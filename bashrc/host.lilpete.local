@@ -1,17 +1,15 @@
 
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH:/usr/local/mysql/bin:~/.pear/bin
 
-# export PHPRC=~						# custom php.ini
 export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
 export HISTIGNORE=$HISTIGNORE:fresh:fresht
 export LSCOLORS=ExfxcxdxBxehbdabagacad
 
 ## Set Textmate as default editor in various places
-export EDITOR='mate -w'				# used by subversion
+export EDITOR='mate -w'
 export VISUAL='mate -w'
-export LESSEDIT='mate -l %lm %f'	# press v while in less
-export GIT_EDITOR='mate -wl1'		# used by git
-
+export LESSEDIT='mate -l %lm %f'
+export GIT_EDITOR='mate -wl1'
 
 alias battery='ioreg -w0 -l | grep -E "MaxCapacity|CurrentCapacity"'
 alias cpath='/bin/echo -n "$PWD" | pbcopy'
