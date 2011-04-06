@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+sudo port -uc selfupdate
+# sudo port -u -c upgrade outdated

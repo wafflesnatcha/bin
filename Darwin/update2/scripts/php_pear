@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+pear update-channels && pear upgrade-all && pear clear-cache
+# pear update-channels && pear clear-cache
