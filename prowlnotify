@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+SCRIPT_NAME="prowlnotify"
+SCRIPT_VERSION="1.0.4 [2011-04-05]"
+SCRIPT_DESCRIPTION="Adapter to prowl.pl that functions more like growlnotify"
+SCRIPT_USAGE="${0##*/} [options] message"
+SCRIPT_GETOPT_SHORT="a:e:p:uh"
+SCRIPT_GETOPT_LONG="application:,event:,priority:,url:,help"
+
+usage() {
+	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESCRIPTION\n\n$SCRIPT_USAGE\n\nOptions:"
+	column -t -s '&' <<EOF
+ -a, --application=NAME&Name of the application sending the message.
+ -e, --event=NAME&The name of the Event part of the notification. This is generally the action which occurs, such as disk partitioning completed. (default is HOSTNAME)
+ -p, --priority=PRIORITY&The priority level of the notification. An integer value ranging [-2, 2] or one of: Very Low, Moderate, Normal, High, Emergency.
+ -u, --url&Defines the message as a url, allowing the client to redirect.
+ -h, --help&Show this output
+EOF
+	echo -e "\nAPI Key:\nBy default prowlnotify will check ~/.prowlapikey for your api key. Otherwise will check both the PROWL_API_KEY and PROWL_API_KEYFILE variables. With PROWL_API_KEY being the key itself and PROWL_API_KEYFILE being a file with your key in as its contents."
+}
+FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+
+ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
+eval set -- "$ARGS"
+
+prowlbin=`which prowl.pl`
+[[ ! -f "$prowlbin" ]] && FAIL "prowl.pl not found"
+
+opt_application="-application=prowlnotify"
+opt_event="-event=$HOSTNAME"
+opt_is_url=
+opt_key=
+opt_keyfile=
+opt_notification="-notification="
+opt_priority=
+opt_url=
+
+
+# Find the api key or file containing it
+[[ -n "$PROWL_API_KEY" ]] && opt_key="-apikey=${PROWL_API_KEY}"
+PROWL_API_KEYFILE=${PROWL_API_KEYFILE:-~/.prowlapikey}
+[[ -f "$PROWL_API_KEYFILE" ]] && opt_keyfile="-apikeyfile=${PROWL_API_KEYFILE}"
+
+while true; do
+	case $1 in
+		-h|--help) usage; exit 0; ;;
+		-a|--application) opt_application="-application=$2"; shift ;;
+		-e|--event) opt_event="-event=$2"; shift ;;
+		-p|--priority)
+			case "$2" in
+				-2|"Very Low") opt_priority="-priority=-2" ;;
+				-1|Moderate) opt_priority="-priority=-1" ;;
+				0|Normal) opt_priority="-priority=0" ;;
+				1|High) opt_priority="-priority=1" ;;
+				2|Emergency) opt_priority="-priority=2" ;;
+			esac
+			shift
+		;;
+		-u|--url) opt_is_url=1 ;;
+		*) shift; break ;;
+	esac
+	shift
+done
+
+[[ ! $1 ]] && echo "Enter a notification description, followed by newline, followed by Ctrl-D (End of File). To cancel, press Ctrl-C."
+msg="${@:-`cat`}"
+
+[[ $opt_is_url ]] && opt_url="-url=${msg}"
+
+"$prowlbin" \
+	"$opt_application" \
+   	"$opt_event" \
+   	"$opt_priority" \
+   	"$opt_key" \
+   	"$opt_keyfile" \
+   	"$opt_url" \
+	$* \
+	"${opt_notification}${msg}"
