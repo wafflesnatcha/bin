@@ -1,0 +1,42 @@
+
+export PATH=/opt/local/bin:/opt/local/sbin:$PATH:/usr/local/mysql/bin:~/.pear/bin
+
+# export PHPRC=~						# custom php.ini
+export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
+export HISTIGNORE=$HISTIGNORE:fresh:fresht
+export LSCOLORS=ExfxcxdxBxehbdabagacad
+
+## Set Textmate as default editor in various places
+export EDITOR='mate -w'				# used by subversion
+export VISUAL='mate -w'
+export LESSEDIT='mate -l %lm %f'	# press v while in less
+export GIT_EDITOR='mate -wl1'		# used by git
+
+
+alias battery='ioreg -w0 -l | grep -E "MaxCapacity|CurrentCapacity"'
+alias cpath='/bin/echo -n "$PWD" | pbcopy'
+alias du='du -h -d 1'
+alias la='ls -Alp@'
+alias mac='mac.sh'
+alias mate='mate -r'
+alias ssh='sshcolor.sh'
+alias updatedb='(cd / && sudo /usr/libexec/locate.updatedb)'
+
+
+## open a new terminal tab at the current working directory
+fresht() {
+	history -w && osascript <<EOF &>/dev/null
+tell application "System Events"
+	if not UI elements enabled then return
+	tell application process "Terminal"
+		if not frontmost then return
+		click menu item "New Tab" of menu "Shell" of menu bar 1
+	end tell
+end tell
+tell application "Terminal" to do script "cd '${PWD}' && history -c && history -r" in front window
+EOF
+}
+## calls fresht AND closes the current tab afterwards
+fresh() { fresht && exit; }
+
+[ -f /opt/local/etc/bash_completion ] && . /opt/local/etc/bash_completion
