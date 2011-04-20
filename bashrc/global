@@ -12,7 +12,6 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 alias du='du -h --max-depth=1'
-alias findstring='findstring.sh'
 alias gitclone='git clone --depth 1 --recursive'
 alias gitupdate='git pull && git submodule update && git gc --auto'
 alias giturl='git config --get remote.origin.url'
@@ -24,7 +23,6 @@ alias lr='l -R'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias ss='shiftsearch'
 alias yuicompressor='java -jar ~/bin/yuicompressor.jar'
-alias zipup='zipup.sh'
 
 getvars() { set | egrep '^[a-zA-Z0-9_]+='; }
 export -f getvars

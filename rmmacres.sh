@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.5.8 [2011-04-05]"
+SCRIPT_VERSION="1.5.9 [2011-04-19]"
 SCRIPT_DESCRIPTION="Find and remove Mac resource & junk files."
 SCRIPT_USAGE="${0##*/} [options] path ..."
 SCRIPT_GETOPT_SHORT="d:sfinh"
@@ -45,8 +45,9 @@ runFind() {
 	[[ ! $names ]] && names=" -or -name '._*' -or -name .localized -or -name .DS_Store -or -name "$'Icon\r'
 	
 	find "$1" ${opts} \
-		-not -path '*.Trash/*' \
-		-not -path '*.Trashes/*' \
+		-not -path '*/.Trash/*' \
+		-not -path '*/.Trashes/*' \
+		-not -path '*lost+found/' \
 		\( -false $names \) \
 		$actions
 }
