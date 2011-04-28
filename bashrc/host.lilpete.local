@@ -1,9 +1,7 @@
-
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH:/usr/local/mysql/bin:~/.pear/bin
 
 export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
 export HISTIGNORE=$HISTIGNORE:fresh:fresht
-export LSCOLORS=ExfxcxdxBxehbdabagacad
 
 ## Set Textmate as default editor in various places
 export EDITOR='mate -w'
@@ -13,13 +11,11 @@ export GIT_EDITOR='mate -wl1'
 
 alias battery='ioreg -w0 -l | grep -E "MaxCapacity|CurrentCapacity"'
 alias cpath='/bin/echo -n "$PWD" | pbcopy'
-alias du='du -h -d 1'
 alias la='ls -Alp@'
 alias mac='mac.sh'
 alias mate='mate -r'
 alias ssh='sshcolor.sh'
 alias updatedb='(cd / && sudo /usr/libexec/locate.updatedb)'
-
 
 ## open a new terminal tab at the current working directory
 fresht() {
