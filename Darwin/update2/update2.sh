@@ -1,29 +1,28 @@
 #!/usr/bin/env bash
 . colors.sh 2>/dev/null # color output support
-
-SCRIPT_NAME="update2.sh"
-SCRIPT_VERSION=1.1.1
+SCRIPT_NAME="update2"
+SCRIPT_VERSION="1.1.2 [2011-04-28]"
 SCRIPT_DESCRIPTION="Run updates for a variety of applications"
 SCRIPT_USAGE="${0##*/} [options] [script] ..."
-SCRIPT_GETOPT_SHORT="ae:d:lh"
-SCRIPT_GETOPT_LONG="autoupdate,enable:,disable:,list,help"
-
+SCRIPT_GETOPT_SHORT="ad:e:lh"
+SCRIPT_GETOPT_LONG="autoupdate,disable:,enable:,list,help"
 usage() {
-	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESCRIPTION\n\n$SCRIPT_USAGE\nOptions:"
-	cat <<EOF | column -s\& -t
- -a, --autoupdate&run autoupdate enabled scripts
- -l, --list&list available update scripts
- -e, --enable=SCRIPT&enable a script for autoupdating
- -d, --disable=SCRIPT&disable a script from autoupdating
- -h, --help&show this output
-EOF
+	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESCRIPTION\n\n$SCRIPT_USAGE\n\nOptions:"
+	column -t -s '&' <<-'EOF'
+	 -a, --autoupdate&run autoupdate enabled scripts
+	 -d, --disable=SCRIPT&remove a script from autoupdate
+	 -e, --enable=SCRIPT&enable a script in autoupdate
+	 -l, --list&list available update scripts
+	 -h, --help&show this output
+	EOF
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-PATH_ROOT="$(dirname "`greadlink -f "$0"`")"
-PATH_RUNSCRIPT="$PATH_ROOT/run.sh"
+PATH_UPDATE2="$(readlink -f "$0" 2>/dev/null || greadlink -f "$0")"
+PATH_ROOT="$(dirname "$PATH_UPDATE2")"
+PATH_RUNSCRIPT="$PATH_ROOT/run_script.sh"
 PATH_SCRIPTS="$PATH_ROOT/scripts"
-PATH_SETTINGS=~/".${SCRIPT_NAME}.cfg"
+PATH_SETTINGS=~/".${SCRIPT_NAME}"
 
 [[ -f "$PATH_SETTINGS" ]] && . "$PATH_SETTINGS"
 
@@ -122,12 +121,12 @@ loadScripts
 
 while true; do
 	case $1 in
-	-h|--help) usage; exit 0 ;;
-	-l|--list) DO_LIST=1 ;;
-	-a|--autoupdate) DO_AUTOUPDATES=1 ;;
-	-e|--enable) scriptEnable "$2"; shift ;;
-	-d|--disable) scriptDisable "$2"; shift ;;
-	*) shift; break ;;
+		-h|--help) usage; exit 0 ;;
+		-l|--list) DO_LIST=1 ;;
+		-a|--autoupdate) DO_AUTOUPDATES=1 ;;
+		-e|--enable) scriptEnable "$2"; shift ;;
+		-d|--disable) scriptDisable "$2"; shift ;;
+		*) shift; break ;;
 	esac
 	shift
 done
@@ -139,4 +138,6 @@ if [[ $DO_LIST || $DO_AUTOUPDATES ]]; then
 	[[ $DO_AUTOUPDATES ]] && runAutoupdates
 fi
 
-for arg in "$@"; do scriptExists "$arg" && runScript "$arg"; done
+for arg in "$@"; do
+	scriptExists "$arg" && runScript "$arg"
+done
