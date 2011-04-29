@@ -1,22 +1,35 @@
 #!/usr/bin/env bash
 
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.0.4 [2011-04-05]"
-SCRIPT_DESCRIPTION="Adapter to prowl.pl that functions more like growlnotify"
+SCRIPT_VERSION="1.0.6 (2011-04-28)"
+SCRIPT_DESCRIPTION="Adapter to prowl.pl that functions more like growlnotify."
 SCRIPT_USAGE="${0##*/} [options] message"
 SCRIPT_GETOPT_SHORT="a:e:p:uh"
-SCRIPT_GETOPT_LONG="application:,event:,priority:,url:,help"
+SCRIPT_GETOPT_LONG="application:,event:,priority:,url,help"
 
 usage() {
-	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESCRIPTION\n\n$SCRIPT_USAGE\n\nOptions:"
-	column -t -s '&' <<EOF
- -a, --application=NAME&Name of the application sending the message.
- -e, --event=NAME&The name of the Event part of the notification. This is generally the action which occurs, such as disk partitioning completed. (default is HOSTNAME)
- -p, --priority=PRIORITY&The priority level of the notification. An integer value ranging [-2, 2] or one of: Very Low, Moderate, Normal, High, Emergency.
- -u, --url&Defines the message as a url, allowing the client to redirect.
- -h, --help&Show this output
+cat <<EOF
+$SCRIPT_NAME $SCRIPT_VERSION
+$SCRIPT_DESCRIPTION
+
+Usage: $SCRIPT_USAGE
+ -a, --application=NAME   Name of the application sending the message.
+ -e, --event=NAME         The name of the Event part of the notification. This 
+                          is generally the action which occurs, such as disk 
+                          partitioning completed. (default is HOSTNAME)
+ -p, --priority=PRIORITY  The priority level of the notification. An integer 
+                          value ranging [-2, 2] or one of: Very Low, Moderate, 
+                          Normal, High, Emergency.
+ -u, --url                Defines the message as a url, allowing the client to 
+                          redirect.
+ -h, --help               Show this output
+
+API Key:
+ By default prowlnotify will check ~/.prowlapikey for the api key. Otherwise it
+ checks both the PROWL_API_KEY and PROWL_API_KEYFILE variables. With 
+ PROWL_API_KEY being the key itself and PROWL_API_KEYFILE being a file with the
+ key as its contents."
 EOF
-	echo -e "\nAPI Key:\nBy default prowlnotify will check ~/.prowlapikey for your api key. Otherwise will check both the PROWL_API_KEY and PROWL_API_KEYFILE variables. With PROWL_API_KEY being the key itself and PROWL_API_KEYFILE being a file with your key in as its contents."
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
@@ -74,5 +87,4 @@ msg="${@:-`cat`}"
    	"$opt_key" \
    	"$opt_keyfile" \
    	"$opt_url" \
-	$* \
 	"${opt_notification}${msg}"

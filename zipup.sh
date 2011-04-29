@@ -1,18 +1,24 @@
 #!/usr/bin/env bash
-
 SCRIPT_NAME="zipup.sh"
-SCRIPT_VERSION="1.0.1 [2011-04-05]"
+SCRIPT_VERSION="1.1.1 (2011-04-28)"
 SCRIPT_DESCRIPTION="Quickly make archives of files and directories"
-SCRIPT_USAGE="${0##*/} [options] path ..."
-SCRIPT_GETOPT_SHORT="7dh"
-SCRIPT_GETOPT_LONG="7zip,append-date,help"
+SCRIPT_USAGE="${0##*/} [options] [path ...]"
+SCRIPT_GETOPT_SHORT="7do:h"
+SCRIPT_GETOPT_LONG="7zip,date,output:,help"
 
 usage() {
-	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESCRIPTION\n\n$SCRIPT_USAGE\n\nOptions:"
-	column -t -s '&' <<EOF
- -7, --7zip&compress with 7-zip (requires 7z)
- -d, --append-date&append the date to the end of the filename (%Y%m%d)
- -h, --help&show this output
+cat <<EOF
+$SCRIPT_NAME $SCRIPT_VERSION
+$SCRIPT_DESCRIPTION
+
+Usage: $SCRIPT_USAGE
+
+Options:	
+ -7, --7zip         Compress with 7-zip (requires 7z)
+ -d, --date         Append the date to the end of the filename
+ -o, --output=PATH  Directory to place the archive in (default current working 
+                    directory)
+ -h, --help         Show this output
 EOF
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
@@ -20,42 +26,47 @@ FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
 
-CONFIG_format="zip" # zip | 7z
-CONFIG_append_date=
+opt_format="zip"
+opt_date=
+opt_date_format=%Y-%m-%d
+opt_output="$PWD"
 
-makeFilename() {
-	local count=2
-	local basename="`basename "$1"`"
-	local extension="$CONFIG_format"
-	
-	[[ $CONFIG_append_date ]] && basename="${basename}-`date +%Y%m%d`"
-
-	local archive="$basename"
-
-	while [[ -e "$archive.$extension" ]]; do
-		archive="$basename $count"
-		count=$(($count+1))
+uniquefile() {
+	local i=1
+	local dir="$(dirname "$1")"
+	local file="$(basename "$1")"
+	local name="${file%.*}"
+	local ext="${file##*.}"
+	local try="$name"
+	while [[ -e "$dir/$try.$ext" ]]; do
+		i=$(($i+1)); try="${name}${2:-.}${i}";
 	done
-
-	echo "$archive.$extension"
+	echo "$dir/$try.$ext"
 }
 
 zipup() {
 	[[ ! -e "$1" ]] && continue
-	local filename="`makeFilename "$1"`"
-	
-	if [[ ${CONFIG_format} == "7z" ]]; then
-		7z a "$filename" "$1" || FAIL
+
+	local file="$(basename "$1")"
+	local out="`uniquefile "${opt_output}/${file##.}${opt_date}.${opt_format}"`"
+
+	if [[ ${opt_format} == "7z" ]]; then
+		7z a "$out" "$1" || FAIL
 	else
-		zip -r "$filename" "$1" || FAIL
+		zip -r "$out" "$1" || FAIL
 	fi
+	echo "$out"
 }
 
 while true; do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
-		-7|--7zip) CONFIG_format="7z" ;;
-		-d|--append-date) CONFIG_append_date=1 ;;
+		-7|--7zip) opt_format="7z" ;;
+		-d|--date) opt_date="-$(date +$opt_date_format)" ;;
+		-o|--output)
+			[[ ! -d "$2" ]] && FAIL "invalid output directory $2"
+			opt_output="$2"; shift
+		;;
 		*) shift; break ;;
 	esac
 	shift
