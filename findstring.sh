@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 SCRIPT_NAME="findstring.sh"
-SCRIPT_VERSION="1.0.9 (2011-04-28)"
+SCRIPT_VERSION="1.1.0 (2011-05-17)"
 SCRIPT_DESCRIPTION="Recursively find strings in files."
-SCRIPT_USAGE="${0##*/} [options] text ..."
 SCRIPT_GETOPT_SHORT="bd:fip:h"
 SCRIPT_GETOPT_LONG="binary,depth:,filenames,ignore-case,path:,help"
 
@@ -12,7 +11,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 $SCRIPT_DESCRIPTION
 
-Usage: $SCRIPT_USAGE
+Usage: ${0##*/} [options] text ...
 
 Options:
  -b, --binary       Include binary files in the search
@@ -54,19 +53,17 @@ runFind() {
 while true; do
     case $1 in
         -h|--help) usage; exit 0 ;;
-		-b|--binary) opt_binary=1 ;;
+        -b|--binary) opt_binary=1 ;;
         -d|--depth) opt_depth="$2"; shift ;;
         -f|--filenames) opt_filenames=1 ;;
         -i|--ignore-case) opt_ignore_case=1 ;;
-        -p|--path)			
-            [[ ! -d "$2" ]] && FAIL "specified path doesn't exist" 
-            opt_path="$2"
-            shift
-        ;;
+        -p|--path) opt_path="$2"; shift ;;
         *) shift; break ;;
     esac
     shift
 done
+
+[[ ! -d "$opt_path" ]] && FAIL "invalid path"
 
 [[ ! $1 ]] && { usage; exit 0; }
 

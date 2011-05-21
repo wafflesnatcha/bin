@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
 
-sudo port -uc selfupdate
-# sudo port -u -c upgrade outdated
+sudo port selfupdate && sudo port upgrade outdated

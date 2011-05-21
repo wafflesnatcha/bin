@@ -1,32 +1,30 @@
 #!/usr/bin/env bash
-
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.0.6 (2011-04-28)"
+SCRIPT_VERSION="1.0.7 (2011-05-17)"
 SCRIPT_DESCRIPTION="Adapter to prowl.pl that functions more like growlnotify."
-SCRIPT_USAGE="${0##*/} [options] message"
 SCRIPT_GETOPT_SHORT="a:e:p:uh"
 SCRIPT_GETOPT_LONG="application:,event:,priority:,url,help"
 
 usage() {
-cat <<EOF
+    cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 $SCRIPT_DESCRIPTION
 
-Usage: $SCRIPT_USAGE
+Usage: ${0##*/} [options] message
  -a, --application=NAME   Name of the application sending the message.
- -e, --event=NAME         The name of the Event part of the notification. This 
-                          is generally the action which occurs, such as disk 
+ -e, --event=NAME         The name of the Event part of the notification. This
+                          is generally the action which occurs, such as disk
                           partitioning completed. (default is HOSTNAME)
- -p, --priority=PRIORITY  The priority level of the notification. An integer 
-                          value ranging [-2, 2] or one of: Very Low, Moderate, 
+ -p, --priority=PRIORITY  The priority level of the notification. An integer
+                          value ranging [-2, 2] or one of: Very Low, Moderate,
                           Normal, High, Emergency.
- -u, --url                Defines the message as a url, allowing the client to 
+ -u, --url                Defines the message as a url, allowing the client to
                           redirect.
  -h, --help               Show this output
-
+ 
 API Key:
  By default prowlnotify will check ~/.prowlapikey for the api key. Otherwise it
- checks both the PROWL_API_KEY and PROWL_API_KEYFILE variables. With 
+ checks both the PROWL_API_KEY and PROWL_API_KEYFILE environment variables. With
  PROWL_API_KEY being the key itself and PROWL_API_KEYFILE being a file with the
  key as its contents."
 EOF
@@ -55,24 +53,24 @@ PROWL_API_KEYFILE=${PROWL_API_KEYFILE:-~/.prowlapikey}
 [[ -f "$PROWL_API_KEYFILE" ]] && opt_keyfile="-apikeyfile=${PROWL_API_KEYFILE}"
 
 while true; do
-	case $1 in
-		-h|--help) usage; exit 0; ;;
-		-a|--application) opt_application="-application=$2"; shift ;;
-		-e|--event) opt_event="-event=$2"; shift ;;
-		-p|--priority)
-			case "$2" in
-				-2|"Very Low") opt_priority="-priority=-2" ;;
-				-1|Moderate) opt_priority="-priority=-1" ;;
-				0|Normal) opt_priority="-priority=0" ;;
-				1|High) opt_priority="-priority=1" ;;
-				2|Emergency) opt_priority="-priority=2" ;;
-			esac
-			shift
-		;;
-		-u|--url) opt_is_url=1 ;;
-		*) shift; break ;;
-	esac
-	shift
+    case $1 in
+        -h|--help) usage; exit 0; ;;
+        -a|--application) opt_application="-application=$2"; shift ;;
+        -e|--event) opt_event="-event=$2"; shift ;;
+        -p|--priority)
+        case "$2" in
+            -2|"Very Low") opt_priority="-priority=-2" ;;
+            -1|Moderate) opt_priority="-priority=-1" ;;
+            0|Normal) opt_priority="-priority=0" ;;
+            1|High) opt_priority="-priority=1" ;;
+            2|Emergency) opt_priority="-priority=2" ;;
+        esac
+        shift
+        ;;
+        -u|--url) opt_is_url=1 ;;
+        *) shift; break ;;
+    esac
+    shift
 done
 
 [[ ! $1 ]] && echo "Enter a notification description, followed by newline, followed by Ctrl-D (End of File). To cancel, press Ctrl-C."
@@ -81,10 +79,10 @@ msg="${@:-`cat`}"
 [[ $opt_is_url ]] && opt_url="-url=${msg}"
 
 "$prowlbin" \
-	"$opt_application" \
-   	"$opt_event" \
-   	"$opt_priority" \
-   	"$opt_key" \
-   	"$opt_keyfile" \
-   	"$opt_url" \
-	"${opt_notification}${msg}"
+    "$opt_application" \
+    "$opt_event" \
+    "$opt_priority" \
+    "$opt_key" \
+    "$opt_keyfile" \
+    "$opt_url" \
+    "${opt_notification}${msg}"

@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.6.3 (2011-04-28)"
+SCRIPT_NAME="rmmacres"
+SCRIPT_VERSION="1.6.4 (2011-05-17)"
 SCRIPT_DESCRIPTION="Find and remove Mac resource & junk files."
-SCRIPT_USAGE="${0##*/} [options] [path ...]"
 SCRIPT_GETOPT_SHORT="afismd:nh"
 SCRIPT_GETOPT_LONG="all,forks,icons,dsstore,misc,depth:,dry-run,help"
 
 usage() {
-cat <<EOF
+    cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 $SCRIPT_DESCRIPTION
 
-Usage: $SCRIPT_USAGE
+Usage: ${0##*/} [options] [path ...]
 
 Options:
  -a, --all        Same as -fism
@@ -38,28 +37,28 @@ factions="-print -delete"
 fopts=
 
 while true; do
-	case $1 in
-		-h|--help) usage; exit 0 ;;
-		-n|--dry-run) factions="-print" ;;
-		-d|--depth) fopts="$fopts -maxdepth $2"; shift ;;
+    case $1 in
+        -h|--help) usage; exit 0 ;;
+        -n|--dry-run) factions="-print" ;;
+        -d|--depth) fopts="$fopts -maxdepth $2"; shift ;;
 
-		-s|--dsstore) fnames="$fnames $find_dsstore" ;;
-		-f|--forks) fnames="$fnames $find_forks" ;;
-		-i|--icons) fnames="$fnames $find_icons" ;;
-		-m|--misc) fnames="$fnames $find_misc" ;;
+        -s|--dsstore) fnames="$fnames $find_dsstore" ;;
+        -f|--forks) fnames="$fnames $find_forks" ;;
+        -i|--icons) fnames="$fnames $find_icons" ;;
+        -m|--misc) fnames="$fnames $find_misc" ;;
 
-		-a|--all) fnames="$fnames $find_dsstore $find_forks $find_icons $find_misc" ;;
-		*) shift; break ;;
-	esac
-	shift
+        -a|--all) fnames="$fnames $find_dsstore $find_forks $find_icons $find_misc" ;;
+        *) shift; break ;;
+    esac
+    shift
 done
 
 [[ ! $fnames ]] && { usage; exit 0; }
 
 for arg in "${@:-$PWD}"; do
-	[[ -d "$arg" ]] && find "$arg" ${fopts} \
-		-not -path '*.Trash/*' \
-		-not -path '*.Trashes/*' \
-		\( -false ${fnames} \) \
-		$factions
+    [[ -d "$arg" ]] && find "$arg" ${fopts} \
+        -not -path '*.Trash/*' \
+        -not -path '*.Trashes/*' \
+        \( -false ${fnames} \) \
+        $factions
 done
