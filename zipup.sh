@@ -47,7 +47,7 @@ zipup() {
     [[ ! -e "$1" ]] && continue
 
     local file="$(basename "$1")"
-    local out="`uniquefile "${opt_output}/${file##.}${opt_date}.${opt_format}"`"
+    local out="`uniquefile "${opt_output}/${file}${opt_date}.${opt_format}"`"
 
     if [[ ${opt_format} == "7z" ]]; then
         7z a "$out" "$1" || FAIL
