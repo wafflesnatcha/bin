@@ -18,14 +18,13 @@ else
 fi
 
 task_start "finding latest build"
-URL=$(curl --max-time 10 -s -S http://nightly.webkit.org/ | grep dmg | head -1 | perl -pe 's/.*(http.*dmg).*/$1/')
+URL=$(curl -qsS -Y1 --max-time 10 --connect-timeout 15 http://nightly.webkit.org/ | grep dmg | head -1 | perl -pe 's/.*(http.*dmg).*/$1/')
 FILE=$(basename "$URL")
 task_end
 
 task_start "downloading"
 mkdir -p $download_dir && cd $download_dir
-curl -s -S $URL --remote-name
-task_end
+task_end $(curl  -qsS -Y1 --connect-timeout 15 $URL --remote-name)
 
 task_start "mounting"
 hdiutil attach -quiet $download_dir/$FILE

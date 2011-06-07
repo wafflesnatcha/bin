@@ -21,17 +21,13 @@ else
 fi
 
 task_start "finding latest revision"
-mkdir "$download_dir"
-LATEST=$(curl --max-time 10 -s -S "$snapshots_url/LATEST" 2>&1)
+LATEST=$(curl -q -s -S -Y 1 --max-time 10 --connect-timeout 15 "$snapshots_url/LATEST" 2>&1)
 task_end "$LATEST"
 
-if [[ $CURRENT -ge $LATEST ]]; then
-	echo "No update necessary"
-	exit 0
-fi
+[[ $CURRENT -ge $LATEST ]] && { echo "No update necessary"; exit 0; }
 
 task_start "downloading"
-task_end $(curl -s -S "$snapshots_url/$LATEST/chrome-mac.zip" -o "$download_dir/chrome-mac.zip" 2>&1)
+task_end $(mkdir "$download_dir" &>/dev/null && curl -q -s -S -Y 1 --connect-timeout 15 "$snapshots_url/$LATEST/chrome-mac.zip" -o "$download_dir/chrome-mac.zip" 2>&1)
 
 task_start "unzipping"
 task_end $(unzip -qq "$download_dir/chrome-mac.zip" -d "$download_dir")

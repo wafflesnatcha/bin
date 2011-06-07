@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . colors.sh 2>/dev/null
 
-SOURCE="$*"
+SOURCE="$@"
 
 task_start() {
 	echo -ne "$@... "
@@ -18,11 +18,11 @@ task_done() {
 
 task_fail() {
 	local msg="${0##*/}: $1"
-	echo -e "${CLR_RED}${2:-failed}${CLR_RESET}"
+	echo -e "${CLR_RED}failed${CLR_RESET}"
 	echo "$msg" >&2
-	type on_fail &>/dev/null && onFail
-	echo "$msg" | growlnotify -s -p2 --title "update2.sh"
-	exit ${2:-1}
+	type on_fail &>/dev/null && on_fail
+    # echo "$msg" | growlnotify -s -p2 --title "update2.sh"
+	exit 1
 }
 
 task_skip() {
