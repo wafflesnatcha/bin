@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="shifttext"
-SCRIPT_VERSION="1.0.4 (2011-05-21)"
+SCRIPT_VERSION="1.0.5 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"
 
@@ -18,11 +18,10 @@ ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SC
 eval set -- "$ARGS"
 
 tempfile() {
-    local filename=$(mktemp -t "${0##*/}")
-    trap "rm -f '$filename'" 0
-    trap "rm -f '$filename'; exit 1" 2
-    trap "rm -f '$filename'; exit 1" 1 15
-    echo "$filename"
+	eval $1=$(mktemp -t "${0##*/}")
+	trap "{ rm -f '${!1}'; }" 0
+	trap "{ rm -f '${!1}'; exit 1; }" 2
+	trap "{ rm -f '${!1}'; exit 1; }" 1 15
 }
 
 while true; do
@@ -37,7 +36,7 @@ done
 
 [[ ! -e "$1" ]] && touch "$1"
 
-tempfile=`tempfile`
+tempfile tmpfile
 
-cat "$1" > "$tempfile"
-cat - "$tempfile" > "$1"
+cat "$1" > "$tmpfile"
+cat - "$tmpfile" > "$1"

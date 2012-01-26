@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="crush"
-SCRIPT_VERSION="0.5.3 (2011-05-17)"
-SCRIPT_DESCRIPTION="Simple processing of images with pngcrush."
+SCRIPT_VERSION="0.5.4 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"
 
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-$SCRIPT_DESCRIPTION
+Simple processing of images with pngcrush.
 
 Usage: ${0##*/} file ...
 EOF
@@ -22,11 +21,10 @@ pngcrushbin=`which pngcrush`
 [[ ! $pngcrushbin ]] && FAIL "pngcrush not found"
 
 tempfile() {
-    local filename=$(mktemp -t "${0##*/}")
-    trap "rm -f '$filename'" 0
-    trap "rm -f '$filename'; exit 1" 2
-    trap "rm -f '$filename'; exit 1" 1 15
-    echo "$filename"
+	eval $1=$(mktemp -t "${0##*/}")
+	trap "{ rm -f '${!1}'; }" 0
+	trap "{ rm -f '${!1}'; exit 1; }" 2
+	trap "{ rm -f '${!1}'; exit 1; }" 1 15
 }
 
 while true; do
@@ -45,10 +43,10 @@ for f in "$@"; do
 
     echo $(basename "$f")
 
-    TMPFILE="$(tempfile)"
-    results="$($pngcrushbin -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$TMPFILE")"
+    tempfile tmpfile
+    results="$($pngcrushbin -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
     [[ $? > 0 ]] && FAIL "$results"
 
-    mv "$TMPFILE" "$f" || exit
+    mv "$tmpfile" "$f" || exit
 done
 

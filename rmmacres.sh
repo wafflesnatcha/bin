@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="rmmacres"
-SCRIPT_VERSION="1.6.5 (2012-01-22)"
-SCRIPT_DESCRIPTION="Find and remove Mac resource & junk files."
+SCRIPT_VERSION="1.6.6 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="afismd:nh"
 SCRIPT_GETOPT_LONG="all,forks,icons,dsstore,misc,depth:,dry-run,help"
 
 usage() {
     cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-$SCRIPT_DESCRIPTION
+Find and remove Mac resource & junk files.
 
 Usage: ${0##*/} [options] [path ...]
 
@@ -20,7 +19,7 @@ Options:
  -m, --misc       Remove other miscellaneous junk (.localized)
  -d, --depth=NUM  Maximum depth to search subdirectories
  -n, --dry-run    Just show what would be deleted
- -h, --help       Show this output
+ -h, --help       Show this help
 EOF
 }
 

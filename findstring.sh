@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-
 SCRIPT_NAME="findstring.sh"
-SCRIPT_VERSION="1.1.0 (2011-05-17)"
-SCRIPT_DESCRIPTION="Recursively find strings in files."
+SCRIPT_VERSION="1.1.1 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="bd:fip:h"
 SCRIPT_GETOPT_LONG="binary,depth:,filenames,ignore-case,path:,help"
 
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-$SCRIPT_DESCRIPTION
+Recursively find strings in files.
 
 Usage: ${0##*/} [options] text ...
 
@@ -19,7 +17,7 @@ Options:
  -f, --filenames    just print out a list of the files that match, no context
  -i, --ignore-case  Case-insensitive search
  -p, --path=PATH    Search for files in this path (default current working directory)
- -h, --help         Show this output
+ -h, --help         Show this help
 EOF
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }

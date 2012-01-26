@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="geticons.sh"
-SCRIPT_VERSION="1.0.8 (2011-05-21)"
+SCRIPT_VERSION="1.0.9 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="d:o:h"
-SCRIPT_GETOPT_LONG="depth:output:,help"
+SCRIPT_GETOPT_LONG="depth:,output:,help"
 
 usage() {
 cat <<EOF
@@ -14,7 +14,7 @@ Usage: ${0##*/} [options] [path]
 Options:
  -d, --depth=NUM    Maximum depth to search subdirectories
  -o, --output=PATH  Output directory
- -h, --help         Show this output
+ -h, --help         Show this help
 EOF
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }

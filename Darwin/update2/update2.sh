@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . colors.sh 2>/dev/null # color output support
 SCRIPT_NAME="update2"
-SCRIPT_VERSION="1.1.4 (2011-05-19)"
+SCRIPT_VERSION="1.1.5 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="ad:e:lh"
 SCRIPT_GETOPT_LONG="autoupdate,disable:,enable:,list,help"
 
@@ -17,7 +17,7 @@ Options:
  -d, --disable=SCRIPT  Remove a script from autoupdate
  -e, --enable=SCRIPT   Enable a script in autoupdate
  -l, --list            List available scripts
- -h, --help            Show this output
+ -h, --help            Show this help
 EOF
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }

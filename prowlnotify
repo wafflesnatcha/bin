@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.0.7 (2011-05-17)"
-SCRIPT_DESCRIPTION="Adapter to prowl.pl that functions more like growlnotify."
+SCRIPT_VERSION="1.0.8 (2012-01-26)"
 SCRIPT_GETOPT_SHORT="a:e:p:uh"
 SCRIPT_GETOPT_LONG="application:,event:,priority:,url,help"
 
 usage() {
     cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-$SCRIPT_DESCRIPTION
+Adapter to prowl.pl that functions more like growlnotify.
 
 Usage: ${0##*/} [options] message
  -a, --application=NAME   Name of the application sending the message.
@@ -20,13 +19,12 @@ Usage: ${0##*/} [options] message
                           Normal, High, Emergency.
  -u, --url                Defines the message as a url, allowing the client to
                           redirect.
- -h, --help               Show this output
+ -h, --help               Show this help
  
-API Key:
- By default prowlnotify will check ~/.prowlapikey for the api key. Otherwise it
- checks both the PROWL_API_KEY and PROWL_API_KEYFILE environment variables. With
- PROWL_API_KEY being the key itself and PROWL_API_KEYFILE being a file with the
- key as its contents."
+By default prowlnotify will check ~/.prowlapikey for an api key. Otherwise it
+checks both the PROWL_API_KEY and PROWL_API_KEYFILE environment variables. With
+PROWL_API_KEY being a key, and PROWL_API_KEYFILE being a file with the key as 
+its contents.
 EOF
 }
 FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
