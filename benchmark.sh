@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="benchmark"
-SCRIPT_VERSION="0.3.4 (2012-01-26)"
+SCRIPT_VERSION="0.3.6 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="c:i:d:o:h"
 SCRIPT_GETOPT_LONG="command:,iterations:,delay:,output:,help"
 
 opt_command=
 opt_delay=2
-opt_iterations=20
+opt_iterations=10
 opt_output=
 
 usage() {
@@ -17,23 +17,22 @@ Benchmark a shell script.
 Usage: ${0##*/} [options]
 
 Options:
- -c, --command=COMMAND  Command to run (default stdin)
- -d, --delay=SECONDS    Seconds to wait in between executions (default ${opt_delay})
- -i, --iterations=NUM   Number of iterations to run (default ${opt_iterations})
- -o, --output=PATH      Write results to this file (default stdout)
+ -c, --command=COMMAND  Specify the command to benchmark
+ -d, --delay=SECONDS    Seconds to wait in between executions (${opt_delay})
+ -i, --iterations=NUM   Number of iterations to run (${opt_iterations})
+ -o, --output=PATH      Write results to a file
  -h, --help             Show this help
 EOF
 }
-FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")
-	trap "{ rm -f '${!1}'; }" 0
-	trap "{ rm -f '${!1}'; exit 1; }" 2
-	trap "{ rm -f '${!1}'; exit 1; }" 1 15
+	tempfile_exit="$tempfile_exit rm -f '${!1}';"
+	trap "{ $tempfile_exit }" EXIT
 }
 
 getStdIn() {
@@ -41,11 +40,6 @@ getStdIn() {
     cat - > "$TMPCMD"
     chmod +x "$TMPCMD"
     opt_command="$TMPCMD"
-}
-
-execute() {
-    { $TIME_BIN $opt_command >/dev/null
-} 2>> $TMPFILE
 }
 
 TIME_BIN=`which time | sed 1q`
@@ -73,7 +67,8 @@ for (( i = 1; i <= $opt_iterations; i++ )); do
     tput rc
     echo -n "$i/$opt_iterations"
     sleep $opt_delay
-    execute
+    { $TIME_BIN $opt_command
+} 2>> $TMPFILE
 done
 tput rc
 echo

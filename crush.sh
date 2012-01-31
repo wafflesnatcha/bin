@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="crush"
-SCRIPT_VERSION="0.5.4 (2012-01-26)"
+SCRIPT_VERSION="0.5.6 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"
 
@@ -12,7 +12,7 @@ Simple processing of images with pngcrush.
 Usage: ${0##*/} file ...
 EOF
 }
-FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
@@ -22,9 +22,8 @@ pngcrushbin=`which pngcrush`
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")
-	trap "{ rm -f '${!1}'; }" 0
-	trap "{ rm -f '${!1}'; exit 1; }" 2
-	trap "{ rm -f '${!1}'; exit 1; }" 1 15
+	tempfile_exit="$tempfile_exit rm -f '${!1}';"
+	trap "{ $tempfile_exit }" EXIT
 }
 
 while true; do

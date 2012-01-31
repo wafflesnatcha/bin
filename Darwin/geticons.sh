@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="geticons.sh"
-SCRIPT_VERSION="1.0.9 (2012-01-26)"
+SCRIPT_VERSION="1.1.1 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="d:o:h"
 SCRIPT_GETOPT_LONG="depth:,output:,help"
 
@@ -17,14 +17,13 @@ Options:
  -h, --help         Show this help
 EOF
 }
-FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
 
 geticon=`which geticon 2>/dev/null | sed 1q`
-[[ ! $geticon ]] && FAIL "path to geticon not found"
-
+[[ ! $geticon ]] && FAIL "geticon not found"
 
 opt_output="$PWD"
 fopts=

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . colors.sh 2>/dev/null # color output support
 SCRIPT_NAME="update2"
-SCRIPT_VERSION="1.1.5 (2012-01-26)"
+SCRIPT_VERSION="1.1.6 (2012-01-28)"
 SCRIPT_GETOPT_SHORT="ad:e:lh"
 SCRIPT_GETOPT_LONG="autoupdate,disable:,enable:,list,help"
 
@@ -20,7 +20,7 @@ Options:
  -h, --help            Show this help
 EOF
 }
-FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"

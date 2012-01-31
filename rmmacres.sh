@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="rmmacres"
-SCRIPT_VERSION="1.6.6 (2012-01-26)"
+SCRIPT_VERSION="1.6.9 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="afismd:nh"
 SCRIPT_GETOPT_LONG="all,forks,icons,dsstore,misc,depth:,dry-run,help"
 
@@ -16,53 +16,57 @@ Options:
  -f, --forks      Remove resource forks (._*)
  -i, --icons      Remove custom icons (Icon^M)
  -s, --dsstore    Remove Finder settings files (.DS_Store)
- -m, --misc       Remove other miscellaneous junk (.localized)
+ -m, --misc       Remove other miscellaneous files (.localized)
  -d, --depth=NUM  Maximum depth to search subdirectories
- -n, --dry-run    Just show what would be deleted
+ -n, --dry-run    Show what would be deleted and exit
  -h, --help       Show this help
 EOF
 }
+FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
 
-find_forks=
-find_dsstore=
-find_icons=
-find_misc=
+opt_dryrun=
 
-factions="-print -delete"
+par_dsstore='-or -name .DS_Store'
+par_forks='-or -name ._\*'
+par_icons='-or -name '$'Icon\r'
+par_misc='-or -name .localized'
+
 fopts=
+fparams=
 
 while true; do
     case $1 in
         -h|--help) usage; exit 0 ;;
-        -n|--dry-run) factions=-print ;;
+        -n|--dry-run) opt_dryrun=1 ;;
         -d|--depth) fopts="$fopts -maxdepth $2"; shift ;;
-
-        -s|--dsstore) find_dsstore=1 ;; #fnames="$fnames $find_dsstore" ;;
-        -f|--forks) find_forks=1 ;; #fnames="$fnames $find_forks" ;;
-        -i|--icons) find_icons=1 ;; #fnames="$fnames $find_icons" ;;
-        -m|--misc) find_misc=1 ;; #fnames="$fnames $find_misc" ;;
-
-        -a|--all) find_dsstore=1; find_forks=1; find_icons=1; find_misc=1; ;;
-        # -a|--all) fnames="$fnames $find_dsstore $find_icons $find_misc" ;;
+        -s|--dsstore) fparams="$fparams $par_dsstore" ;;
+        -f|--forks) fparams="$fparams $par_forks" ;;
+        -i|--icons) fparams="$fparams $par_icons" ;;
+        -m|--misc) fparams="$fparams $par_misc" ;;
+        -a|--all) fparams="$fparams $par_dsstore $par_forks $par_icons $par_misc" ;;
         *) shift; break ;;
     esac
     shift
 done
 
-[[ ! $find_dsstore && ! $find_forks && ! $find_icons && ! $find_misc ]] && { usage; exit 0; }
+[[ ! $fparams ]] && { usage; exit 0; }
+
+
+args=$(cat <<EOF
+${fopts}
+-not -path '*.Trash/*'
+-not -path '*.Trashes/*'
+(
+	-false
+	${fparams}
+)
+$( [[ ! ${opt_dryrun} ]] && echo "-delete" )
+-print
+EOF)
 
 for arg in "${@:-$PWD}"; do
-    [[ -d "$arg" ]] && find "$arg" ${fopts} \
-        -not -path '*.Trash/*' \
-        -not -path '*.Trashes/*' \
-        \( -false \
-        ${find_dsstore:+-or -name .DS_Store} \
-        ${find_forks:+-or -name ._\*} \
-        ${find_icons:+-or -name $'Icon\r'} \
-        ${find_misc:+-or -name .localized} \
-        \) \
-        $factions
+	echo "$args" | xargs find "$arg"
 done

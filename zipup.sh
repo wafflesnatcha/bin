@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="zipup.sh"
-SCRIPT_VERSION="1.1.3 (2012-01-25)"
+SCRIPT_VERSION="1.1.4 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="7do:h"
 SCRIPT_GETOPT_LONG="7zip,date,output:,help"
 
@@ -47,11 +47,11 @@ processFile() {
     [[ ! -e "$1" ]] && continue
     
     local file="$(basename "$1")"
-    [[ -d "$1" ]] && file="$(cd "$1"; basename "$PWD")" || file
+    [[ -d "$1" ]] && file="$(cd "$1"; basename "$PWD")"
 
     local out="`uniquefile "${opt_output}/${file}${opt_date}.${opt_format}"`"
 
-    if [[ ${opt_format} == "7z" ]]; then
+    if [[ ${opt_format} = "7z" ]]; then
         7z a "$out" "$1" || exit 1
     else
         zip -r "$out" "$1" || exit 1
