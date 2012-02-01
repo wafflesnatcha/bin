@@ -36,7 +36,6 @@ done
 
 [[ ! $1 ]] && { usage; exit 0; }
 
-
 for f in "$@"; do
     [[ "${f##*.}" != "png" ]] && continue
 

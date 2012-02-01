@@ -43,7 +43,6 @@ historys() { [[ ${#} < 1 ]] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
 pss() { [[ ${#} < 1 ]] && ps -lAww || ps aux | grep -i "$*"; }
-resetfile() { for f in "$@"; do local t=$(mktemp -t resetfile) && mv "$f" "$t" && cat "$t" > "$f" && touch -r "$t" "$f"; done; }
 
 if [[ "$PS1" ]]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
