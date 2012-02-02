@@ -37,12 +37,13 @@ export -f printvar
 adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/${b%.*}_$(date +%Y-%m-%d).${b##*.}"; [[ ! -e "$f" ]] && mv "$1" "$f" || echo "file already exists" >&2; }
 countfiles() { for a in "${@:-.}"; do echo -n "$a"; find "$a" | wc -l; done; }
 countlines() { (find "${1:-$PWD}" -type f \! -regex ".*/\.svn/.*" -exec bash -c '[[ `file -b --mime-type {}` =~ ^text/ ]]' \; -print | while read f; do cat "$f"; done) | wc -l; }
+datauri() { [[ ! $1 ]] && return; echo -n "data:$(file -b --mime-type "$1");base64," && openssl base64 -in "$1" | awk '{ str1=str1 $0 }END{ print str1 }' | perl -pe 's/\s*$//';  }
 findname() { local n="$1"; shift; find . -type f -iname "*$n*" $@; }
 findregex() { local n="$1"; shift; find . -regex "$n" $@; }
 historys() { [[ ${#} < 1 ]] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
-pss() { [[ ${#} < 1 ]] && ps -lAww || ps aux | grep -i "$*"; }
+pss() { [[ ${#} < 1 ]] && ps -lAww || ps -lAww | grep -i "$*"; }
 
 if [[ "$PS1" ]]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
