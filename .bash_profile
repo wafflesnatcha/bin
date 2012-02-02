@@ -43,7 +43,8 @@ findregex() { local n="$1"; shift; find . -regex "$n" $@; }
 historys() { [[ ${#} < 1 ]] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
-pss() { [[ ${#} < 1 ]] && ps -lAww || ps -lAww | grep -i "$*"; }
+pss() { [[ ! $@ ]] && ps -lAww || ps -lAww | grep -i "[${1:0:1}]${1:1}"; }
+
 
 if [[ "$PS1" ]]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
