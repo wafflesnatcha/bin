@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-snapshots_url="http://build.chromium.org/f/chromium/snapshots/Mac"
+snapshots_url="http://commondatastorage.googleapis.com/chromium-browser-continuous/index.html?path=Mac/"
 download_dir="$TMPDIR/chromedownload"
 
 on_fail() {
@@ -11,9 +11,9 @@ task_start "checking for existing installation"
 app_path="`find_app "org.chromium.Chromium"`"
 if [[ $? != 0 ]]; then
 	install_dir="/Applications"
-	task_skip "Not found"
+	task_skip "Not found... setting to [${install_dir}]"
 else
-	install_dir="`dirname "$app_path"`"
+	install_dir="$(dirname "$app_path")"
 	task_done "$install_dir"
 	task_start "getting current revision"
 	CURRENT=$(osascript -e 'tell application "System Events" to tell property list file "/Applications/Browsers/Chromium.app/Contents/Info.plist" to return |SVNRevision| of (value of contents as record)' 2>&1)
@@ -21,20 +21,20 @@ else
 fi
 
 task_start "finding latest revision"
-LATEST=$(curl -q -s -S -Y 1 --max-time 10 --connect-timeout 15 "$snapshots_url/LATEST" 2>&1)
+LATEST=$(curl -qsS -Y1 --max-time 10 --connect-timeout 15 "$snapshots_url/LAST_CHANGE" 2>&1)
 task_end "$LATEST"
 
 [[ $CURRENT -ge $LATEST ]] && { echo "No update necessary"; exit 0; }
 
 task_start "downloading"
-task_end $(mkdir "$download_dir" &>/dev/null && curl -q -s -S -Y 1 --connect-timeout 15 "$snapshots_url/$LATEST/chrome-mac.zip" -o "$download_dir/chrome-mac.zip" 2>&1)
+task_end $(mkdir "$download_dir" &>/dev/null && curl -qsS -Y1 --connect-timeout 15 "$snapshots_url/$LATEST/chrome-mac.zip" -o "$download_dir/chrome-mac.zip" 2>&1)
 
 task_start "unzipping"
 task_end $(unzip -qq "$download_dir/chrome-mac.zip" -d "$download_dir")
 
 if [[ -e $install_dir/Chromium.app ]]; then
 	task_start "removing old version"
-	task_end $(mv "$install_dir/Chromium.app" ~/.Trash/Chromium-`date +%Y-%m-%d_%H-%M-%s`.app/ 2>&1)
+	task_end $(mv "$install_dir/Chromium.app" ~/.Trash/Chromium-$(date +%Y-%m-%d_%H-%M-%s).app/ 2>&1)
 fi
 
 task_start "installing into (${install_dir})"
