@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="findstring.sh"
-SCRIPT_VERSION="1.1.1 (2012-01-26)"
+SCRIPT_VERSION="1.1.2 (2012-02-03)"
 SCRIPT_GETOPT_SHORT="bd:fip:h"
 SCRIPT_GETOPT_LONG="binary,depth:,filenames,ignore-case,path:,help"
 
@@ -16,11 +16,11 @@ Options:
  -d, --depth=NUM    Maximum depth to search subdirectories
  -f, --filenames    just print out a list of the files that match, no context
  -i, --ignore-case  Case-insensitive search
- -p, --path=PATH    Search for files in this path (default current working directory)
+ -p, --path=PATH    Search for files in this path (current working directory)
  -h, --help         Show this help
 EOF
 }
-FAIL() { echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
