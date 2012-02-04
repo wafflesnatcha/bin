@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-sudo pecl update-channels && sudo pecl upgrade-all && sudo pecl clear-cache
-# sudo pecl update-channels && sudo pecl clear-cache
