@@ -28,25 +28,24 @@ alias giturl='git config --get remote.origin.url'
 alias japng='java -jar ~/bin/japng.jar'
 alias yuicompressor='java -jar ~/bin/yuicompressor.jar'
 
-
 getvars() { set | grep -E '^[a-zA-Z0-9_]+='; }
 export -f getvars
 printvar() { for a in "$@"; do echo -e "$a=${!a}" >&2; done; }
 export -f printvar
 
-adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/${b%.*}_$(date +%Y-%m-%d).${b##*.}"; [[ ! -e "$f" ]] && mv "$1" "$f" || echo "file already exists" >&2; }
+adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/${b%.*}_$(date +%Y-%m-%d).${b##*.}"; [ ! -e "$f" ] && mv "$1" "$f" || echo "file already exists" >&2; }
 countfiles() { for a in "${@:-.}"; do echo -n "$a"; find "$a" | wc -l; done; }
 countlines() { (find "${1:-$PWD}" -type f \! -regex ".*/\.svn/.*" -exec bash -c '[[ `file -b --mime-type {}` =~ ^text/ ]]' \; -print | while read f; do cat "$f"; done) | wc -l; }
-datauri() { [[ ! $1 ]] && return; echo -n "data:$(file -b --mime-type "$1");base64," && openssl base64 -in "$1" | awk '{ str1=str1 $0 }END{ print str1 }' | perl -pe 's/\s*$//';  }
+datauri() { [ -z "$1" ] && return; echo -n "data:$(file -b --mime-type "$1");base64," && openssl base64 -in "$1" | awk '{ str1=str1 $0 }END{ print str1 }' | perl -pe 's/\s*$//';  }
 findname() { local n="$1"; shift; find . -type f -iname "*$n*" $@; }
 findregex() { local n="$1"; shift; find . -regex "$n" $@; }
-historys() { [[ ${#} < 1 ]] && history || history | grep -i "$*"; }
+historys() { [ ${#} -lt 1 ] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
-pss() { [[ ! $@ ]] && ps -lAww || ps -lAww | grep -i "[${1:0:1}]${1:1}"; }
+pss() { [ -z "$@" ] && ps -lAww || ps -lAww | grep -i "[${1:0:1}]${1:1}"; }
 
 
-if [[ "$PS1" ]]; then
+if [ -n "$PS1" ]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
 	shopt -s cdspell
 	tabs -4
@@ -57,7 +56,7 @@ fi
 # OS specific settings
 
 # Mac
-if [[ $(uname) == "Darwin" ]]; then
+if [ $(uname) = "Darwin" ]; then
 
 	export PATH=$PATH:~/bin/Darwin:~/bin/Darwin/CocoaDialog.app/Contents/MacOS
 	# Macports
@@ -88,11 +87,11 @@ if [[ $(uname) == "Darwin" ]]; then
 	}
 	freshe() { fresh && exit; }
 	rmxattr() { for f in "$@"; do xattr "$f" | { while read a; do echo "$f: $a"; xattr -d "$a" "$f"; done; } done; }
-	
+
 fi
 
 # Linux
-if [[ $(uname) == "Linux" ]]; then
+if [ $(uname) = "Linux" ]; then
 
 	export PATH=$PATH:~/bin/Linux
 
@@ -102,14 +101,13 @@ fi
 ##
 # Host specific settings
 
-if [[ "$HOSTNAME" == "lilpete.local" ]]; then
+if [ "$HOSTNAME" = "lilpete.local" ]; then
 
 	export PATH=$PATH:/usr/local/mysql/bin:~/.pear/bin
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'
 	export LESSEDIT='mate -l %lm %f'
 	export VISUAL='mate -w'
-
 
 	alias mate='mate -r'
 	alias updatedb='(cd / && sudo /usr/libexec/locate.updatedb)'
@@ -118,7 +116,7 @@ if [[ "$HOSTNAME" == "lilpete.local" ]]; then
 
 fi
 
-if [[ "$HOSTNAME" == "box" ]]; then
+if [ "$HOSTNAME" == "box" ]; then
 
 	export PATH=$PATH:/usr/sbin:/usr/local/sbin:/usr/local/lib:/sbin
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;94m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
