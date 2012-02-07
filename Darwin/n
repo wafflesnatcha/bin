@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Runs any commands as entered, followed by a growl notification when complete
+
+$*
+status=$?
+condition=""
+msg="$PWD # $*"
+
+if [ $status -eq 0 ]; then
+	condition="Finished"
+	priority=0
+else
+	condition="Error"
+	priority=1
+fi
+
+title="$condition ($HOSTNAME)"
+# growl errors to dev/null
+echo $msg | growlnotify -p $priority -t "$title" 2> /dev/null
