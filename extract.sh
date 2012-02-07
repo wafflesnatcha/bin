@@ -30,7 +30,8 @@ done
 for f in "$@"; do
     [[ ! -f "$f" ]] && continue
     case "$(echo $f | tr '[A-Z]' '[a-z]')" in
-        *.tar.gz|*.tar.bz2) tar -xzvpf "$f" ;;
+		*.tar.bz2) tar -xjvpf "$f" ;;
+        *.tar.gz|*.tgz) tar -xzvpf "$f" ;;
         *.7z) 7z x "$f" ;;
 		*.bz2|*.bzip2|*.bz) bunzip2 "$f" ;;
         *.gz) gzip -d "$f" ;;
