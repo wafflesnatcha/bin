@@ -71,7 +71,7 @@ while true; do
     shift
 done
 
-[[ ! $1 ]] && echo "Enter a notification description, followed by newline, followed by Ctrl-D (End of File). To cancel, press Ctrl-C."
+[[ ! $1 && ! -p /dev/stdin ]] && echo "Enter a notification description, followed by newline, followed by Ctrl-D (End of File). To cancel, press Ctrl-C."
 msg="${@:-`cat`}"
 
 [[ $opt_is_url ]] && opt_url="-url=${msg}"
