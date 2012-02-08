@@ -27,7 +27,7 @@ eval set -- "$ARGS"
 opt_format="zip"
 opt_date=
 opt_date_format=%Y-%m-%d
-opt_prefix_date="_"
+opt_prefix_date="-"
 opt_output="$PWD"
 
 uniquefile() {

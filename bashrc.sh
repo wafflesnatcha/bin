@@ -104,6 +104,8 @@ fi
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
 	export PATH=$PATH:/usr/local/mysql/bin:~/.pear/bin
+	[ -d ~/.gem/ruby/1.8/bin ] && export PATH=~/.gem/ruby/1.8/bin:$PATH
+	
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'
 	export LESSEDIT='mate -l %lm %f'
@@ -119,9 +121,9 @@ fi
 if [ "$HOSTNAME" == "box" ]; then
 
 	export PATH=$PATH:/usr/sbin:/usr/local/sbin:/usr/local/lib:/sbin
-	export PS1='\[\e]0;\h:\W\007\]\[\e[0;94m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
+	[ -n "$PS1" ] && export PS1='\[\e]0;\h:\W\007\]\[\e[0;94m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
 
 fi
 
 # Bash Completion
-[ -f /opt/local/etc/bash_completion ] && . /opt/local/etc/bash_completion
+# [ -f /opt/local/etc/bash_completion ] && . /opt/local/etc/bash_completion

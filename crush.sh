@@ -12,14 +12,14 @@ Simple processing of images with pngcrush.
 Usage: ${0##*/} [options] file ...
 
 Options:
- -p, --percentage  Prefix output with percent completed (useful when piping to
-                   CocoaDialog progressbar)
+ -p, --percentage  Prefix output lines with overall percent completed (useful 
+                   when piping to CocoaDialog progressbar)
  -h, --help        Show this help
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-ARGS=$(/usr/bin/getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
+ARGS=$(getopt -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
 
 pngcrushbin="$(which pngcrush)"
@@ -49,9 +49,9 @@ count=0
 
 for f in "$@"; do
 	(( count++ ))
-	[[ "${f##*.}" != "png" ]] && continue
+	[[ "${f##*.}" != "png" || ! -e "$f" ]] && continue
 
-	[ $opt_percentage ] && echo "$count/$total_files*100" | bc -l | xargs printf "%1.0f%% "
+	[[ $opt_percentage ]] && { echo "$count/$total_files*100" | bc -l | xargs printf "%1.0f%% "; }
 	echo "$(basename "$f")"
 
 	tempfile tmpfile
