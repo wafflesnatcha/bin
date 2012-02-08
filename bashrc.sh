@@ -15,11 +15,9 @@ alias hs='historys'
 alias l='ls -alph --color=auto'
 alias lr='l -R'
 
-alias extract='extract.sh'
 alias finds='findstring.sh'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias ss='shiftsearch'
-alias zipup='zipup.sh'
 
 alias gitclone='git clone --depth 1 --recursive'
 alias gitupdate='git pull && git submodule update && git gc --auto'
@@ -35,14 +33,14 @@ export -f printvar
 
 adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/${b%.*}_$(date +%Y-%m-%d).${b##*.}"; [ ! -e "$f" ] && mv "$1" "$f" || echo "file already exists" >&2; }
 countfiles() { for a in "${@:-.}"; do echo -n "$a"; find "$a" | wc -l; done; }
-countlines() { (find "${1:-$PWD}" -type f \! -regex ".*/\.svn/.*" -exec bash -c '[[ `file -b --mime-type {}` =~ ^text/ ]]' \; -print | while read f; do cat "$f"; done) | wc -l; }
+countlines() { find "${1:-$PWD}" -not -path '*/.svn/*' -not -path '*/.git/*' -type f -exec bash -c '[[ `file -b --mime-type {}` =~ ^text/ ]]' \; -print | xargs wc -l; }
 datauri() { [ -z "$1" ] && return; echo -n "data:$(file -b --mime-type "$1");base64," && openssl base64 -in "$1" | awk '{ str1=str1 $0 }END{ print str1 }' | perl -pe 's/\s*$//';  }
 findname() { local n="$1"; shift; find . -type f -iname "*$n*" $@; }
 findregex() { local n="$1"; shift; find . -regex "$n" $@; }
 historys() { [ ${#} -lt 1 ] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
-pss() { [ -z "$@" ] && ps -lAww || ps -lAww | grep -i "[${1:0:1}]${1:1}"; }
+pss() { [ -z "$@" ] && ps -lA || ( ps -lAww | grep -i "[${1:0:1}]${1:1}"; ) }
 
 
 if [ -n "$PS1" ]; then
@@ -51,6 +49,7 @@ if [ -n "$PS1" ]; then
 	tabs -4
 fi
 
+path_append() { for d in "$@"; do [ -d "$d" ] && export PATH=$PATH:$d; done; }
 
 ##
 # OS specific settings
@@ -58,7 +57,8 @@ fi
 # Mac
 if [ $(uname) = "Darwin" ]; then
 
-	export PATH=$PATH:~/bin/Darwin:~/bin/Darwin/CocoaDialog.app/Contents/MacOS
+	path_append ~/bin/Darwin ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
+	
 	# Macports
 	[ -d /opt/local/bin -a -d /opt/local/sbin ] && export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
@@ -93,7 +93,7 @@ fi
 # Linux
 if [ $(uname) = "Linux" ]; then
 
-	export PATH=$PATH:~/bin/Linux
+	path_append ~/bin/Linux
 
 fi
 
@@ -103,8 +103,7 @@ fi
 
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
-	export PATH=$PATH:/usr/local/mysql/bin:~/.pear/bin
-	[ -d ~/.gem/ruby/1.8/bin ] && export PATH=~/.gem/ruby/1.8/bin:$PATH
+	path_append /usr/local/mysql/bin ~/.pear/bin ~/.gem/ruby/1.8/bin
 	
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'
@@ -120,7 +119,7 @@ fi
 
 if [ "$HOSTNAME" == "box" ]; then
 
-	export PATH=$PATH:/usr/sbin:/usr/local/sbin:/usr/local/lib:/sbin
+	path_append /usr/sbin /usr/local/sbin /usr/local/lib /sbin
 	[ -n "$PS1" ] && export PS1='\[\e]0;\h:\W\007\]\[\e[0;94m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
 
 fi
