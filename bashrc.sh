@@ -4,7 +4,7 @@ export CLICOLOR=1
 export GREP_OPTIONS="--color=auto"
 export HISTCONTROL=erasedups
 export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:h:history:l:lr:pwd"
-export LC_CTYPE=en_US.UTF-8
+#export LC_CTYPE=en_US.UTF-8
 export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --prompt=M ?f"%f" ?m[%i/%m]. | .?lbLine %lb?L of %L..?PB (%PB\%).?e (END). '
 
 alias cd..='cd ..'
@@ -41,15 +41,15 @@ historys() { [ ${#} -lt 1 ] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
 pss() { [ -z "$@" ] && ps -lA || ( ps -lAww | grep -i "[${1:0:1}]${1:1}"; ) }
-
+realpath() { echo $(readlink -f "$1" 2>/dev/null || greadlink -f "$1"); }
 
 if [ -n "$PS1" ]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
 	shopt -s cdspell
-	tabs -4
+	tabs -4 &>/dev/null
 fi
 
-path_append() { for d in "$@"; do [ -d "$d" ] && export PATH=$PATH:$d; done; }
+path_append() { for d in "$@"; do [ -d "$d" ] && export PATH=$PATH:$d; done; unset d; }
 
 ##
 # OS specific settings
@@ -58,31 +58,31 @@ path_append() { for d in "$@"; do [ -d "$d" ] && export PATH=$PATH:$d; done; }
 if [ $(uname) = "Darwin" ]; then
 
 	path_append ~/bin/Darwin ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
-	
+
 	# Macports
 	[ -d /opt/local/bin -a -d /opt/local/sbin ] && export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
+	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
 	# export LSCOLORS=ExfxcxdxBxehbdabagacad
 	export HISTIGNORE=$HISTIGNORE:l@:fresh:freshe
-	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
+	export INPUTRC=~/.inputrc
 
 	alias cpath='/bin/echo -n "$PWD" | pbcopy'
 	alias l='ls -alph'
 	alias l@='ls -alph@'
-	alias mac='mac.sh'
 	alias ssh='sshcolor.sh'
 
 	fresh() {
-		history -w && osascript <<-EOF &>/dev/null
+		history -w && osascript <<-EOF | { while read a; do [ -z "$a" ]; return; done; }
 		tell application "System Events"
-			if not UI elements enabled then return false
+			if not UI elements enabled then return
 			tell application process "Terminal"
-				if frontmost then
-					click menu item "New Tab" of menu "Shell" of menu bar 1
-					tell application "Terminal" to do script "cd '$PWD' && history -c && history -r" in front window
-				end if
+				if not frontmost then return 1
+				click menu item "New Tab" of menu "Shell" of menu bar 1
+				tell application "Terminal" to do script "cd '$PWD' && history -c && history -r" in front window
 			end tell
 		end tell
+		return
 		EOF
 	}
 	freshe() { fresh && exit; }
@@ -104,7 +104,7 @@ fi
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
 	path_append /usr/local/mysql/bin ~/.pear/bin ~/.gem/ruby/1.8/bin
-	
+
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'
 	export LESSEDIT='mate -l %lm %f'
