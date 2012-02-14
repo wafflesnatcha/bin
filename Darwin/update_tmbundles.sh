@@ -7,7 +7,7 @@ git_update() {
 	
  	echo -en "${CLR_CYAN}$(basename "$dir")${CLR_R}... "
 
-	local res=$( cd "$dir" && (git pull && git submodule update && git gc) 2>&1 )
+	local res=$( cd "$dir" && ( git pull; git submodule update; git gc -q; ) 2>&1 )
 	[[ $? != 0 ]] && { echo -e "${CLR_RED}ERROR${CLR_R}"; return 1; }
 	
 	[[ "$res" != "Already up-to-date." ]] && echo
