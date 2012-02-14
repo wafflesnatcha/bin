@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="extract"
-SCRIPT_VERSION="0.1.2 (2012-02-07)"
+SCRIPT_VERSION="0.1.3 (2012-02-14)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"
 
@@ -28,15 +28,16 @@ done
 [[ ! "$1" ]] && { usage; exit 0; }
 
 for f in "$@"; do
-    [[ ! -f "$f" ]] && continue
-    case "$(echo $f | tr '[A-Z]' '[a-z]')" in
-		*.tar.bz2) tar -xjvpf "$f" ;;
-        *.tar.gz|*.tgz) tar -xzvpf "$f" ;;
-        *.7z) 7z x "$f" ;;
+	[[ ! -f "$f" ]] && continue
+	case "$(echo $f | tr '[A-Z]' '[a-z]')" in
+		*.tar.bz2|*.tbz2) tar -xvpf "$f" ;;
+		*.tar.gz|*.tgz) tar -xvpf "$f" ;;
+		*.7z) 7z x "$f" ;;
 		*.bz2|*.bzip2|*.bz) bunzip2 "$f" ;;
-        *.gz) gzip -d "$f" ;;
-        *.rar) unrar x "$f" ;;
-        *.zip|*.z01) unzip "$f" ;;
-        *) FAIL "don't know how to handle '$f'" ;;
-    esac
+		*.gz) gzip -d "$f" ;;
+		*.rar) unrar x "$f" ;;
+		*.zip|*.z01) unzip "$f" ;;
+		*) FAIL "don't know how to handle '$f'" ;;
+	esac
 done
+
