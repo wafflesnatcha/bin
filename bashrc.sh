@@ -15,9 +15,11 @@ alias hs='historys'
 alias l='ls -alph --color=auto'
 alias lr='l -R'
 
+alias extract='extract.sh'
 alias finds='findstring.sh'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias ss='shiftsearch'
+alias zipup='zipup.sh'
 
 alias gitclone='git clone --depth 1 --recursive'
 alias gitupdate='git pull && git submodule update && git gc --auto'
@@ -28,11 +30,11 @@ alias yuicompressor='java -jar ~/bin/yuicompressor.jar'
 
 getvars() { set | grep -E '^[a-zA-Z0-9_]+='; }
 export -f getvars
-printvar() { for a in "$@"; do echo -e "$a=${!a}" >&2; done; }
+printvar() { local a; for a in "$@"; do echo -e "$a=${!a}" >&2; done; }
 export -f printvar
 
 adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/${b%.*}_$(date +%Y-%m-%d).${b##*.}"; [ ! -e "$f" ] && mv "$1" "$f" || echo "file already exists" >&2; }
-countfiles() { for a in "${@:-.}"; do echo -n "$a"; find "$a" | wc -l; done; }
+countfiles() { local f; for f in "${@:-$PWD}"; do echo -e "$(find "$f" | wc -l) $f"; done; }
 countlines() { find "${1:-$PWD}" -not -path '*/.svn/*' -not -path '*/.git/*' -type f -exec bash -c '[[ `file -b --mime-type {}` =~ ^text/ ]]' \; -print | xargs wc -l; }
 datauri() { [ -z "$1" ] && return; echo -n "data:$(file -b --mime-type "$1");base64," && openssl base64 -in "$1" | awk '{ str1=str1 $0 }END{ print str1 }' | perl -pe 's/\s*$//';  }
 findname() { local n="$1"; shift; find . -type f -iname "*$n*" $@; }
@@ -45,11 +47,12 @@ realpath() { echo $(readlink -f "$1" 2>/dev/null || greadlink -f "$1"); }
 
 if [ -n "$PS1" ]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
+	tabs -4 2>/dev/null
 	shopt -s cdspell
-	tabs -4 &>/dev/null
 fi
 
-path_append() { for d in "$@"; do [ -d "$d" ] && export PATH=$PATH:$d; done; unset d; }
+path_append() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$PATH:$f; done; }
+path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$f:$PATH; done; }
 
 ##
 # OS specific settings
@@ -58,14 +61,12 @@ path_append() { for d in "$@"; do [ -d "$d" ] && export PATH=$PATH:$d; done; uns
 if [ $(uname) = "Darwin" ]; then
 
 	path_append ~/bin/Darwin ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
-
-	# Macports
-	[ -d /opt/local/bin -a -d /opt/local/sbin ] && export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+	path_prepend /opt/local/bin /opt/local/sbin # Macports
 
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
-	# export LSCOLORS=ExfxcxdxBxehbdabagacad
 	export HISTIGNORE=$HISTIGNORE:l@:fresh:freshe
 	export INPUTRC=~/.inputrc
+	# export LSCOLORS=ExfxcxdxBxehbdabagacad
 
 	alias cpath='/bin/echo -n "$PWD" | pbcopy'
 	alias l='ls -alph'
@@ -86,7 +87,7 @@ if [ $(uname) = "Darwin" ]; then
 		EOF
 	}
 	freshe() { fresh && exit; }
-	rmxattr() { for f in "$@"; do xattr "$f" | { while read a; do echo "$f: $a"; xattr -d "$a" "$f"; done; } done; }
+	rmxattr() { local f; for f in "$@"; do xattr "$f" | { while read a; do echo "$f: $a"; xattr -d "$a" "$f"; done; } done; }
 
 fi
 
@@ -111,9 +112,9 @@ if [ "$HOSTNAME" = "lilpete.local" ]; then
 	export VISUAL='mate -w'
 
 	alias mate='mate -r'
-	alias updatedb='(cd / && sudo /usr/libexec/locate.updatedb)'
+	alias updatedb='cd / && sudo /usr/libexec/locate.updatedb'
 
-	battery() { ioreg -w0 -l | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s|\|]*"(\w*)Capacity" = (.*)/$1 $2/' | column -t; }
+	battery() { ioreg -w0 -l | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{CONVFMT="%.1f" }	{print (($2 / $1 * 100) "%")}'; }
 
 fi
 
