@@ -1,4 +1,7 @@
-export PATH=$PATH:~/bin
+path_append() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$PATH:$f; done; }
+path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$f:$PATH; done; }
+
+path_append ~/bin
 
 export CLICOLOR=1
 export GREP_OPTIONS="--color=auto"
@@ -51,8 +54,6 @@ if [ -n "$PS1" ]; then
 	shopt -s cdspell
 fi
 
-path_append() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$PATH:$f; done; }
-path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$f:$PATH; done; }
 
 ##
 # OS specific settings
