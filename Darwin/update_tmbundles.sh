@@ -24,3 +24,9 @@ updateBundles() {
 
 updateBundles "/Library/Application Support/TextMate/Bundles"
 updateBundles ~/"Library/Application Support/TextMate/Pristine Copy/Bundles"
+
+support_dir=~/"Library/Application Support/TextMate/Pristine Copy/Support"
+if [[ -d "$support_dir" && -d "$support_dir/.svn" ]]; then
+	echo -en "${CLR_GREEN}Updating Support${CLR_R}... "
+	svn update "$support_dir"
+fi	
