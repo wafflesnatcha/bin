@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="geticons.sh"
+SCRIPT_NAME="geticons"
 SCRIPT_VERSION="1.1.1 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="d:o:h"
 SCRIPT_GETOPT_LONG="depth:,output:,help"

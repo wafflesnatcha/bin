@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="probeui.sh"
+SCRIPT_NAME="probeui"
 SCRIPT_VERSION="1.0.3 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="d:ph"
 SCRIPT_GETOPT_LONG="depth:,pretty,help"

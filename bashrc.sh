@@ -1,7 +1,7 @@
 path_append() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$PATH:$f; done; }
 path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$f:$PATH; done; }
 
-path_append ~/bin
+path_append ~/bin ~/bin/"$(uname)"
 
 export CLICOLOR=1
 export GREP_OPTIONS="--color=auto"
@@ -12,14 +12,12 @@ export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --pro
 
 alias cd..='cd ..'
 alias ..='cd ..'
-alias findn='findname'
 alias h='history'
 alias hs='historys'
-alias l='ls -alph --color=auto'
+alias l='ls -Ahlp --color=auto'
 alias lr='l -R'
 
 alias extract='extract.sh'
-alias finds='findstring.sh'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias ss='shiftsearch'
 alias zipup='zipup.sh'
@@ -40,7 +38,7 @@ adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/$
 countfiles() { local f; for f in "${@:-$PWD}"; do echo -e "$(find "$f" | wc -l) $f"; done; }
 countlines() { find "${1:-$PWD}" -not -path '*/.svn/*' -not -path '*/.git/*' -type f -exec bash -c '[[ `file -b --mime-type {}` =~ ^text/ ]]' \; -print | xargs wc -l; }
 datauri() { [ -z "$1" ] && return; echo -n "data:$(file -b --mime-type "$1");base64," && openssl base64 -in "$1" | awk '{ str1=str1 $0 }END{ print str1 }' | perl -pe 's/\s*$//';  }
-findname() { local n="$1"; shift; find . -type f -iname "*$n*" $@; }
+findname() { local n="$1"; shift; find . -iname "*$n*" $@; }
 findregex() { local n="$1"; shift; find . -regex "$n" $@; }
 historys() { [ ${#} -lt 1 ] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
@@ -61,7 +59,7 @@ fi
 # Mac
 if [ $(uname) = "Darwin" ]; then
 
-	path_append ~/bin/Darwin ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
+	path_append ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
 	path_prepend /opt/local/bin /opt/local/sbin # Macports
 
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
@@ -70,8 +68,8 @@ if [ $(uname) = "Darwin" ]; then
 	# export LSCOLORS=ExfxcxdxBxehbdabagacad
 
 	alias cpath='/bin/echo -n "$PWD" | pbcopy'
-	alias l='ls -alph'
-	alias l@='ls -alph@'
+	alias l='ls -Abhlp'
+	alias l@='l -@'
 	alias ssh='sshcolor.sh'
 
 	fresh() {
@@ -92,20 +90,13 @@ if [ $(uname) = "Darwin" ]; then
 
 fi
 
-# Linux
-if [ $(uname) = "Linux" ]; then
-
-	path_append ~/bin/Linux
-
-fi
-
 
 ##
 # Host specific settings
 
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
-	path_append /usr/local/mysql/bin ~/.pear/bin ~/.gem/ruby/1.8/bin
+	path_append /usr/local/mysql/bin ~/.pear/bin ~/.gem/ruby/1.8/bin ~/lib/AdobeAIRSDK/bin
 
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="zipup.sh"
+SCRIPT_NAME="zipup"
 SCRIPT_VERSION="1.1.4 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="7do:h"
 SCRIPT_GETOPT_LONG="7zip,date,output:,help"
@@ -45,7 +45,7 @@ uniquefile() {
 
 processFile() {
     [[ ! -e "$1" ]] && continue
-    
+
     local file="$(basename "$1")"
     [[ -d "$1" ]] && file="$(cd "$1"; basename "$PWD")"
 

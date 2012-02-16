@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="crush.sh"
+SCRIPT_NAME="crush"
 SCRIPT_VERSION="0.5.8 (2012-02-07)"
 SCRIPT_GETOPT_SHORT="hp"
 SCRIPT_GETOPT_LONG="help,percentage"
@@ -22,7 +22,7 @@ FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 ARGS=$(getopt -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
 eval set -- "$ARGS"
 
-pngcrushbin="$(which pngcrush)"
+pngcrushbin="$(which pngcrush 2>/dev/null)"
 [[ ! $pngcrushbin ]] && FAIL "pngcrush not found"
 
 opt_percentage=

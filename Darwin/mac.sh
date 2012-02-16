@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="mac.sh"
+SCRIPT_NAME="mac"
 SCRIPT_VERSION="0.3.8 (2012-01-30)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="findstring.sh"
+SCRIPT_NAME="findstring"
 SCRIPT_VERSION="1.1.2 (2012-02-03)"
 SCRIPT_GETOPT_SHORT="bd:fip:h"
 SCRIPT_GETOPT_LONG="binary,depth:,filenames,ignore-case,path:,help"
