@@ -9,6 +9,7 @@ export HISTCONTROL=erasedups
 export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:h:history:l:lr:pwd"
 #export LC_CTYPE=en_US.UTF-8
 export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --prompt=M ?f"%f" ?m[%i/%m]. | .?lbLine %lb?L of %L..?PB (%PB\%).?e (END). '
+export LS_COLORS='rs=0:di=00;34:ln=00;35:mh=00:pi=40;33:so=00;32:do=01;35:bd=40;33;01:cd=40;33;01:or=41;30;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:';
 
 alias cd..='cd ..'
 alias ..='cd ..'
@@ -63,10 +64,10 @@ if [ $(uname) = "Darwin" ]; then
 	path_prepend /opt/local/bin /opt/local/sbin # Macports
 
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
-	export HISTIGNORE=$HISTIGNORE:l@:fresh:freshe
+	export HISTIGNORE=$HISTIGNORE:ll:l@:fresh:freshe
 	export INPUTRC=~/.inputrc
-	# export LSCOLORS=ExfxcxdxBxehbdabagacad
-
+	export LSCOLORS=exfxcxdxBxehbdabagacad
+		
 	alias cpath='/bin/echo -n "$PWD" | pbcopy'
 	alias l='ls -Abhlp'
 	alias l@='l -@'
@@ -104,6 +105,7 @@ if [ "$HOSTNAME" = "lilpete.local" ]; then
 	export VISUAL='mate -w'
 
 	alias mate='mate -r'
+	alias m='mate'
 	alias updatedb='cd / && sudo /usr/libexec/locate.updatedb'
 
 	battery() { ioreg -w0 -l | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{CONVFMT="%.1f" }	{print (($2 / $1 * 100) "%")}'; }
