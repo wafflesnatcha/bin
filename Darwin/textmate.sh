@@ -13,13 +13,11 @@ require() {
 }
 
 function_input() {
-	while read data; do
-		echo -e "$data"
-	done
+	while read -r data; do echo -e "$data"; done
 }
 
 html_encode() {
-	echo "${@:-$(function_input)}" | perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>/'
+	echo -e "${@:-$(function_input)}" | perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>/'
 }
 
 html_redirect() {
@@ -37,49 +35,44 @@ html_error() {
 }
 
 ##
-# tooltip functions
+## Tool Tip functions
 
-tooltip_default_style='html,body{background:0;border:0;padding:0;margin:0}body{font:small-caption;color:#000;padding:1px 2px 2px;background:rgba(255,255,185,.75)}pre,code,tt{font-family:Menlo,Consolas,"Droid Sans Mono",monospace;font-size:inherit;margin:0}'
+tooltip_style='html,body{background:transparent;border:0;margin:0;padding:0}body{background:rgba(255,255,185,.75);color:#000;font:small-caption;padding:1px 2px 2px}pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}'
+tooltip_style_error='body{background:rgba(170,14,14,.75);color:#fff}'
+tooltip_style_success='body{background:rgba(21,86,0,.75);color:#fff}'
 
 ## Standard tooltip
 tooltip() {
-	"${DIALOG}" tooltip --transparent --html "<style>${tooltip_default_style}</style>$(html_encode "$@")" &>/dev/null
+	tooltip_html "<style>${tooltip_style}</style>$(html_encode "$@")"
 }
 
 ## Red tooltip
 tooltip_error() {
-	"${DIALOG}" tooltip --transparent --html "<style>${tooltip_default_style}body{background:rgba(170,14,14,.75);color:#fff}</style>$(html_encode "$@")" &>/dev/null
-}
-
-## Standard tooltip, but with HTML content
-tooltip_html() {
-	"${DIALOG}" tooltip --transparent --html "<style>${tooltip_default_style}</style>${@:-$(function_input)}" &>/dev/null
+	tooltip_html "<style>${tooltip_style}${tooltip_style_error}</style>$(html_encode "$@")"
 }
 
 ## Green tooltip
 tooltip_success() {
-	"${DIALOG}" tooltip --transparent --html "<style>${tooltip_default_style}body{color:#fff;background:rgba(21,86,0,.75);}</style}</style>$(html_encode "$@")" &>/dev/null
+	tooltip_html "<style>${tooltip_style}${tooltip_style_success}</style>$(html_encode "$@")"
+}
+
+## Standard tooltip, but with HTML content
+tooltip_html() {
+	"${DIALOG}" tooltip --transparent --html "${@:-$(function_input)}"
 }
 
 ## Tooltip with a nice green checkmark
 ## nice to display when a command has successfully completed
 ## (doesn't accept any input)
 tooltip_tick() {
-	html="<style>html,body{background:transparent;border:0;margin:0;padding:0}div{-webkit-animation-delay:0s;-webkit-animation-duration:.1s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:'fadeIn';-webkit-border-radius:4px;background:rgba(57,154,21,.9);color:#fff;font:15px/25px monospace;height:25px;opacity:0;text-align:center;text-shadow:0 1px 1px rgba(0,0,0,.5);width:25px}div span{-webkit-animation-delay:.1s;-webkit-animation-duration:.5s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:'fadeIn';opacity:0}@-webkit-keyframes 'fadeIn'{0%{opacity:0}100%{opacity:.9999}}</style><div><span>&#x2714;</span></div>"
-	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null
-}
-
-##
-# Overloaded functions
-
-exit_show_tool_tip() {
-	tooltip "$@" && exit_discard
+	html='<style>html,body{background:transparent;border:0;margin:0;padding:0}div{-webkit-animation-delay:0s;-webkit-animation-duration:.1s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:fadeIn;-webkit-border-radius:4px;background:rgba(57,154,21,.9);color:#fff;font:15px/25px monospace;height:25px;opacity:0;text-align:center;text-shadow:0 1px 1px rgba(0,0,0,.5);width:25px}div span{-webkit-animation-delay:.1s;-webkit-animation-duration:.5s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:fadeIn;opacity:0}@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}</style><div><span>&#x2714;</span></div>'
+	tooltip_html "$html"
 }
 
 
 ##
-# Tests
+## Tests
 
 # /usr/bin/php -v | tooltip_error
-# tooltip_success "This is a successful tooltip! :D ┌( ◔‿◔)┘ ʘ‿ʘ " && exit_discard
+# tooltip_success "This is a successful tooltip! :D ┌( ◔‿◔)┘ ʘ‿ʘ\nWow! Amazing! Zing!" && exit_discard
 # tooltip_tick && exit_discard

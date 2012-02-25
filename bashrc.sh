@@ -55,10 +55,10 @@ fi
 
 
 ##
-# OS specific settings
+## OS specific settings
 
-# Mac
-if [ $(uname) = "Darwin" ]; then
+## Mac
+if [ "$(uname)" = "Darwin" ]; then
 
 	path_append ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
 	path_prepend /opt/local/bin /opt/local/sbin # Macports
@@ -93,8 +93,9 @@ fi
 
 
 ##
-# Host specific settings
+## Host specific settings
 
+## lilpete.local
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
 	path_append /usr/local/mysql/bin ~/.pear/bin ~/.gem/ruby/1.8/bin ~/lib/AdobeAIRSDK/bin
@@ -112,6 +113,7 @@ if [ "$HOSTNAME" = "lilpete.local" ]; then
 
 fi
 
+## box
 if [ "$HOSTNAME" == "box" ]; then
 
 	path_append /usr/sbin /usr/local/sbin /usr/local/lib /sbin
@@ -119,5 +121,5 @@ if [ "$HOSTNAME" == "box" ]; then
 
 fi
 
-# Bash Completion
+## Bash Completion
 # [ -f /opt/local/etc/bash_completion ] && . /opt/local/etc/bash_completion
