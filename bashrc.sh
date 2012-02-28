@@ -19,6 +19,7 @@ alias l='ls -Ahlp --color=auto'
 alias lr='l -R'
 
 alias extract='extract.sh'
+alias finds='findstring.sh'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias ss='shiftsearch'
 alias zipup='zipup.sh'
