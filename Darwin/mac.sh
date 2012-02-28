@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="mac"
-SCRIPT_VERSION="0.3.8 (2012-01-30)"
+SCRIPT_VERSION="0.3.9 (2012-02-28)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"
 
@@ -29,6 +29,7 @@ Commands:
  flushdns                      Flush system DNS cache
  lockdesktop                   Lock the desktop
  showusers                     List all users on this machine
+ updatedb                      Update locate database
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
@@ -110,6 +111,6 @@ case $1 in
     flushdns) dscacheutil -flushcache ;;
     lockdesktop) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend ;;
 	showusers) dscacheutil -q group ;;
-
+	updatedb) [ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb ;;
     *) usage; exit 0 ;;
 esac
