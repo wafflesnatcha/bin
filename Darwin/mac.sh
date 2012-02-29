@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="mac"
-SCRIPT_VERSION="0.3.9 (2012-02-28)"
+SCRIPT_VERSION="0.4.0 (2012-02-28)"
 SCRIPT_GETOPT_SHORT="h"
 SCRIPT_GETOPT_LONG="help"
 
@@ -38,79 +38,83 @@ ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SC
 eval set -- "$ARGS"
 
 pref_bool() {
-    case "$(echo $2 | tr '[A-Z]' '[a-z]')" in
-        y|yes|1|true|on) defaults write $1 -bool TRUE ;;
-        n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-        *) [[ $(defaults read $1) = 1 ]] && { echo "on"; return 1; } || { echo "off"; return 2; } ;;
-    esac
-    return
+	case "$(echo $2 | tr '[A-Z]' '[a-z]')" in
+		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
+		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
+		*) [[ $(defaults read $1) = 1 ]] && { echo "on"; return 1; } || { echo "off"; return 2; } ;;
+	esac
+	return
 }
 
 finder_restart() {
-    osascript <<EOF
+	osascript <<EOF
 tell application "Finder" to quit
 try
-    tell application "Finder" to reopen
+	tell application "Finder" to reopen
 on error
-    tell application "Finder" to launch
+	tell application "Finder" to launch
 end try
 EOF
 }
 
 finder_showfile() {
-    for f in "$@"; do
-        [[ -e "$f" ]] && setfile -a v "$f"
-    done
+	local cmd="setfile -a v"
+	[[ ! $(type -p setfile) && $(type -p chflags) ]] && cmd="chflags nohidden"
+	for f in "$@"; do
+		[[ -e "$f" ]] && $cmd "$f"
+	done
 }
 finder_hidefile() {
-    for f in "$@"; do
-        [[ -e "$f" ]] && setfile -a V "$f"
-    done
+	local cmd="setfile -a V"
+	[[ ! $(type -p setfile) && $(type -p chflags) ]] && cmd="chflags hidden"
+	for f in "$@"; do
+		[[ -e "$f" ]] && $cmd "$f"
+	done
 }
 
 
 while true; do
-    case $1 in
-        -h|--help) usage; exit 0 ;;
-        *) shift; break ;;
-    esac
-    shift
+	case $1 in
+		-h|--help) usage; exit 0 ;;
+		*) shift; break ;;
+	esac
+	shift
 done
 
 
 case $1 in
-    f|finder) shift
-    case $1 in
-        showhidden) pref_bool "com.apple.finder AppleShowAllFiles" $2 && finder_restart ;;
-        fullpathview) pref_bool "com.apple.finder _FXShowPosixPathInTitle" $2 ;;
-        r|restart) finder_restart ;;
-        sf|showfile) shift; finder_showfile "$@" ;;
-        hf|hidefile) shift; finder_hidefile "$@" ;;
-        *) usage; exit 0 ;;
-    esac
-    ;;
+	f|finder) shift
+	case $1 in
+		showhidden) pref_bool "com.apple.finder AppleShowAllFiles" && finder_restart ;;
+		fullpathview) pref_bool "com.apple.finder _FXShowPosixPathInTitle" $2 ;;
+		r|restart) finder_restart ;;
+		sf|showfile) shift; finder_showfile "$@" ;;
+		hf|hidefile) shift; finder_hidefile "$@" ;;
+		*) usage; exit 0 ;;
+	esac
+	;;
 
-    d|dock) shift
-    case $1 in
-        addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock ;;
-        noglass) pref_bool "com.apple.dock no-glass" $2 && killall Dock ;;
-        showhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock ;;
-        restart) killall Dock ;;
-        *) usage; exit 0 ;;
-    esac
-    ;;
+	d|dock) shift
+	case $1 in
+		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock ;;
+		noglass) pref_bool "com.apple.dock no-glass" $2 && killall Dock ;;
+		showhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock ;;
+		restart) killall Dock ;;
+		*) usage; exit 0 ;;
+	esac
+	;;
 
-    i|itunes) shift
-    case $1 in
-        hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2 ;;
-        storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2 ;;
-        *) usage; exit 0 ;;
-    esac
-    ;;
+	i|itunes) shift
+	case $1 in
+		hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2 ;;
+		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2 ;;
+		*) usage; exit 0 ;;
+	esac
+	;;
 
-    flushdns) dscacheutil -flushcache ;;
-    lockdesktop) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend ;;
+	flushdns) dscacheutil -flushcache ;;
+	lockdesktop) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend ;;
 	showusers) dscacheutil -q group ;;
 	updatedb) [ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb ;;
-    *) usage; exit 0 ;;
+	*) usage; exit 0 ;;
 esac

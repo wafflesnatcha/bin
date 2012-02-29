@@ -1,7 +1,7 @@
 path_append() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$PATH:$f; done; }
 path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$f:$PATH; done; }
 
-path_append ~/bin ~/bin/"$(uname)"
+path_append ~/bin ~/bin/"$(uname)" ~/lib
 
 export CLICOLOR=1
 export GREP_OPTIONS="--color=auto"
@@ -9,10 +9,12 @@ export HISTCONTROL=erasedups
 export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:h:history:l:lr:pwd"
 #export LC_CTYPE=en_US.UTF-8
 export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --prompt=M ?f"%f" ?m[%i/%m]. | .?lbLine %lb?L of %L..?PB (%PB\%).?e (END). '
-export LS_COLORS='rs=0:di=00;34:ln=00;35:mh=00:pi=40;33:so=00;32:do=01;35:bd=40;33;01:cd=40;33;01:or=41;30;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:';
+export LS_COLORS='rs=0:di=00;34:ln=00;35:mh=00:pi=40;33:so=00;32:do=01;35:bd=40;33;01:cd=40;33;01:or=41;30;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=30;43:st=37;44:ex=1;31:';
+
 
 alias cd..='cd ..'
 alias ..='cd ..'
+alias e='echo'
 alias h='history'
 alias hs='historys'
 alias l='ls -Ahlp --color=auto'
@@ -28,12 +30,9 @@ alias gitclone='git clone --depth 1 --recursive'
 alias gitupdate='git pull && git submodule update && git gc --auto'
 alias giturl='git config --get remote.origin.url'
 
-alias japng='java -jar ~/bin/japng.jar'
-alias yuicompressor='java -jar ~/bin/yuicompressor.jar'
-
 getvars() { set | grep -E '^[a-zA-Z0-9_]+='; }
 export -f getvars
-printvar() { local a; for a in "$@"; do echo -e "$a=${!a}" >&2; done; }
+printvar() { local a; for a in "$@"; do echo -e "$a=${!a}"; done; }
 export -f printvar
 
 adddate() { local b="$(basename "$1")"; local d="$(dirname "$1")"; local f="$d/${b%.*}_$(date +%Y-%m-%d).${b##*.}"; [ ! -e "$f" ] && mv "$1" "$f" || echo "file already exists" >&2; }
@@ -49,7 +48,7 @@ pss() { [ -z "$@" ] && ps -lA || ( ps -lAww | grep -i "[${1:0:1}]${1:1}"; ) }
 realpath() { echo $(readlink -f "$1" 2>/dev/null || greadlink -f "$1"); }
 
 if [ -n "$PS1" ]; then
-	export PS1='\[\e]0;\h:\W\007\]\[\e[0;92m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
+	export PS1='\[\e]0;\h:\W\007\]\[\e[0;32m\]\h\[\e[m\]:\[\e[33m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
 	tabs -4 2>/dev/null
 	shopt -s cdspell
 fi
@@ -61,18 +60,19 @@ fi
 ## Mac
 if [ "$(uname)" = "Darwin" ]; then
 
-	path_append ~/bin/Darwin/cocoaDialog.app/Contents/MacOS
+	path_append ~/lib/cocoaDialog.app/Contents/MacOS
 	path_prepend /opt/local/bin /opt/local/sbin # Macports
 
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
-	export HISTIGNORE=$HISTIGNORE:ll:l@:fresh:freshe
+	export HISTIGNORE=$HISTIGNORE:gl:l@:fresh:freshe
 	export INPUTRC=~/.inputrc
-	export LSCOLORS=exfxcxdxBxehbdabagacad
+	export LSCOLORS=exfxcxdxBxegedabagacad
 		
 	alias cpath='/bin/echo -n "$PWD" | pbcopy'
+	alias gl='gls -Ahlp --color=auto'
 	alias l='ls -Abhlp'
 	alias l@='l -@'
-	alias ssh='sshcolor.sh'
+	alias sshc='sshcolor.sh'
 
 	fresh() {
 		history -w && osascript <<-EOF | { while read a; do [ -z "$a" ]; return; done; }
@@ -88,6 +88,7 @@ if [ "$(uname)" = "Darwin" ]; then
 		EOF
 	}
 	freshe() { fresh && exit; }
+	lxattr() { local f; for f in "$@"; do xattr "$f" | { while read a; do xattr -vlp "$a" "$f"; done; } done; }
 	rmxattr() { local f; for f in "$@"; do xattr "$f" | { while read a; do echo "$f: $a"; xattr -d "$a" "$f"; done; } done; }
 
 fi
@@ -108,8 +109,6 @@ if [ "$HOSTNAME" = "lilpete.local" ]; then
 
 	alias mate='mate -r'
 	alias m='mate'
-
-	battery() { ioreg -w0 -l | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{CONVFMT="%.1f" }	{print (($2 / $1 * 100) "%")}'; }
 
 fi
 

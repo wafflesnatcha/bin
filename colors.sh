@@ -1,4 +1,4 @@
-if [ "$TERM" = "xterm-color" ]; then
+if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
 
     CLR_RESET='\033[m'          # Reset all formatting
 

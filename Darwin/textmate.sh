@@ -6,7 +6,7 @@ tempfile() {
 }
 
 require() {
-	local c=$(type -p $@ | sed 1q)
+	local c=$(type -p "$@")
 	[ -z "$c" ] && { tooltip_error "Required command not found: $@"; return 1; }
 	echo "$c"
 	return 0
