@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="probeui"
-SCRIPT_VERSION="1.0.3 (2012-01-30)"
-SCRIPT_GETOPT_SHORT="d:ph"
-SCRIPT_GETOPT_LONG="depth:,pretty,help"
-
-opt_depth=0
-opt_pretty=
+SCRIPT_VERSION="1.0.4 (2012-02-29)"
 
 usage() {
 cat <<EOF
@@ -15,15 +10,15 @@ Profile the user interface of an open application.
 Usage: ${0##*/} [options] APPLICATION_NAME
 
 Options:
- -d, --depth=NUM  Maximum depth to recurse
+ -d, --depth NUM  Maximum depth to recurse
  -p, --pretty     Nicely format the output
  -h, --help       Show this help
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
-eval set -- "$ARGS"
+opt_depth=0
+opt_pretty=
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")
@@ -31,12 +26,13 @@ tempfile() {
 	trap "{ $tempfile_exit }" EXIT
 }
 
-while true; do
+while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-d|--depth) opt_depth="$2"; shift ;;
 		-p|--pretty) opt_pretty=1 ;;
-		*) shift; break ;;
+		-*|--*) FAIL "unknown option ${1}" ;;
+		*) break ;;
 	esac
 	shift
 done

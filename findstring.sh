@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="findstring"
-SCRIPT_VERSION="1.1.3 (2012-02-28)"
+SCRIPT_VERSION="1.1.3 (2012-02-29)"
 
 usage() {
 cat <<EOF
@@ -11,10 +11,10 @@ Usage: ${0##*/} [options] text ...
 
 Options:
  -b, --binary       Include binary files in the search
- -d, --depth=NUM    Maximum depth to search subdirectories
+ -d, --depth NUM    Maximum depth to search subdirectories
  -f, --filenames    just print out a list of the files that match, no context
  -i, --ignore-case  Case-insensitive search
- -p, --path=PATH    Search for files in this path (current working directory)
+ -p, --path PATH    Search for files in this path (current working directory)
  -h, --help         Show this help
 EOF
 }
@@ -27,12 +27,12 @@ opt_ignore_case=
 opt_path="$PWD"
 
 runFind() {
-    local grepopts="--no-messages --with-filename --line-number --color=auto"
+	local grepopts="--no-messages --with-filename --line-number --color=auto"
 	local findopts=""
 
-    [[ $opt_binary ]] && grepopts="${grepopts} --binary-files=text" || grepopts="${grepopts} --binary-files=without-match"
-    [[ $opt_filenames ]] && grepopts="${grepopts} -l"
-    [[ $opt_ignore_case ]] && grepopts="${grepopts} -i"
+	[[ $opt_binary ]] && grepopts="${grepopts} --binary-files=text" || grepopts="${grepopts} --binary-files=without-match"
+	[[ $opt_filenames ]] && grepopts="${grepopts} -l"
+	[[ $opt_ignore_case ]] && grepopts="${grepopts} -i"
 	[[ $opt_depth ]] && findopts="${findopts} -maxdepth ${opt_depth}"
 
 	find "$opt_path" -print0 -type f \
@@ -52,7 +52,7 @@ while (($#)); do
 		-i|--ignore-case) opt_ignore_case=1 ;;
 		-p|--path) opt_path="$2"; shift ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
-		*) shift; break ;;
+		*) break ;;
 	esac
 	shift
 done

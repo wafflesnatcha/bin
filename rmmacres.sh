@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="rmmacres"
-SCRIPT_VERSION="1.7.0 (2012-02-28)"
+SCRIPT_VERSION="1.7.1 (2012-02-29)"
 
 usage() {
 	cat <<EOF
@@ -20,7 +20,7 @@ Options:
  -h, --help       Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { [ -n "$1" ] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 opt_dryrun=
 
@@ -43,7 +43,7 @@ while (($#)); do
 		-m|--misc) fparams="$fparams $par_misc" ;;
 		-a|--all) fparams="$fparams $par_dsstore $par_forks $par_icons $par_misc" ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
-		*) shift; break ;;
+		*) break ;;
 	esac
 	shift
 done

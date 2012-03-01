@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.1.1 (2012-02-29)"
+SCRIPT_VERSION="1.1.2 (2012-02-29)"
 
 usage() {
     cat <<EOF
@@ -18,17 +18,16 @@ Usage: ${0##*/} [options] message
  -u, --url                Defines the message as a url, allowing the client to
                           redirect.
  -h, --help               Show this help
- 
+
 By default prowlnotify will check ~/.prowlapikey for an api key. Otherwise it
 checks both the PROWL_API_KEY and PROWL_API_KEYFILE environment variables. With
-PROWL_API_KEY being a key, and PROWL_API_KEYFILE being a file with the key as 
+PROWL_API_KEY being a key, and PROWL_API_KEYFILE being a file with the key as
 its contents.
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-prowlbin=$(which prowl.pl)
-[[ ! -f "$prowlbin" ]] && FAIL "prowl.pl not found"
+prowlbin=$(which prowl.pl) || FAIL "prowl.pl not found"
 
 opt_application="-application=prowlnotify"
 opt_event="-event=$HOSTNAME"
@@ -62,7 +61,7 @@ while (($#)); do
 		;;
 		-u|--url) opt_is_url=1 ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
-		*) shift; break ;;
+		*) break ;;
 	esac
 	shift
 done

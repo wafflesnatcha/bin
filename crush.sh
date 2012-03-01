@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="crush"
-SCRIPT_VERSION="0.5.8 (2012-02-07)"
-SCRIPT_GETOPT_SHORT="hp"
-SCRIPT_GETOPT_LONG="help,percentage"
+SCRIPT_VERSION="0.5.9 (2012-02-29)"
 
 usage() {
 cat <<EOF
@@ -12,18 +10,14 @@ Simple processing of images with pngcrush.
 Usage: ${0##*/} [options] file ...
 
 Options:
- -p, --percentage  Prefix output lines with overall percent completed (useful 
+ -p, --percentage  Prefix output lines with overall percent completed (useful
                    when piping to CocoaDialog progressbar)
  -h, --help        Show this help
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-ARGS=$(getopt -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
-eval set -- "$ARGS"
-
-pngcrushbin="$(which pngcrush 2>/dev/null)"
-[[ ! $pngcrushbin ]] && FAIL "pngcrush not found"
+bin=$(which pngcrush 2>/dev/null) || FAIL "pngcrush not found"
 
 opt_percentage=
 
@@ -33,11 +27,13 @@ tempfile() {
 	trap "{ $tempfile_exit }" EXIT
 }
 
-while true; do
+
+while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-p|--percentage) opt_percentage=1 ;;
-		*) shift; break ;;
+		-*|--*) FAIL "unknown option ${1}" ;;
+		*) break ;;
 	esac
 	shift
 done
@@ -55,9 +51,8 @@ for f in "$@"; do
 	echo "$(basename "$f")"
 
 	tempfile tmpfile
-	results="$($pngcrushbin -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
+	results="$("$bin" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
 	[[ $? > 0 ]] && FAIL "$results"
 
 	mv "$tmpfile" "$f" || exit
 done
-

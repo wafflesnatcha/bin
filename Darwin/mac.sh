@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="mac"
-SCRIPT_VERSION="0.4.0 (2012-02-28)"
-SCRIPT_GETOPT_SHORT="h"
-SCRIPT_GETOPT_LONG="help"
+SCRIPT_VERSION="0.4.1 (2012-02-29)"
 
 usage() {
 cat <<EOF
@@ -35,9 +33,6 @@ Commands:
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
-
-ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
-eval set -- "$ARGS"
 
 pref_bool() {
 	case "$(echo $2 | tr '[A-Z]' '[a-z]')" in
@@ -85,11 +80,10 @@ finder_hidefile() {
 	done
 }
 
-
-while true; do
+while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
-		*) shift; break ;;
+		*) break ;;
 	esac
 	shift
 done
