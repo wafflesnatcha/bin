@@ -13,7 +13,9 @@ require() {
 }
 
 function_input() {
-	while read -r data; do echo -e "$data"; done
+	while read -r data; do
+		echo -e "$data"
+	done
 }
 
 go_to() {
@@ -25,7 +27,14 @@ go_to() {
 ##
 
 html_encode() {
-	echo -e "${@:-$(function_input)}" | sed '/./,$!d' | perl -pe 's/^[\s]*$//g' | perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>\n/g;'
+	{ [ -z "$1" ] && function_input || echo -e "${@}"; } |
+		perl -pe '$| = 1; s/^[\s]*$//g; s/[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
+}
+
+## same as html_encode, but also turns newlines into <br>
+html_encode_pre() {
+	{ [ -z "$1" ] && function_input || echo -e "${@}"; } |
+		perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>/g;'
 }
 
 html_redirect() {
@@ -40,7 +49,7 @@ html_error() {
 	html_header "${2:-ERROR}"
 	echo "<pre>"
 	html_encode "$@" |
-		php -d display_errors=on -r 'echo preg_replace("/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)[\n\r]+/mi", "<a href=\"txmt://open/?url=file://".$_SERVER["TM_FILEPATH"]."&line=$3&column=$4\" style=\"color:#f00\">$2</a>$5", file_get_contents("php://stdin"));'
+		php -r 'echo preg_replace("/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)[\n\r]+/mi", "<a href=\"txmt://open/?url=file://".$_SERVER["TM_FILEPATH"]."&line=$3&column=$4\" style=\"color:#f00\">$2</a>$5", file_get_contents("php://stdin"));'
 	echo "</pre>"
 	html_footer
 	exit_show_html
@@ -56,17 +65,17 @@ tooltip_style_success='body{background:rgba(21,86,0,.75);color:#fff}'
 
 ## Standard tooltip
 tooltip() {
-	tooltip_html "<style>${tooltip_style}</style>$(html_encode "$@")"
+	tooltip_html "<style>${tooltip_style}</style>$(html_encode_pre "$@")"
 }
 
 ## Red tooltip
 tooltip_error() {
-	tooltip_html "<style>${tooltip_style}${tooltip_style_error}</style>$(html_encode "$@")"
+	tooltip_html "<style>${tooltip_style}${tooltip_style_error}</style>$(html_encode_pre "$@")"
 }
 
 ## Green tooltip
 tooltip_success() {
-	tooltip_html "<style>${tooltip_style}${tooltip_style_success}</style>$(html_encode "$@")"
+	tooltip_html "<style>${tooltip_style}${tooltip_style_success}</style>$(html_encode_pre "$@")"
 }
 
 ## Standard tooltip, but with HTML content
@@ -90,8 +99,6 @@ exit_tooltip() { tooltip "$@" && exit_discard; }
 exit_tooltip_error() { tooltip_error "$@" && exit_discard; }
 exit_tooltip_success() { tooltip_success "$@" && exit_discard; }
 exit_tooltip_tick() { tooltip_tick "$@" && exit_discard; }
-
-
 
 ##
 ## Tests

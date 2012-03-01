@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="benchmark"
-SCRIPT_VERSION="0.3.6 (2012-01-30)"
-SCRIPT_GETOPT_SHORT="c:i:d:o:h"
-SCRIPT_GETOPT_LONG="command:,iterations:,delay:,output:,help"
+SCRIPT_VERSION="0.3.7 (2012-02-29)"
 
 opt_command=
 opt_delay=2
@@ -17,17 +15,14 @@ Benchmark a shell script.
 Usage: ${0##*/} [options]
 
 Options:
- -c, --command=COMMAND  Specify the command to benchmark
- -d, --delay=SECONDS    Seconds to wait in between executions (${opt_delay})
- -i, --iterations=NUM   Number of iterations to run (${opt_iterations})
- -o, --output=PATH      Write results to a file
+ -c, --command COMMAND  Specify the command to benchmark
+ -d, --delay SECONDS    Seconds to wait in between executions (${opt_delay})
+ -i, --iterations NUM   Number of iterations to run (${opt_iterations})
+ -o, --output PATH      Write results to a file
  -h, --help             Show this help
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
-
-ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
-eval set -- "$ARGS"
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")
@@ -45,16 +40,17 @@ getStdIn() {
 TIME_BIN=`which time | sed 1q`
 [[ ! $TIME_BIN ]] && FAIL "can't locate time program"
 
-while true; do
-    case $1 in
+while (($#)); do
+	case $1 in
         -h|--help) usage; exit 0 ;;
         -c|--command) opt_command="$2"; shift ;;
         -d|--delay) opt_delay=$2; shift ;;
         -i|--iterations) opt_iterations=$2; shift ;;
         -o|--output) opt_output=$2; shift ;;
-        *) shift; break ;;
-    esac
-    shift
+		-*|--*) FAIL "unknown option ${1}" ;;
+		*) shift; break ;;
+	esac
+	shift
 done
 
 [[ -z "$opt_command" ]] && getStdIn

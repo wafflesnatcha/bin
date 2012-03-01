@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="findstring"
-SCRIPT_VERSION="1.1.2 (2012-02-03)"
-SCRIPT_GETOPT_SHORT="bd:fip:h"
-SCRIPT_GETOPT_LONG="binary,depth:,filenames,ignore-case,path:,help"
+SCRIPT_VERSION="1.1.3 (2012-02-28)"
 
 usage() {
 cat <<EOF
@@ -21,9 +19,6 @@ Options:
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
-
-ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
-eval set -- "$ARGS"
 
 opt_binary=
 opt_depth=
@@ -48,17 +43,18 @@ runFind() {
 		| xargs -0 -n 100 grep $grepopts "$@"
 }
 
-while true; do
-    case $1 in
-        -h|--help) usage; exit 0 ;;
-        -b|--binary) opt_binary=1 ;;
-        -d|--depth) opt_depth="$2"; shift ;;
-        -f|--filenames) opt_filenames=1 ;;
-        -i|--ignore-case) opt_ignore_case=1 ;;
-        -p|--path) opt_path="$2"; shift ;;
-        *) shift; break ;;
-    esac
-    shift
+while (($#)); do
+	case $1 in
+		-h|--help) usage; exit 0 ;;
+		-b|--binary) opt_binary=1 ;;
+		-d|--depth) opt_depth="$2"; shift ;;
+		-f|--filenames) opt_filenames=1 ;;
+		-i|--ignore-case) opt_ignore_case=1 ;;
+		-p|--path) opt_path="$2"; shift ;;
+		-*|--*) FAIL "unknown option ${1}" ;;
+		*) shift; break ;;
+	esac
+	shift
 done
 
 [[ ! -d "$opt_path" ]] && FAIL "invalid path"

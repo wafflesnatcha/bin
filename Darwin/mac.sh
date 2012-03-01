@@ -12,24 +12,26 @@ Do stuff with OS X like changing settings and shit.
 Usage: ${0##*/} command
 
 Commands:
- finder showfile PATH          Removes the Invisible attribute (v) from a file
- finder hidefile PATH          Sets the Invisible attribute (V) on a file
+ dock addspace             Add a spacer to the dock
+ dock noglass [on/off]     Toggle the 3d display of the dock
+ dock showhidden [on/off]  Hidden applications appear dimmer on the dock
+ dock restart              Reload the dock
+
+ expose anim-duration [FLOAT]  Expose (Mission Control) animation duration
+
+ finder showfile PATH          Make a file visible in Finder
+ finder hidefile PATH          Hide a file in Finder
  finder restart                Restart Finder
  finder fullpathview [on/off]  Show the full path in the title of Finder windows
  finder showhidden [on/off]    Toggle visibility of hidden files and folders
 
- dock addspace                 Add a spacer to the dock
- dock noglass [on/off]         Toggle the 3d display of the dock
- dock showhidden [on/off]      Hidden applications appear dimmer on the dock
- dock restart                  Reload the dock
+ itunes hideping [on/off]    Hide the "Ping" arrows
+ itunes storelinks [on/off]  Toggle display of the store link arrows
 
- itunes hideping [on/off]      Hide the "Ping" arrows
- itunes storelinks [on/off]    Toggle display of the store link arrows
-
- flushdns                      Flush system DNS cache
- lockdesktop                   Lock the desktop
- showusers                     List all users on this machine
- updatedb                      Update locate database
+ flushdns      Flush system DNS cache
+ lockdesktop   Lock the desktop
+ showusers     List all users on this machine
+ updatedb      Update locate database
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
@@ -43,6 +45,17 @@ pref_bool() {
 		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
 		*) [[ $(defaults read $1) = 1 ]] && { echo "on"; return 1; } || { echo "off"; return 2; } ;;
 	esac
+	return
+}
+
+pref_float() {
+	if [[ ! $2 ]]; then
+		v=$(defaults read $1 2>&1) && { echo $v; return 1; } || { echo "not set"; return 2; }
+	elif [[ $2 = "-" ]]; then
+		defaults delete $1
+	else
+		defaults write $1 -float $2
+	fi
 	return
 }
 
@@ -83,16 +96,6 @@ done
 
 
 case $1 in
-	f|finder) shift
-	case $1 in
-		showhidden) pref_bool "com.apple.finder AppleShowAllFiles" && finder_restart ;;
-		fullpathview) pref_bool "com.apple.finder _FXShowPosixPathInTitle" $2 ;;
-		r|restart) finder_restart ;;
-		sf|showfile) shift; finder_showfile "$@" ;;
-		hf|hidefile) shift; finder_hidefile "$@" ;;
-		*) usage; exit 0 ;;
-	esac
-	;;
 
 	d|dock) shift
 	case $1 in
@@ -100,6 +103,24 @@ case $1 in
 		noglass) pref_bool "com.apple.dock no-glass" $2 && killall Dock ;;
 		showhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock ;;
 		restart) killall Dock ;;
+		*) usage; exit 0 ;;
+	esac
+	;;
+
+	e|expose) shift
+	case $1 in
+		anim-duration) pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock ;;
+		*) usage; exit 0 ;;
+	esac
+	;;
+
+	f|finder) shift
+	case $1 in
+		showhidden) pref_bool "com.apple.finder AppleShowAllFiles" && finder_restart ;;
+		fullpathview) pref_bool "com.apple.finder _FXShowPosixPathInTitle" $2 ;;
+		r|restart) finder_restart ;;
+		sf|showfile) shift; finder_showfile "$@" ;;
+		hf|hidefile) shift; finder_hidefile "$@" ;;
 		*) usage; exit 0 ;;
 	esac
 	;;

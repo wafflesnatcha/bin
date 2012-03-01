@@ -52,7 +52,6 @@ $tags .= "|{embed|{exp:|{/exp:";
 # These tags get indented/unindented. Comment out to taste!
 #
 $tagindent = "";
-
 #$tagindent.= "<html|<body|<head";
 $tagindent .= "<body|<head";
 $tagindent .= "|<style|<script";

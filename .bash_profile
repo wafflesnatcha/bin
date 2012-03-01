@@ -1,5 +1,5 @@
-path_append() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$PATH:$f; done; }
-path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && export PATH=$f:$PATH; done; }
+path_append() { local f; for f in "$@"; do [ -d "$f" ] && PATH=$PATH:$f; done; export PATH; }
+path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && PATH=$f:$PATH; done; export PATH; }
 
 path_append ~/bin ~/bin/"$(uname)" ~/lib
 
@@ -11,7 +11,6 @@ export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:h:history:l:lr:pwd"
 export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --prompt=M ?f"%f" ?m[%i/%m]. | .?lbLine %lb?L of %L..?PB (%PB\%).?e (END). '
 export LS_COLORS='rs=0:di=00;34:ln=00;35:mh=00:pi=40;33:so=00;32:do=01;35:bd=40;33;01:cd=40;33;01:or=41;30;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=30;43:st=37;44:ex=1;31:';
 
-
 alias cd..='cd ..'
 alias ..='cd ..'
 alias e='echo'
@@ -21,9 +20,9 @@ alias l='ls -Ahlp --color=auto'
 alias lr='l -R'
 
 alias extract='extract.sh'
+alias findn='findname'
 alias finds='findstring.sh'
 alias rmmr='rmmacres.sh --dsstore --forks'
-alias ss='shiftsearch'
 alias zipup='zipup.sh'
 
 alias gitclone='git clone --depth 1 --recursive'
@@ -45,7 +44,7 @@ historys() { [ ${#} -lt 1 ] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
 pss() { [ -z "$@" ] && ps -lA || ( ps -lAww | grep -i "[${1:0:1}]${1:1}"; ) }
-realpath() { echo $(readlink -f "$1" 2>/dev/null || greadlink -f "$1"); }
+realpath() { readlink -f "$1" || greadlink -f "$1"; }
 
 if [ -n "$PS1" ]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;32m\]\h\[\e[m\]:\[\e[33m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
@@ -61,7 +60,7 @@ fi
 if [ "$(uname)" = "Darwin" ]; then
 
 	path_append ~/lib/cocoaDialog.app/Contents/MacOS
-	path_prepend /opt/local/bin /opt/local/sbin # Macports
+	path_prepend /opt/local/{bin,sbin} # Macports
 
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
 	export HISTIGNORE=$HISTIGNORE:gl:l@:fresh:freshe
@@ -100,7 +99,7 @@ fi
 ## lilpete.local
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
-	path_append /usr/local/mysql/bin ~/.pear/bin ~/.gem/ruby/1.8/bin ~/lib/AdobeAIRSDK/bin
+	path_append /usr/local/mysql/bin ~/.pear/bin ~/lib/AdobeAIRSDK/bin ~/lib/phantomjs-1.4.1/bin
 
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'
@@ -119,6 +118,3 @@ if [ "$HOSTNAME" == "box" ]; then
 	[ -n "$PS1" ] && export PS1='\[\e]0;\h:\W\007\]\[\e[0;94m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
 
 fi
-
-## Bash Completion
-# [ -f /opt/local/etc/bash_completion ] && . /opt/local/etc/bash_completion

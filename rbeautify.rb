@@ -28,8 +28,8 @@ module RBeautify
 
    # user-customizable values
 
-   RBeautify::TabStr = " "
-   RBeautify::TabSize = 3
+   RBeautify::TabStr = "\t"
+   RBeautify::TabSize = 1
 
    # indent regexp tests
 
