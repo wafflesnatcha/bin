@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="rmmacres"
+SCRIPT_NAME="rmmacres.sh"
 SCRIPT_VERSION="1.7.1 (2012-02-29)"
 
 usage() {

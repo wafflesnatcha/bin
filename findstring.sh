@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="findstring"
+SCRIPT_NAME="findstring.sh"
 SCRIPT_VERSION="1.1.3 (2012-02-29)"
 
 usage() {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="runclipboard"
+SCRIPT_NAME="runclipboard.sh"
 SCRIPT_VERSION="1.0.1 (2012-02-29)"
 
 usage() {

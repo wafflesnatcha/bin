@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="crush"
-SCRIPT_VERSION="0.5.9 (2012-02-29)"
+SCRIPT_NAME="crush.sh"
+SCRIPT_VERSION="0.6.0 (2012-03-07)"
 
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-Simple processing of images with pngcrush.
+Simple processing of images with pngcrush and/or jpgcrush.
 
 Usage: ${0##*/} [options] file ...
 
@@ -16,8 +16,7 @@ Options:
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
-
-bin=$(which pngcrush 2>/dev/null) || FAIL "pngcrush not found"
+or_fail() { [[ ! $? = 0 ]] && FAIL "$@"; }
 
 opt_percentage=
 
@@ -26,7 +25,6 @@ tempfile() {
 	tempfile_exit="$tempfile_exit rm -f '${!1}';"
 	trap "{ $tempfile_exit }" EXIT
 }
-
 
 while (($#)); do
 	case $1 in
@@ -40,19 +38,24 @@ done
 
 [[ ! $1 ]] && { usage; exit 0; }
 
-total_files=$#
 count=0
 
 for f in "$@"; do
 	(( count++ ))
-	[[ "${f##*.}" != "png" || ! -e "$f" ]] && continue
-
-	[[ $opt_percentage ]] && { echo "$count/$total_files*100" | bc -l | xargs printf "%1.0f%% "; }
+	percent=$(echo "$count/$#*100" | bc -l | xargs printf "%1.0f%%";)
+	[[ $opt_percentage ]] && echo -n "$percent [$percent] "
 	echo "$(basename "$f")"
-
-	tempfile tmpfile
-	results="$("$bin" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
-	[[ $? > 0 ]] && FAIL "$results"
-
-	mv "$tmpfile" "$f" || exit
+	
+	case "${f##*.}" in
+		png)
+			[[ ! $pngcrush ]] && { pngcrush=$(which pngcrush 2>/dev/null) || FAIL "pngcrush not found"; }
+			tempfile tmpfile
+			or_fail "$("$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
+			or_fail "$(mv "$tmpfile" "$f")"
+		;;
+		jpg|jpeg)
+			[[ ! $jpgcrush ]] && { jpgcrush=$(which jpgcrush 2>/dev/null) || FAIL "jpgcrush not found"; }
+			or_fail "$("$jpgcrush" "$f")"
+		;;
+	esac
 done

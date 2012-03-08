@@ -37,3 +37,4 @@ cp -R "$download_dir/chrome-mac/Chromium.app" "$install_dir"
 
 echo "cleaning up... "
 [[ -e "$download_dir" ]] && rm -rf "$download_dir";
+echo "done"

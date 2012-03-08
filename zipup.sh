@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="zipup"
+SCRIPT_NAME="zipup.sh"
 SCRIPT_VERSION="1.1.5 (2012-02-29)"
 
 usage() {

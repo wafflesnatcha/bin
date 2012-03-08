@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="mac"
+SCRIPT_NAME="mac.sh"
 SCRIPT_VERSION="0.4.1 (2012-02-29)"
 
 usage() {

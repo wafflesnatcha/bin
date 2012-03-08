@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="benchmark"
+SCRIPT_NAME="benchmark.sh"
 SCRIPT_VERSION="0.3.7 (2012-02-29)"
 
 opt_command=

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="geticons"
-SCRIPT_VERSION="1.1.1 (2012-01-30)"
-SCRIPT_GETOPT_SHORT="d:o:h"
-SCRIPT_GETOPT_LONG="depth:,output:,help"
+SCRIPT_NAME="geticons.sh"
+SCRIPT_VERSION="1.1.2 (2012-03-01)"
 
 usage() {
 cat <<EOF
@@ -12,28 +10,25 @@ Save file icons recursively.
 Usage: ${0##*/} [options] [path]
 
 Options:
- -d, --depth=NUM    Maximum depth to search subdirectories
- -o, --output=PATH  Output directory
+ -d, --depth NUM    Maximum depth to search subdirectories
+ -o, --output PATH  Output directory
  -h, --help         Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+FAIL() { local code=$?; [[ $code = 0 ]] && code=${2:-1}; [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-ARGS=$(getopt -s bash -o "$SCRIPT_GETOPT_SHORT" -l "$SCRIPT_GETOPT_LONG" -n "$SCRIPT_NAME" -- "$@") || exit
-eval set -- "$ARGS"
-
-geticon=`which geticon 2>/dev/null | sed 1q`
-[[ ! $geticon ]] && FAIL "geticon not found"
+geticon=$(which geticon 2>/dev/null) || FAIL "geticon not found"
 
 opt_output="$PWD"
 fopts=
 
-while true; do
+while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-d|--depth) fopts="$fopts -maxdepth $2"; shift ;;
 		-o|--output) opt_output="${2%%/}"; shift ;;
-		*) shift; break ;;
+		-*|--*) FAIL "unknown option ${1}" ;;
+		*) break ;;
 	esac
 	shift
 done
@@ -46,9 +41,9 @@ src="${1:-$PWD}"
 
 
 find "$src" ${fopts} \
-	-not -path '*.Trash/*' \
-	-not -path '*.Trashes/*' \
-	-not -path '*.*/*' \
+	-not -path '*/.Trash/*' \
+	-not -path '*/.Trashes/*' \
+	-not -path '*/.*/*' \
 	-not -name '.*' \
 	-not -name $'Icon\r' \
 	| while read f; do

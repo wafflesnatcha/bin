@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.1.2 (2012-02-29)"
+SCRIPT_VERSION="1.1.3 (2012-03-07)"
 
 usage() {
     cat <<EOF
@@ -27,7 +27,7 @@ EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-prowlbin=$(which prowl.pl) || FAIL "prowl.pl not found"
+prowlbin=$(which prowl.pl 2>/dev/null) || FAIL "prowl.pl not found"
 
 opt_application="-application=prowlnotify"
 opt_event="-event=$HOSTNAME"

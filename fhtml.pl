@@ -5,8 +5,8 @@
 # e-mail: john@watson-net.com
 #
 # modified for TextMate by Ross A. Reyman - 12/2005
-# modified again by Scott Buchanan <buchanan.sc@gmail.com> 2012/02/27
-# 
+# modified again by Scott Buchanan <buchanan.sc@gmail.com> 2012-03-07
+#
 # -----About-----
 # This Script formats and indents html source code.
 # It makes code generated easier to read for humans.
@@ -16,9 +16,10 @@
 
 # tab settings | how many spaces per tab? Use tabs?
 #
-if ( $ENV{"TM_SOFT_TABS"} == "YES" ) {
+
+if ( $ENV{'TM_SOFT_TABS'} =~ /YES/ ) {
 	$usetabs = 0;
-	$amount  = $ENV{"TM_TAB_SIZE"};
+	$amount  = $ENV{'TM_TAB_SIZE'};
 }
 else {
 	$usetabs = 1;
@@ -28,7 +29,8 @@ else {
 # These are the tags that will be formatted. Comment out to taste!
 #
 $tags = "";
-$tags .= "<!DOCTYPE|<html|</html|<body|</body|<head|</head|<title|<meta|<style|</style";
+$tags .=
+"<!DOCTYPE|<html|</html|<body|</body|<head|</head|<title|<meta|<style|</style";
 $tags .= "<script|</script";
 $tags .= "|<isindex|<link";
 $tags .= "|<table|<tr|<th|<td|</tr|</th|</td|</table";
@@ -52,6 +54,7 @@ $tags .= "|{embed|{exp:|{/exp:";
 # These tags get indented/unindented. Comment out to taste!
 #
 $tagindent = "";
+
 #$tagindent.= "<html|<body|<head";
 $tagindent .= "<body|<head";
 $tagindent .= "|<style|<script";

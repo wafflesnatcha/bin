@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="probeui"
+SCRIPT_NAME="probeui.sh"
 SCRIPT_VERSION="1.0.4 (2012-02-29)"
 
 usage() {

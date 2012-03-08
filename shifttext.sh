@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-SCRIPT_NAME="shifttext"
+SCRIPT_NAME="shifttext.sh"
 SCRIPT_VERSION="1.0.8 (2012-02-29)"
 
 usage() {
