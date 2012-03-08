@@ -20,7 +20,7 @@ function_input() {
 
 go_to() {
 	ruby -e "require ENV['TM_SUPPORT_PATH'] + '/lib/textmate'" -e "TextMate.go_to :line => ARGV[0], :column => ARGV[1]" "$1" "$2"
-}	
+}
 
 ##
 ## HTML functions
@@ -59,9 +59,9 @@ html_error() {
 ## Tool Tip functions
 ##
 
-tooltip_style='html,body{background:transparent;border:0;margin:0;padding:0}body{background:rgba(255,255,185,.75);color:#000;font:small-caption;padding:1px 2px 2px}pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}'
+tooltip_style='html,body{background:none;border:0;margin:0;padding:0}body{background:rgba(255,255,185,.75);color:#000;font:small-caption;padding:1px 2px 2px}pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}'
 tooltip_style_error='body{background:rgba(170,14,14,.75);color:#fff}'
-tooltip_style_success='body{background:rgba(21,86,0,.75);color:#fff}'
+tooltip_style_success='body{background:rgba(57,154,21,.75);color:#fff}'
 
 ## Standard tooltip
 tooltip() {
@@ -84,11 +84,15 @@ tooltip_html() {
 	"${DIALOG}" tooltip --transparent --html "${@:-$(function_input)}"
 }
 
-## Tooltip with a nice green checkmark
+## Green tooltip with a checkmark
 ## nice to display when a command has successfully completed
-## (doesn't accept any input)
 tooltip_tick() {
-	html='<style>html,body{background:transparent;border:0;margin:0;padding:0}div{-webkit-animation-delay:0s;-webkit-animation-duration:.1s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:fadeIn;-webkit-border-radius:4px;background:rgba(57,154,21,.9);color:#fff;font:15px/25px monospace;height:25px;opacity:0;text-align:center;text-shadow:0 1px 1px rgba(0,0,0,.5);width:25px}div span{-webkit-animation-delay:.1s;-webkit-animation-duration:.5s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:fadeIn;opacity:0}@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}</style><div><span>&#x2714;</span></div>'
+	local input="$(html_encode_pre "$@")"
+	if [[ $input ]]; then 
+		local html='<style>'${tooltip_style}'body{background:transparent;color:#fff}.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:3px 0 0 3px;-webkit-box-shadow:0 1px 2px 0 rgba(0,0,0,.3);background:rgba(57,154,21,.95);opacity:0;text-shadow:0 1px 0 rgba(0,0,0,.4);position:relative}.tick{-webkit-border-radius:3px 0 0 3px;-webkit-box-shadow:-8px 0 8px -8px rgba(0,0,0,.3) inset;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-mask-image:-webkit-linear-gradient(top,rgba(0,0,0,1) 75%,rgba(0,0,0,.5));background-image:-webkit-linear-gradient(top,rgba(0,0,0,.2),rgba(0,0,0,.1));text-align:center;width:18px;height:100%;position:absolute;padding:1px 0 0}.content{padding:1px 2px 2px 3px;margin-left:18px}@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}</style><div class="tooltip"><div class="tick">&#x2714;</div><div class="content">'${input}'</div></div>'
+	else
+		local html='<style>html,body{background:transparent;border:0;margin:0;padding:0}div{-webkit-animation-delay:0s;-webkit-animation-duration:.1s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:fadeIn;-webkit-border-radius:4px;background:rgba(57,154,21,.9);color:#fff;font:15px/25px monospace;height:25px;opacity:0;text-align:center;text-shadow:0 1px 1px rgba(0,0,0,.5);width:25px}div span{-webkit-animation-delay:.1s;-webkit-animation-duration:.5s;-webkit-animation-fill-mode:forwards;-webkit-animation-name:fadeIn;opacity:0}@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}</style><div><span>&#x2714;</span></div>'
+	fi	
 	tooltip_html "$html"
 }
 
@@ -100,10 +104,14 @@ exit_tooltip_error() { tooltip_error "$@" && exit_discard; }
 exit_tooltip_success() { tooltip_success "$@" && exit_discard; }
 exit_tooltip_tick() { tooltip_tick "$@" && exit_discard; }
 
+
+
 ##
 ## Tests
 ##
 
 # /usr/bin/php -v | tooltip_error
 # tooltip_success "This is a successful tooltip! :D ┌( ◔‿◔)┘ ʘ‿ʘ\nWow! Amazing! Zing!" && exit_discard
+# tooltip "This is a successful tooltip! :D ┌( ◔‿◔)┘ ʘ‿ʘ\nWow! Amazing! Zing!"
 # tooltip_tick && exit_discard
+# /usr/bin/php -v | tooltip_tick
