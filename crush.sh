@@ -50,6 +50,7 @@ for f in "$@"; do
 		png)
 			[[ ! $pngcrush ]] && { pngcrush=$(which pngcrush 2>/dev/null) || FAIL "pngcrush not found"; }
 			tempfile tmpfile
+			chmod $(stat -f%p "$f") "$tmpfile"
 			or_fail "$("$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
 			or_fail "$(mv "$tmpfile" "$f")"
 		;;
