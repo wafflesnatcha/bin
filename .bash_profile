@@ -44,7 +44,7 @@ historys() { [ ${#} -lt 1 ] && history || history | grep -i "$*"; }
 locatefile() { locate "$@" | grep -e "$@$"; }
 mkd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
 pss() { [ -z "$@" ] && ps -lA || ( ps -lAww | grep -i "[${1:0:1}]${1:1}"; ) }
-realpath() { readlink -f "$1" || greadlink -f "$1"; }
+realpath() { readlink -f "$1" 2>/dev/null || type -p greadlink && greadlink -f "$1"; }
 
 if [ -n "$PS1" ]; then
 	export PS1='\[\e]0;\h:\W\007\]\[\e[0;32m\]\h\[\e[m\]:\[\e[33m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
@@ -71,6 +71,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	alias gl='gls -Ahlp --color=auto'
 	alias l='ls -Abhlp'
 	alias l@='l -@'
+	alias mac='mac.sh'
 	alias sshc='sshcolor.sh'
 
 	fresh() {
@@ -105,6 +106,8 @@ if [ "$HOSTNAME" = "lilpete.local" ]; then
 	export GIT_EDITOR='mate -wl1'
 	export LESSEDIT='mate -l %lm %f'
 	export VISUAL='mate -w'
+
+	_lesspipe=$(type -p lesspipe.sh 2>/dev/null) && export LESSOPEN="|${_lesspipe} %s"; unset _lesspipe
 
 	alias mate='mate -r'
 	alias m='mate'
