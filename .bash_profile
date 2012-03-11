@@ -6,7 +6,7 @@ path_append ~/bin ~/bin/"$(uname)" ~/lib
 export CLICOLOR=1
 export GREP_OPTIONS="--color=auto"
 export HISTCONTROL=erasedups
-export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:h:history:l:lr:pwd"
+export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:l:lr:pwd"
 #export LC_CTYPE=en_US.UTF-8
 export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --prompt=M ?f"%f" ?m[%i/%m]. | .?lbLine %lb?L of %L..?PB (%PB\%).?e (END). '
 export LS_COLORS='rs=0:di=00;34:ln=00;35:mh=00:pi=40;33:so=00;32:do=01;35:bd=40;33;01:cd=40;33;01:or=41;30;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=30;43:st=37;44:ex=1;31:';

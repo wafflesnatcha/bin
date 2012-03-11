@@ -1,30 +1,28 @@
 #set editing-mode vi
 #set keymap vi
 
-# this makes the "delete" key work rather than
-# just entering a ~
+# this makes the "delete" key work rather than just entering a ~
 "\e[3~": delete-char
 
-# these allow you to use ctrl+left/right arrow keys
-# to jump the cursor over words
+# ctrl+left/right jump word left/right
 "\e[5C": forward-word
 "\e[5D": backward-word
 
-# these allow you to start typing a command and
-# use the up/down arrow to auto complete from
-# commands in your history
-#"\e[B": history-search-forward
-#"\e[A": history-search-backward
-
-# this lets you hit tab to auto-complete a file or
-# directory name ignoring case
+# tab to auto-complete a file or directory name ignoring case
 set completion-ignore-case On
 
-# Two escapes clear command line
+# two escapes clear command line
 "\e\e": "\C-a\C-k"
 
 #"\e[1~": beginning-of-line
+#"\e[2~": quoted-insert
 #"\e[4~": end-of-line
+
+# page up/down beginning/end of history
 "\e[5~": beginning-of-history
 "\e[6~": end-of-history
-#"\e[2~": quoted-insert
+
+# up/down autocomplete from history
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+
