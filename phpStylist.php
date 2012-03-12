@@ -1,4 +1,4 @@
-#!/usr/bin/env php -d display_errors=on -d error_reporting=E_ALL
+#!/usr/bin/env php -d display_errors=on -d error_reporting=E_ALL|E_STRICT
 <?php
 /**
  * The contents of this file are subject to the RECIPROCAL PUBLIC LICENSE
@@ -10,9 +10,9 @@
  *
  * @package phpStylist
  * @author  Mr. Milk (aka Marcelo Leite) <mrmilk@anysoft.com.br>
- *          Scott Buchanan <buchanan.sc@gmail.com>
+ * @author  Scott Buchanan <buchanan.sc@gmail.com>
  * @license http://opensource.org/licenses/rpl1.0.php Reciprocal Public License ("RPL") Version 1.1
- * @version 1.0.2 (2012-02-27)
+ * @version 1.0.3
  */
 
 $ps = new phpStylist();
@@ -20,7 +20,7 @@ $ps->cli();
 
 class phpStylist
 {
-	var $version = "1.0.2 (2012-02-27)";
+	var $version = "1.0.3";
 
 	var $option_groups = array(
 		array("Indentation and general formatting"),
@@ -40,17 +40,20 @@ class phpStylist
 		array('space_after_comma', 'Space after comma', 1, false),
 		array('space_inside_parentheses', 'Space inside parentheses', 1, false),
 		array('space_outside_parentheses', 'Space outside parentheses', 1, false),
+		
 		array('align_var_assignment', 'Align block +3 assigned variables', 2, false),
 		array('space_around_arithmetic', '(- + * / %)', 2, false),
 		array('space_around_assignment', '(= .= += -= *= /= <<<)', 2, false),
 		array('space_around_colon_question', '(? :)', 2, false),
 		array('space_around_comparison', '(== === != !== > >= < <=)', 2, false),
 		array('space_around_logical', '(&& || AND OR XOR << >>)', 2, false),
+		
 		array('line_after_curly_function', 'Blank line below opening bracket', 3, false),
 		array('line_before_curly_function', 'Opening bracket on next line', 3, false),
 		array('line_before_function', 'Blank line before keyword', 3, false),
 		array('space_around_double_colon', '(::)', 3, false),
 		array('space_around_obj_operator', '(->)', 3, false),
+		
 		array('add_missing_braces', 'Add missing brackets to single line structs', 4, false),
 		array('else_along_curly', 'Keep else/elseif along with bracket', 4, false),
 		array('indent_case', 'Extra indent for "case" and "default"', 4, false),
@@ -58,19 +61,55 @@ class phpStylist
 		array('line_before_curly', 'Opening bracket on next line', 4, false),
 		array('space_after_if', 'Space between keyword and opening parentheses', 4, false),
 		array('space_inside_for', 'Space between "for" elements', 4, false),
+		
 		array('align_array_assignment', 'Align block +3 assigned array elements', 5, false),
-		array('line_before_array', 'Opening array parentheses on next line', 5, false),
+		array('line_before_array_paren', 'Opening array parentheses on next line', 5, false),
 		array('space_around_concat', 'Space around concat elements', 5, false),
 		array('space_around_double_arrow', 'Space around double arrow', 5, false),
 		array('vertical_array', 'Non-empty arrays as vertical block', 5, false),
 		array('vertical_concat', 'Concatenation as vertical block', 5, false),
+		
 		array('line_after_comment', 'Blank line after single line comments (//)', 6, false),
 		array('line_after_comment_multi', 'Blank line after multi-line comment (/*)', 6, false),
 		array('line_before_comment', 'Blank line before single line comments (//)', 6, false),
 		array('line_before_comment_multi', 'Blank line before multi-line comment (/*)', 6, false),
 	);
 
-	var $config = array();
+	var $new_tokens = array(
+		"S_ABSTRACT"      => "abstract",
+		"S_AT"            => "@",
+		"S_CLOSE_BRACKET" => "]",
+		"S_CLOSE_CURLY"   => "}",
+		"S_CLOSE_PARENTH" => ")",
+		"S_COLON"         => ":",
+		"S_COMMA"         => ",",
+		"S_CONCAT"        => ".",
+		"S_DIVIDE"        => "/",
+		"S_DOLLAR"        => "$",
+		"S_EQUAL"         => "=",
+		"S_EXCLAMATION"   => "!",
+		"S_FINAL"         => "final",
+		"S_INTERFACE"     => "interface",
+		"S_IS_GREATER"    => ">",
+		"S_IS_SMALLER"    => "<",
+		"S_MINUS"         => "-",
+		"S_MODULUS"       => "%",
+		"S_NAMESPACE"     => "namespace",
+		"S_OPEN_BRACKET"  => "[",
+		"S_OPEN_CURLY"    => "{",
+		"S_OPEN_PARENTH"  => "(",
+		"S_PLUS"          => "+",
+		"S_PRIVATE"       => "private",
+		"S_PROTECTED"     => "protected",
+		"S_PUBLIC"        => "public",
+		"S_QUESTION"      => "?",
+		"S_QUOTE"         => '"',
+		"S_REFERENCE"     => "&",
+		"S_SEMI_COLON"    => ";",
+		"S_TIMES"         => "*",
+	);
+
+	var $config;
 
 	var $block_size = 3;
 
@@ -90,7 +129,16 @@ class phpStylist
 
 	function __construct()
 	{
-		$this->defineTokens();
+		/** Define new tokens */
+		foreach($this->new_tokens as $k => $v) {
+			if(!defined($k))
+				define($k, $v);
+		}
+		if (defined("T_ML_COMMENT"))
+			define("T_DOC_COMMENT", T_ML_COMMENT);
+		elseif (defined("T_DOC_COMMENT"))
+			define("T_ML_COMMENT", T_DOC_COMMENT);
+			
 		$this->clearConfig();
 	}
 
@@ -98,6 +146,7 @@ class phpStylist
 	{
 		$this->getOptions();
 		$f = @$_SERVER['argv'][count($_SERVER['argv']) - 1];
+		
 		if(!$f || $f == '-' || count($_SERVER['argv']) <= 1)
 			$f = "php://stdin";
 		echo $this->parseFile($f);
@@ -116,8 +165,8 @@ class phpStylist
 		$shortopts = "h";
 		$longopts = array("help");
 
-		foreach($this->options as $o) {
-			$longopts[] = $o[0] . (!is_bool($o[3])? ":" : "");
+		foreach($this->options as $option) {
+			$longopts[] = $option[0] . (!is_bool($option[3])? ":" : "");
 		}
 
 		$args = getopt($shortopts, $longopts);
@@ -135,7 +184,8 @@ class phpStylist
 
 	function usage()
 	{
-		echo "phpStylist.php {$this->version}\n\nUsage: " . basename($_SERVER['argv'][0]) . " [options] [file]\n";
+		echo "phpStylist.php {$this->version}\n\n";
+		echo "Usage: " . basename($_SERVER['argv'][0]) . " [options] [file]\n";
 
 		$col1 = 10;		
 		foreach($this->options as $o) {
@@ -147,58 +197,12 @@ class phpStylist
  			// echo "\n". (($i != 0) ? implode("\n", $this->option_groups[$i-1]) . "\n" : "");
 			echo "\n" . $this->option_groups[$i-1][0] . ":\n";
 			foreach($this->options as $o) {
-				if($o[2] == $i) {
+				if($o[2] == $i)
 					printf(" --%-{$col1}s  %s\n", $o[0], $o[1]);
-				}
 			}
 		}
 	}
 
-	private function defineTokens()
-	{
-		$tokens = array(
-			"S_ABSTRACT"      => "abstract",
-			"S_AT"            => "@",
-			"S_CLOSE_BRACKET" => "]",
-			"S_CLOSE_CURLY"   => "}",
-			"S_CLOSE_PARENTH" => ")",
-			"S_COLON"         => ":",
-			"S_COMMA"         => ",",
-			"S_CONCAT"        => ".",
-			"S_DIVIDE"        => "/",
-			"S_DOLLAR"        => "$",
-			"S_EQUAL"         => "=",
-			"S_EXCLAMATION"   => "!",
-			"S_FINAL"         => "final",
-			"S_INTERFACE"     => "interface",
-			"S_IS_GREATER"    => ">",
-			"S_IS_SMALLER"    => "<",
-			"S_MINUS"         => "-",
-			"S_MODULUS"       => "%",
-			"S_NAMESPACE"     => "namespace",
-			"S_OPEN_BRACKET"  => "[",
-			"S_OPEN_CURLY"    => "{",
-			"S_OPEN_PARENTH"  => "(",
-			"S_PLUS"          => "+",
-			"S_PRIVATE"       => "private",
-			"S_PROTECTED"     => "protected",
-			"S_PUBLIC"        => "public",
-			"S_QUESTION"      => "?",
-			"S_QUOTE"         => '"',
-			"S_REFERENCE"     => "&",
-			"S_SEMI_COLON"    => ";",
-			"S_TIMES"         => "*",
-		);
-		foreach($tokens as $k => $v) {
-			if(!defined($k))
-				define($k, $v);
-		}
-		if (defined("T_ML_COMMENT"))
-			define("T_DOC_COMMENT", T_ML_COMMENT);
-		elseif (defined("T_DOC_COMMENT"))
-			define("T_ML_COMMENT", T_DOC_COMMENT);
-	}
-	
 	function parseFile($file)
 	{
 		return $this->parse(file_get_contents($file));
@@ -225,7 +229,7 @@ class phpStylist
 		$this->_tokens = token_get_all($input);
 
 		foreach ($this->_tokens as $index => $token) {
-			list($id, $text) = $this->_get_token($token);
+			list($id, $text) = $this->_token($token);
 			$this->_pointer = $index;
 
 			if ($halt_parser && $id != S_QUOTE) {
@@ -250,7 +254,7 @@ class phpStylist
 				case S_OPEN_CURLY:
 					$condition = $in_function ? $this->config["line_before_curly_function"] : $this->config["line_before_curly"];
 					$this->_set_indent( + 1);
-					$this->_append_code((!$condition ? ' ' : $this->_get_crlf_indent(false, - 1)) . $text . $this->_get_crlf($this->config["line_after_curly_function"] && $in_function && !$this->_is_token_lf()) . $this->_get_crlf_indent());
+					$this->_append_code((!$condition ? ' ' : $this->_crlf_indent(false, - 1)) . $text . $this->_crlf($this->config["line_after_curly_function"] && $in_function && !$this->_is_token_lf()) . $this->_crlf_indent());
 					$in_function = false;
 					break;
 
@@ -273,12 +277,12 @@ class phpStylist
 							if ($switch_level > 0)
 								$switch_arr["l" . $switch_level]--;
 							$this->_set_indent( - 1);
-							$this->_append_code($this->_get_crlf_indent() . $text . $this->_get_crlf_indent());
+							$this->_append_code($this->_crlf_indent() . $text . $this->_crlf_indent());
 							$text = '';
 						}
 						if ($text != '') {
 							$this->_set_indent( - 1);
-							$this->_append_code($this->_get_crlf_indent() . $text . $this->_get_crlf_indent());
+							$this->_append_code($this->_crlf_indent() . $text . $this->_crlf_indent());
 						}
 					}
 					break;
@@ -294,14 +298,14 @@ class phpStylist
 						$this->_set_indent( - 1);
 						$in_concat = false;
 					}
-					$this->_append_code($text . $this->_get_crlf($this->config["line_after_break"] && $in_break) . $this->_get_crlf_indent($in_for));
+					$this->_append_code($text . $this->_crlf($this->config["line_after_break"] && $in_break) . $this->_crlf_indent($in_for));
 					while ($if_pending > 0) {
 						$text = $this->config["add_missing_braces"] ? "}" : "";
 						$this->_set_indent( - 1);
 						if ($text != "")
-							$this->_append_code($this->_get_crlf_indent() . $text . $this->_get_crlf_indent());
+							$this->_append_code($this->_crlf_indent() . $text . $this->_crlf_indent());
 						else
-							$this->_append_code($this->_get_crlf_indent());
+							$this->_append_code($this->_crlf_indent());
 						$if_pending--;
 						if ($this->_is_token(array(T_ELSE, T_ELSEIF)))
 							break;
@@ -324,11 +328,11 @@ class phpStylist
 						$arr_parenth["i" . $array_level]++;
 						if ($this->_is_token(array(T_ARRAY), true) && !$this->_is_token(S_CLOSE_PARENTH)) {
 							$this->_set_indent( + 1);
-							$this->_append_code((!$this->config["line_before_array"] ? '' : $this->_get_crlf_indent(false, - 1)) . $text . $this->_get_crlf_indent());
+							$this->_append_code((!$this->config["line_before_array_paren"] ? '' : $this->_crlf_indent(false, - 1)) . $text . $this->_crlf_indent());
 							break;
 						}
 					}
-					$this->_append_code($this->_get_space($this->config["space_outside_parentheses"] || $space_after) . $text . $this->_get_space($this->config["space_inside_parentheses"]));
+					$this->_append_code($this->_space($this->config["space_outside_parentheses"] || $space_after) . $text . $this->_space($this->config["space_inside_parentheses"]));
 					$space_after = false;
 					break;
 
@@ -338,20 +342,20 @@ class phpStylist
 						if ($arr_parenth["i" . $array_level] == 0) {
 							$comma = substr(trim($this->_code), - 1) != "," && $this->config['vertical_array'] ? "," : "";
 							$this->_set_indent( - 1);
-							$this->_append_code($comma . $this->_get_crlf_indent() . $text . $this->_get_crlf_indent());
+							$this->_append_code($comma . $this->_crlf_indent() . $text . $this->_crlf_indent());
 							unset($arr_parenth["i" . $array_level]);
 							$array_level--;
 							break;
 						}
 					}
-					$this->_append_code($this->_get_space($this->config["space_inside_parentheses"]) . $text . $this->_get_space($this->config["space_outside_parentheses"]));
+					$this->_append_code($this->_space($this->config["space_inside_parentheses"]) . $text . $this->_space($this->config["space_outside_parentheses"]));
 					if ($if_level > 0) {
 						$if_parenth["i" . $if_level]--;
 						if ($if_parenth["i" . $if_level] == 0) {
 							if (!$this->_is_token(S_OPEN_CURLY) && !$this->_is_token(S_SEMI_COLON)) {
 								$text = $this->config["add_missing_braces"] ? "{" : "";
 								$this->_set_indent( + 1);
-								$this->_append_code((!$this->config["line_before_curly"] || $text == "" ? ' ' : $this->_get_crlf_indent(false, - 1)) . $text . $this->_get_crlf_indent());
+								$this->_append_code((!$this->config["line_before_curly"] || $text == "" ? ' ' : $this->_crlf_indent(false, - 1)) . $text . $this->_crlf_indent());
 								$if_pending++;
 							}
 							unset($if_parenth["i" . $if_level]);
@@ -362,9 +366,9 @@ class phpStylist
 
 				case S_COMMA:
 					if ($array_level > 0)
-						$this->_append_code($text . $this->_get_crlf_indent($in_for));
+						$this->_append_code($text . $this->_crlf_indent($in_for));
 					else {
-						$this->_append_code($text . $this->_get_space($this->config["space_after_comma"]));
+						$this->_append_code($text . $this->_space($this->config["space_after_comma"]));
 						if ($this->_is_token(S_OPEN_PARENTH))
 							$space_after = $this->config["space_after_comma"];
 					}
@@ -379,9 +383,9 @@ class phpStylist
 							$in_concat = true;
 							$this->_set_indent( + 1);
 						}
-						$this->_append_code($this->_get_space($condition) . $text . $this->_get_crlf_indent());
+						$this->_append_code($this->_space($condition) . $text . $this->_crlf_indent());
 					} else
-						$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+						$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case S_EQUAL:
@@ -399,7 +403,7 @@ class phpStylist
 					$condition = $this->config["space_around_assignment"];
 					if ($this->_is_token(S_OPEN_PARENTH))
 						$space_after = $condition;
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case S_IS_GREATER:
@@ -413,7 +417,7 @@ class phpStylist
 					$condition = $this->config["space_around_comparison"];
 					if ($this->_is_token(S_OPEN_PARENTH))
 						$space_after = $condition;
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case T_BOOLEAN_AND:
@@ -426,12 +430,12 @@ class phpStylist
 					$condition = $this->config["space_around_logical"];
 					if ($this->_is_token(S_OPEN_PARENTH))
 						$space_after = $condition;
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case T_DOUBLE_COLON:
 					$condition = $this->config["space_around_double_colon"];
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case S_COLON:
@@ -439,12 +443,12 @@ class phpStylist
 						$switch_arr["c" . $switch_level]++;
 						if ($this->config["indent_case"])
 							$this->_set_indent( + 1);
-						$this->_append_code($text . $this->_get_crlf_indent());
+						$this->_append_code($text . $this->_crlf_indent());
 					} else {
 						$condition = $this->config["space_around_colon_question"];
 						if ($this->_is_token(S_OPEN_PARENTH))
 							$space_after = $condition;
-						$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+						$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					}
 					if (($in_break || $this->_is_token(S_CLOSE_CURLY)) && $switch_level > 0 && $switch_arr["l" . $switch_level] > 0) {
 						if ($this->config["indent_case"])
@@ -458,14 +462,14 @@ class phpStylist
 					$condition = $this->config["space_around_colon_question"];
 					if ($this->_is_token(S_OPEN_PARENTH))
 						$space_after = $condition;
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case T_DOUBLE_ARROW:
 					$condition = $this->config["space_around_double_arrow"];
 					if ($this->_is_token(S_OPEN_PARENTH))
 						$space_after = $condition;
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case S_DIVIDE:
@@ -476,12 +480,12 @@ class phpStylist
 					$condition = $this->config["space_around_arithmetic"];
 					if ($this->_is_token(S_OPEN_PARENTH))
 						$space_after = $condition;
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case T_OBJECT_OPERATOR:
 					$condition = $this->config["space_around_obj_operator"];
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($condition));
+					$this->_append_code($this->_space($condition) . $text . $this->_space($condition));
 					break;
 
 				case T_FOR:
@@ -492,7 +496,7 @@ class phpStylist
 				case T_SWITCH:
 				case T_WHILE:
 					$space_after = $this->config["space_after_if"];
-					$this->_append_code($text . $this->_get_space($space_after), false);
+					$this->_append_code($text . $this->_space($space_after), false);
 					if ($id == T_SWITCH) {
 						$switch_level++;
 						$switch_arr["s" . $switch_level] = $this->_indent;
@@ -513,21 +517,21 @@ class phpStylist
 				case T_PUBLIC:
 					if (!$in_function) {
 						if ($this->config["line_before_function"]) {
-							$this->_append_code($this->_get_crlf($after || !$this->_is_token(array(T_COMMENT, T_ML_COMMENT, T_DOC_COMMENT), true)) . $this->_get_crlf_indent() . $text . $this->_get_space());
+							$this->_append_code($this->_crlf($after || !$this->_is_token(array(T_COMMENT, T_ML_COMMENT, T_DOC_COMMENT), true)) . $this->_crlf_indent() . $text . $this->_space());
 							$after = false;
 						} else
-							$this->_append_code($text . $this->_get_space(), false);
+							$this->_append_code($text . $this->_space(), false);
 						$in_function = true;
 					} else
-						$this->_append_code($this->_get_space() . $text . $this->_get_space());
+						$this->_append_code($this->_space() . $text . $this->_space());
 					break;
 
 				case T_START_HEREDOC:
-					$this->_append_code($this->_get_space($this->config["space_around_assignment"]) . $text);
+					$this->_append_code($this->_space($this->config["space_around_assignment"]) . $text);
 					break;
 
 				case T_END_HEREDOC:
-					$this->_append_code($this->_get_crlf() . $text . $this->_get_crlf_indent());
+					$this->_append_code($this->_crlf() . $text . $this->_crlf_indent());
 					break;
 
 				case T_COMMENT:
@@ -540,7 +544,7 @@ class phpStylist
 						while (substr($pad, $i, 1) != "\n" && substr($pad, $i, 1) != "\r" && $i >= 0) {
 							$k .= substr($pad, $i--, 1);
 						}
-						$text = preg_replace("/\r?\n$k/", $this->_get_crlf_indent(), $text);
+						$text = preg_replace("/\r?\n$k/", $this->_crlf_indent(), $text);
 					}
 					$after = $id == (T_COMMENT && preg_match("/^\/\//", $text)) ? $this->config["line_after_comment"] : $this->config["line_after_comment_multi"];
 					$before = $id == (T_COMMENT && preg_match("/^\/\//", $text)) ? $this->config["line_before_comment"] : $this->config["line_before_comment_multi"];
@@ -548,9 +552,9 @@ class phpStylist
 						$before = $before && !$this->_is_token_lf(true, $prev);
 					$after = $after && (!$this->_is_token_lf() || !$this->config["keep_redundant_lines"]);
 					if ($before)
-						$this->_append_code($this->_get_crlf(!$this->_is_token(array(T_COMMENT), true)) . $this->_get_crlf_indent() . trim($text) . $this->_get_crlf($after) . $this->_get_crlf_indent());
+						$this->_append_code($this->_crlf(!$this->_is_token(array(T_COMMENT), true)) . $this->_crlf_indent() . trim($text) . $this->_crlf($after) . $this->_crlf_indent());
 					else
-						$this->_append_code(trim($text) . $this->_get_crlf($after) . $this->_get_crlf_indent(), false);
+						$this->_append_code(trim($text) . $this->_crlf($after) . $this->_crlf_indent(), false);
 					break;
 
 				case T_CURLY_OPEN:
@@ -565,7 +569,7 @@ class phpStylist
 				case T_EXTENDS:
 				case T_IMPLEMENTS:
 				case T_INSTANCEOF:
-					$this->_append_code($this->_get_space() . $text . $this->_get_space());
+					$this->_append_code($this->_space() . $text . $this->_space());
 					break;
 
 				case S_DOLLAR:
@@ -581,7 +585,7 @@ class phpStylist
 						$lines = preg_match_all("/\r\n|\r|\n/", $text, $matches);
 						$lines = $lines > 0 ? $lines - 1 : 0;
 						$redundant = $lines > 0 ? str_repeat($this->_new_line, $lines) : "";
-						$current_indent = $this->_get_indent();
+						$current_indent = $this->_indent();
 						if (substr($this->_code, strlen($current_indent) * - 1) == $current_indent && $lines > 0)
 							$redundant .= $current_indent;
 					}
@@ -633,10 +637,10 @@ class phpStylist
 					if ($switch_arr["l" . $switch_level] > 0 && $this->config["indent_case"]) {
 						$switch_arr["c" . $switch_level]--;
 						$this->_set_indent( - 1);
-						$this->_append_code($this->_get_crlf_indent() . $text . $this->_get_space());
+						$this->_append_code($this->_crlf_indent() . $text . $this->_space());
 					} else {
 						$switch_arr["l" . $switch_level]++;
-						$this->_append_code($text . $this->_get_space(), false);
+						$this->_append_code($text . $this->_space(), false);
 					}
 					break;
 
@@ -673,14 +677,14 @@ class phpStylist
 				case T_STATIC:
 				case T_UNSET:
 				case T_VAR:
-					$this->_append_code($text . $this->_get_space(), false);
+					$this->_append_code($text . $this->_space(), false);
 					break;
 
 				case T_ELSEIF:
 					$space_after = $this->config["space_after_if"];
 					$added_braces = $this->_is_token(S_SEMI_COLON, true) && $this->config["add_missing_braces"];
 					$condition = $this->config['else_along_curly'] && ($this->_is_token(S_CLOSE_CURLY, true) || $added_braces);
-					$this->_append_code($this->_get_space($condition) . $text . $this->_get_space($space_after), $condition);
+					$this->_append_code($this->_space($condition) . $text . $this->_space($space_after), $condition);
 					$if_level++;
 					$if_parenth["i" . $if_level] = 0;
 					break;
@@ -688,11 +692,11 @@ class phpStylist
 				case T_ELSE:
 					$added_braces = $this->_is_token(S_SEMI_COLON, true) && $this->config["add_missing_braces"];
 					$condition = $this->config['else_along_curly'] && ($this->_is_token(S_CLOSE_CURLY, true) || $added_braces);
-					$this->_append_code($this->_get_space($condition) . $text, $condition);
+					$this->_append_code($this->_space($condition) . $text, $condition);
 					if (!$this->_is_token(S_OPEN_CURLY) && !$this->_is_token(array(T_IF))) {
 						$text = $this->config["add_missing_braces"] ? "{" : "";
 						$this->_set_indent( + 1);
-						$this->_append_code((!$this->config["line_before_curly"] || $text == "" ? ' ' : $this->_get_crlf_indent(false, - 1)) . $text . $this->_get_crlf_indent());
+						$this->_append_code((!$this->config["line_before_curly"] || $text == "" ? ' ' : $this->_crlf_indent(false, - 1)) . $text . $this->_crlf_indent());
 						$if_pending++;
 					}
 					break;
@@ -705,14 +709,14 @@ class phpStylist
 		return $this->_align_operators();
 	}
 
-	private function _get_token($token)
+	private function _align_operators()
 	{
-		if (is_string($token))
-			return array($token, $token);
+		if ($this->config['align_array_assignment'] || $this->config['align_var_assignment'])
+			return preg_replace_callback("/<\?.*?\?" . ">/s", array($this, "_parse_block"), $this->_code);
 		else
-			return $token;
+			return $this->_code;
 	}
-
+	
 	private function _append_code($code = "", $trim = true)
 	{
 		if ($trim)
@@ -721,7 +725,7 @@ class phpStylist
 			$this->_code .= $code;
 	}
 
-	private function _get_crlf_indent($in_for = false, $increment = 0)
+	private function _crlf_indent($in_for = false, $increment = 0)
 	{
 		if ($in_for) {
 			$this->_for_idx++;
@@ -729,24 +733,32 @@ class phpStylist
 				$this->_for_idx = 0;
 		}
 		if ($this->_for_idx == 0 || !$in_for)
-			return $this->_get_crlf() . $this->_get_indent($increment);
+			return $this->_crlf() . $this->_indent($increment);
 		else
-			return $this->_get_space($this->config["space_inside_for"]);
+			return $this->_space($this->config["space_inside_for"]);
 	}
 
-	private function _get_crlf($true = true)
+	private function _crlf($true = true)
 	{
 		return $true ? $this->_new_line : "";
 	}
 
-	private function _get_space($true = true)
+	private function _indent($increment = 0)
+	{
+		return str_repeat($this->config['indent_char'], ($this->_indent + $increment) * $this->config['indent_size']);
+	}
+
+	private function _space($true = true)
 	{
 		return $true ? " " : "";
 	}
 
-	private function _get_indent($increment = 0)
+	private function _token($token)
 	{
-		return str_repeat($this->config['indent_char'], ($this->_indent + $increment) * $this->config['indent_size']);
+		if (is_string($token))
+			return array($token, $token);
+		else
+			return $token;
 	}
 
 	private function _set_indent($increment)
@@ -764,7 +776,7 @@ class phpStylist
 			while (--$i >= 0 && is_array($this->_tokens[$i]) && $this->_tokens[$i][0] == T_WHITESPACE);
 		else
 			while (++$i < count($this->_tokens) - 1 && is_array($this->_tokens[$i]) && $this->_tokens[$i][0] == T_WHITESPACE);
-		if (is_string($this->_tokens[$i]) && $this->_tokens[$i] == $token)
+		if (isset($this->_tokens[$i]) && is_string($this->_tokens[$i]) && $this->_tokens[$i] == $token)
 			return $idx ? $i : true;
 		elseif (is_array($token) && is_array($this->_tokens[$i])) {
 			if (in_array($this->_tokens[$i][0], $token))
@@ -846,11 +858,4 @@ class phpStylist
 		return $php_code;
 	}
 
-	private function _align_operators()
-	{
-		if ($this->config['align_array_assignment'] || $this->config['align_var_assignment'])
-			return preg_replace_callback("/<\?.*?\?" . ">/s", array($this, "_parse_block"), $this->_code);
-		else
-			return $this->_code;
-	}
 }

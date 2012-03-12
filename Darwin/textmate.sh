@@ -49,7 +49,7 @@ html_error() {
 	html_header "${2:-ERROR}"
 	echo "<pre>"
 	html_encode "$@" |
-		php -r 'echo preg_replace("/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)[\n\r]+/mi", "<a href=\"txmt://open/?url=file://".$_SERVER["TM_FILEPATH"]."&line=$3&column=$4\" style=\"color:#f00\">$2</a>$5", file_get_contents("php://stdin"));'
+		perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?url=file:\/\/$ENV{TM_FILEPATH}\&line=$3\&column=$4\" style=\"color:#f00\">$2<\/a>$5/mi'
 	echo "</pre>"
 	html_footer
 	exit_show_html

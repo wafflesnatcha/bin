@@ -10,6 +10,7 @@ export HISTIGNORE="&:cd:cd :cd ..:..:clear:exit:l:lr:pwd"
 #export LC_CTYPE=en_US.UTF-8
 export LESS='-R --LONG-PROMPT --hilite-unread --tabs=4 --tilde --window=-4 --prompt=M ?f"%f" ?m[%i/%m]. | .?lbLine %lb?L of %L..?PB (%PB\%).?e (END). '
 export LS_COLORS='rs=0:di=00;34:ln=00;35:mh=00:pi=40;33:so=00;32:do=01;35:bd=40;33;01:cd=40;33;01:or=41;30;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=30;43:st=37;44:ex=1;31:';
+export LSCOLORS=exfxcxdxbxegedabagacad
 
 alias cd..='cd ..'
 alias ..='cd ..'
@@ -47,7 +48,10 @@ pss() { [ -z "$@" ] && ps -lA || ( ps -lAww | grep -i "[${1:0:1}]${1:1}"; ) }
 realpath() { readlink -f "$1" 2>/dev/null || type -p greadlink && greadlink -f "$1"; }
 
 if [ -n "$PS1" ]; then
-	export PS1='\[\e]0;\h:\W\007\]\[\e[0;32m\]\h\[\e[m\]:\[\e[33m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
+	case "$TERM" in
+		xterm-color|xterm-256color) export PS1='\[\e[m\]\[\e]0;\h:\W\007\]\[\e[92m\]\h\[\e[37m\]:\[\e[33m\]\W \[\e[0;32m\]\$\[\e[m\] ' ;;
+		*) export PS1='\h:\W \$ ' ;;
+	esac
 	tabs -4 2>/dev/null
 	shopt -s cdspell
 fi
@@ -65,8 +69,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
 	export HISTIGNORE=$HISTIGNORE:gl:l@:fresh:freshe
 	export INPUTRC=~/.inputrc
-	export LSCOLORS=exfxcxdxBxegedabagacad
-		
+
 	alias cpath='/bin/echo -n "$PWD" | pbcopy'
 	alias gl='gls -Ahlp --color=auto'
 	alias l='ls -Abhlp'
@@ -107,8 +110,6 @@ if [ "$HOSTNAME" = "lilpete.local" ]; then
 	export LESSEDIT='mate -l %lm %f'
 	export VISUAL='mate -w'
 
-	_lesspipe=$(type -p lesspipe.sh 2>/dev/null) && export LESSOPEN="|${_lesspipe} %s"; unset _lesspipe
-
 	alias mate='mate -r'
 	alias m='mate'
 
@@ -118,6 +119,8 @@ fi
 if [ "$HOSTNAME" == "box" ]; then
 
 	path_append /usr/sbin /usr/local/sbin /usr/local/lib /sbin
-	[ -n "$PS1" ] && export PS1='\[\e]0;\h:\W\007\]\[\e[0;94m\]\h\[\e[97m\]:\[\e[93m\]\W\[\e[m\] \[\e[32m\]\$\[\e[m\] '
+	
+	# change hostname color in bash prompt
+	[ -n "$PS1" ] && PS1=$(echo -n $PS1 | sed 's/\([0-9]\{2\}\)\(m\\\]\\h\)/94\2/g') && export PS1
 
 fi
