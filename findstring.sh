@@ -24,24 +24,7 @@ opt_binary=
 opt_depth=
 opt_filenames=
 opt_ignore_case=
-opt_path="$PWD"
-
-runFind() {
-	local grepopts="--no-messages --with-filename --line-number --color=auto"
-	local findopts=""
-
-	[[ $opt_binary ]] && grepopts="${grepopts} --binary-files=text" || grepopts="${grepopts} --binary-files=without-match"
-	[[ $opt_filenames ]] && grepopts="${grepopts} -l"
-	[[ $opt_ignore_case ]] && grepopts="${grepopts} -i"
-	[[ $opt_depth ]] && findopts="${findopts} -maxdepth ${opt_depth}"
-
-	find "$opt_path" -print0 -type f \
-		-not -path '*/.Trash/*' \
-		-not -path '*/.Trashes/*' \
-		-not -path '*lost+found/' \
-		$findopts \
-		| xargs -0 -n 100 grep $grepopts "$@"
-}
+opt_path="."
 
 while (($#)); do
 	case $1 in
@@ -61,4 +44,20 @@ done
 
 [[ ! $1 ]] && { usage; exit 0; }
 
-runFind "$@"
+grepopts="--with-filename --line-number --color=auto"
+findopts=""
+
+[[ $opt_binary ]] && grepopts="${grepopts} --binary-files=text" || grepopts="${grepopts} --binary-files=without-match"
+[[ $opt_filenames ]] && grepopts="${grepopts} -l"
+[[ $opt_ignore_case ]] && grepopts="${grepopts} -i"
+[[ $opt_depth ]] && findopts="${findopts} -maxdepth ${opt_depth}"
+
+find "$opt_path" -type f \
+	-not -path '*/.Trash/*' \
+	-not -path '*/.Trashes/*' \
+	-not -path '*lost+found/' \
+	$findopts \
+	-print0 \
+	| xargs -0 -n 100 grep $grepopts "$@" 2>/dev/null
+
+exit 0

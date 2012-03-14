@@ -49,8 +49,10 @@ realpath() { readlink -f "$1" 2>/dev/null || type -p greadlink && greadlink -f "
 
 if [ -n "$PS1" ]; then
 	case "$TERM" in
-		xterm-color|xterm-256color) export PS1='\[\e[m\]\[\e]0;\h:\W\007\]\[\e[92m\]\h\[\e[37m\]:\[\e[33m\]\W \[\e[0;32m\]\$\[\e[m\] ' ;;
-		*) export PS1='\h:\W \$ ' ;;
+		xterm-color|xterm-256color)
+		export PS1='\[\e[m\]\[\e]0;\h:\W\007\]\[\e[92m\]\h\[\e[37m\]:\[\e[33m\]\W \[\e[0;$([[ $? > 0 ]] && echo "31" || echo "32")m\]\$\[\e[m\] ' ;;
+		*)
+		export PS1='\h:\W \$ ' ;;
 	esac
 	tabs -4 2>/dev/null
 	shopt -s cdspell
