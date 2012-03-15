@@ -72,18 +72,20 @@ tooltip() {
 ## nice to display when a command has failed
 tooltip_error() {
 	local input=$(html_encode_pre "$@")
-	local args="--color 170,14,14 --glyph &#x2718; $input"
-	[[ $input ]] && args="styled $args" || args="styled_empty $args"
-	tooltip_html $args
+	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
+		--color 170,14,14 \
+		--glyph "&#x2718;" \
+		"$input"	
 }
 
 ## Green tooltip with a checkmark
 ## nice to display when a command has successfully completed
 tooltip_success() {
 	local input=$(html_encode_pre "$@")
-	local args="--color 57,154,21 --glyph &#x2714; $input"
-	[[ $input ]] && args="styled $args" || args="styled_empty $args"
-	tooltip_html $args
+	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
+		--color 57,154,21 \
+		--glyph "&#x2714;" \
+		"$input"
 }
 
 ## Orange tooltip with an ! on it
@@ -93,7 +95,6 @@ tooltip_warning() {
 		--color 175,82,0 \
 		--glyph "<span\ style=\"color:yellow\">&#x26A0;</span>" \
 		"$input"
-	
 }
 
 ## Shows a custom tooltip using $tooltip_template

@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 . colors.sh 2>/dev/null
-
-c=1
-for i in "$@"; do
-	echo -e "${CLR_B}$c${CLR_R}=$i"
-	c=$(($c + 1))
+for(( i=1; i<=$#; i++)); do
+	printf "${COLOR_YELLOW}$i${COLOR_GREEN}=${COLOR_RESET}${!i}\n"
 done

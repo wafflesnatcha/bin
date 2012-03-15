@@ -3,6 +3,7 @@ path_prepend() { local f; for f in "$@"; do [ -d "$f" ] && PATH=$f:$PATH; done; 
 
 path_append ~/bin ~/bin/"$(uname)" ~/lib
 
+# export CDPATH=.:~/Favorites
 export CLICOLOR=1
 export GREP_OPTIONS="--color=auto"
 export HISTCONTROL=erasedups
@@ -54,7 +55,7 @@ if [ -n "$PS1" ]; then
 		*)
 		export PS1='\h:\W \$ ' ;;
 	esac
-	tabs -4 2>/dev/null
+	# tabs -4 2>/dev/null
 	shopt -s cdspell
 fi
 

@@ -1,61 +1,71 @@
+#!/usr/bin/env bash
+## Bash color output
+# 
+## Usage:
+# . colors.sh
+# echo -e "${COLOR_BLUE}Here is some blue text!${COLOR_RESET}"
+# 
+## Display available colors:
+# for c in ${!COLOR_*}; do echo -e "${!c}$c $COLOR_RESET"; done
+
 if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
 
-    CLR_RESET='\033[m'          # Reset all formatting
+	COLOR_RESET='\033[m'        # Reset all formatting
 
-    # Text Styling
-    CLR_BOLD='\033[1m'          # Bold
-    CLR_DIM='\033[2m'           # Dim
-    CLR_UNDERLINE='\033[4m'     # Underline
-    CLR_BLINK='\033[5m'         # Blinking
-    CLR_INVERT='\033[7m'        # Invert current color scheme
+	# Text Styling
+	COLOR_BOLD='\033[1m'
+	COLOR_DIM='\033[2m'
+	COLOR_UNDERLINE='\033[4m'
+	COLOR_BLINK='\033[5m'
+	COLOR_INVERT='\033[7m'
 
-    # Colors
-    CLR_BLACK='\033[30m'        # Black
-    CLR_RED='\033[31m'          # Red
-    CLR_GREEN='\033[32m'        # Green
-    CLR_YELLOW='\033[33m'       # Yellow
-    CLR_BLUE='\033[34m'         # Blue
-    CLR_MAGENTA='\033[35m'      # Magenta
-    CLR_CYAN='\033[36m'         # Cyan
-    CLR_WHITE='\033[37m'        # White
-    CLR_DEFAULT='\033[39m'      # Default
+	# Colors
+	COLOR_BLACK='\033[30m'
+	COLOR_RED='\033[31m'
+	COLOR_GREEN='\033[32m'
+	COLOR_YELLOW='\033[33m'
+	COLOR_BLUE='\033[34m'
+	COLOR_MAGENTA='\033[35m'
+	COLOR_CYAN='\033[36m'
+	COLOR_WHITE='\033[37m'
+	COLOR_DEFAULT='\033[39m'
 
-    # Bright Colors
-    CLR_bBLACK='\033[90m'       # Black
-    CLR_bRED='\033[91m'         # Red
-    CLR_bGREEN='\033[92m'       # Green
-    CLR_bYELLOW='\033[93m'      # Yellow
-    CLR_bBLUE='\033[94m'        # Blue
-    CLR_bMAGENTA='\033[95m'     # Magenta
-    CLR_bCYAN='\033[96m'        # Cyan
-    CLR_bWHITE='\033[97m'       # White
-    CLR_bDEFAULT='\033[99m'     # Default
+	# Bright Colors
+	COLOR_BLACK_BRIGHT='\033[90m'
+	COLOR_RED_BRIGHT='\033[91m'
+	COLOR_GREEN_BRIGHT='\033[92m'
+	COLOR_YELLOW_BRIGHT='\033[93m'
+	COLOR_BLUE_BRIGHT='\033[94m'
+	COLOR_MAGENTA_BRIGHT='\033[95m'
+	COLOR_CYAN_BRIGHT='\033[96m'
+	COLOR_WHITE_BRIGHT='\033[97m'
+	COLOR_DEFAULT_BRIGHT='\033[99m'
 
-    # Background Colors
-    CLR_BG_BLACK='\033[40m'     # Black
-    CLR_BG_RED='\033[41m'       # Red
-    CLR_BG_GREEN='\033[42m'     # Green
-    CLR_BG_YELLOW='\033[43m'    # Yellow
-    CLR_BG_BLUE='\033[44m'      # Blue
-    CLR_BG_MAGENTA='\033[45m'   # Magenta
-    CLR_BG_CYAN='\033[46m'      # Cyan
-    CLR_BG_WHITE='\033[47m'     # White
-    CLR_BG_DEFAULT='\033[49m'   # Default
+	# Background Colors
+	COLOR_BG_BLACK='\033[40m'
+	COLOR_BG_RED='\033[41m'
+	COLOR_BG_GREEN='\033[42m'
+	COLOR_BG_YELLOW='\033[43m'
+	COLOR_BG_BLUE='\033[44m'
+	COLOR_BG_MAGENTA='\033[45m'
+	COLOR_BG_CYAN='\033[46m'
+	COLOR_BG_WHITE='\033[47m'
+	COLOR_BG_DEFAULT='\033[49m'
 
-    # Bright Background Colors
-    CLR_BG_bBLACK='\033[100m'   # Black
-    CLR_BG_bRED='\033[101m'     # Red
-    CLR_BG_bGREEN='\033[102m'   # Green
-    CLR_BG_bYELLOW='\033[103m'  # Yellow
-    CLR_BG_bBLUE='\033[104m'    # Blue
-    CLR_BG_bMAGENTA='\033[105m' # Magenta
-    CLR_BG_bCYAN='\033[106m'    # Cyan
-    CLR_BG_bWHITE='\033[107m'   # White
-    CLR_BG_bDEFAULT='\033[109m' # Default
+	# Bright Background Colors
+	COLOR_BG_BLACK_BRIGHT='\033[100m'
+	COLOR_BG_RED_BRIGHT='\033[101m'
+	COLOR_BG_GREEN_BRIGHT='\033[102m'
+	COLOR_BG_YELLOW_BRIGHT='\033[103m'
+	COLOR_BG_BLUE_BRIGHT_BRIGHT='\033[104m'
+	COLOR_BG_MAGENTA_BRIGHT='\033[105m'
+	COLOR_BG_CYAN_BRIGHT='\033[106m'
+	COLOR_BG_WHITE_BRIGHT='\033[107m'
+	COLOR_BG_DEFAULT_BRIGHT='\033[109m'
 
-    # Extra Aliases
-    CLR_R=$CLR_RESET
-    CLR_B=$CLR_BOLD
-    CLR_U=$CLR_UNDERLINE
+	# Extra Aliases
+	COLOR_R=$COLOR_RESET
+	COLOR_B=$COLOR_BOLD
+	COLOR_U=$COLOR_UNDERLINE
 
 fi

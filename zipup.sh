@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="zipup.sh"
-SCRIPT_VERSION="1.1.5 (2012-02-29)"
+SCRIPT_VERSION="1.1.6 (2012-03-14)"
 
 usage() {
 cat <<EOF
@@ -33,20 +33,20 @@ uniquefile() {
 	local ext="${file##*.}"
 	local try="$name"
 	while [[ -e "$dir/$try.$ext" ]]; do
-		i=$(($i+1)); try="${name}${2:-.}${i}";
+		((i++)); try="${name}${2:-.}${i}";
 	done
 	echo "$dir/$try.$ext"
 }
 
 processFile() {
-	[[ ! -e "$1" ]] && continue
+	[[ ! -e "$1" ]] && return
 	local file="$(basename "$1")"
-	[[ -d "$1" ]] && file="$(cd "$1"; basename "$PWD")"
-	local out="`uniquefile "${opt_output}/${file}${opt_date}.${opt_format}"`"
+	[[ -d "$1" ]] && file="$(cd "$1" &>/dev/null; basename "$PWD")"
+	local out=$(uniquefile "${opt_output}/${file}${opt_date}.${opt_format}")
 	if [[ ${opt_format} = "7z" ]]; then
-		7z a "$out" "$1" || exit 1
+		7z a "$out" "$1" || FAIL
 	else
-		zip -r "$out" "$1" || exit 1
+		zip -r "$out" "$1" || FAIL
 	fi
 }
 
