@@ -9,7 +9,8 @@
 # for c in ${!COLOR_*}; do echo -e "${!c}$c $COLOR_RESET"; done
 
 if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
-
+	COLOR_SUPPORT=1
+	
 	COLOR_RESET='\033[m'        # Reset all formatting
 
 	# Text Styling

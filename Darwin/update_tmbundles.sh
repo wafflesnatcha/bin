@@ -1,32 +1,41 @@
 #!/usr/bin/env bash
-. colors.sh 2>/dev/null
+source colors.sh 2>/dev/null 
 
 git_update() {
-	local dir="$1"
-	[[ ! -d "$dir/.git" ]] && return 1
-	
- 	echo -en "${CLR_CYAN}$(basename "$dir")${CLR_R}... "
+	for d in "$@"; do
+		[[ ! -d "$d/.git" ]] && continue
 
-	local res=$( cd "$dir" && ( git pull; git submodule update; git gc -q; ) 2>&1 )
-	[[ $? != 0 ]] && { echo -e "${CLR_RED}ERROR${CLR_R}"; return 1; }
-	
-	[[ "$res" != "Already up-to-date." ]] && echo
+		local name=$(basename "$d")
+		echo -en "$name... "
 
-	echo -e "$res"
-}
-
-updateBundles() {
-	[[ ! -d "$1" ]] && return 1
-	for i in "$1"/*; do
-		git_update "$i"
+		res="$({ cd "$d" 1>/dev/null && git pull | tail -n 1; } 2>&1)"
+		res_code=$?
+		if [[ $COLOR_SUPPORT ]]; then
+			if [[ $res_code != 0 ]]; then
+				echo -en "\r${COLOR_RED}$name... ${COLOR_R}"
+			elif [[ "$res" = "Already up-to-date." ]]; then
+				echo -en "\r${COLOR_WHITE}$name... ${COLOR_R}"
+			else
+				echo -en "\r${COLOR_GREEN}$name... ${COLOR_R}"
+			fi
+		fi
+				
+		echo -e "$res"
 	done
 }
 
-updateBundles "/Library/Application Support/TextMate/Bundles"
-updateBundles ~/"Library/Application Support/TextMate/Pristine Copy/Bundles"
+git_update /Library/"Application Support"/TextMate/Bundles/*
+git_update $HOME/Library/"Application Support"/TextMate/"Pristine Copy"/Bundles/*
 
-support_dir=~/"Library/Application Support/TextMate/Pristine Copy/Support"
+support_dir=$HOME/"Library/Application Support/TextMate/Pristine Copy/Support"
+
 if [[ -d "$support_dir" && -d "$support_dir/.svn" ]]; then
-	echo -en "${CLR_GREEN}Updating Support${CLR_R}... "
-	svn update "$support_dir"
-fi	
+	echo -en "updating support..."
+	res=$(svn update "$support_dir")
+	if [[ $? != 0 ]]; then
+		echo -en "\r${COLOR_RED}updating support... ${COLOR_R}"
+	else
+		echo -en "\r${COLOR_GREEN}updating support... ${COLOR_R}"
+	fi
+	echo -e "$res"
+fi
