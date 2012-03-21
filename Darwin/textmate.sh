@@ -49,11 +49,13 @@ html_redirect() {
 ## usage: html_error "text"
 ## usage: cat some/file.txt | html_error
 html_error() {
+	[[ $TM_FILEPATH ]] && url_param="url=file:\/\/${TM_FILEPATH//\//\\/}\&"
+	
 	. "$TM_SUPPORT_PATH/lib/webpreview.sh"
 	html_header "${2:-ERROR}"
 	echo "<pre>"
 	html_encode "$@" |
-		perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?url=file:\/\/$ENV{TM_FILEPATH}\&line=$3\&column=$4\" style=\"color:#f00\">$2<\/a>$5/mi'
+		perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?'${url_param}'line=$3\&column=$4\">$2<\/a>$5/mi'
 	echo "</pre>"
 	html_footer
 	exit_show_html

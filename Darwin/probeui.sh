@@ -45,7 +45,7 @@ tempfile tmpfile
 
 osascript -s s <<EOF > "$tmpfile"
 using terms from application "System Events"
-	property config : {max_depth:${opt_depth}, exclude_classes:{menu bar, menu, menu item}}
+	property config : {max_depth:${opt_depth}, exclude_classes:{}}
 end using terms from
 on run argv
 	set _app to "${opt_app}"
