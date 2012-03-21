@@ -62,6 +62,7 @@ fi
 
 ##
 ## OS specific settings
+##
 
 ## Mac
 if [ "$(uname)" = "Darwin" ]; then
@@ -102,6 +103,7 @@ fi
 
 ##
 ## Host specific settings
+##
 
 ## lilpete.local
 if [ "$HOSTNAME" = "lilpete.local" ]; then
@@ -122,7 +124,7 @@ fi
 if [ "$HOSTNAME" == "box" ]; then
 
 	path_append /usr/sbin /usr/local/sbin /usr/local/lib /sbin
-	
+
 	# change hostname color in bash prompt
 	[ -n "$PS1" ] && PS1=$(echo -n $PS1 | sed 's/\([0-9]\{2\}\)\(m\\\]\\h\)/94\2/g') && export PS1
 
