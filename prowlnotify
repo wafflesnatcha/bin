@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.1.3 (2012-03-07)"
+SCRIPT_VERSION="1.1.4 2012-03-21"
 
 usage() {
-    cat <<EOF
+cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-Adapter to prowl.pl that functions more like growlnotify.
+Interface to prowl.pl that functions more like growlnotify.
 
 Usage: ${0##*/} [options] message
  -a, --application NAME   Name of the application sending the message.

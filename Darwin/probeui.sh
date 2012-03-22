@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="probeui.sh"
-SCRIPT_VERSION="1.0.4 (2012-02-29)"
+SCRIPT_VERSION="1.0.5 2012-03-21"
 
 usage() {
 cat <<EOF
@@ -10,14 +10,17 @@ Profile the user interface of an open application.
 Usage: ${0##*/} [options] APPLICATION_NAME
 
 Options:
- -d, --depth NUM  Maximum depth to recurse
- -p, --pretty     Nicely format the output
- -h, --help       Show this help
+ -d, --depth NUM        Maximum depth to recurse
+ -e, --exclude CLASSES  A comma separated list of UI Element child classes to
+                        ignore (i.e. "menu bar, slider, grow area")
+ -p, --pretty           Output in a more human friendly format
+ -h, --help             Show this help
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 opt_depth=0
+opt_exclude=
 opt_pretty=
 
 tempfile() {
@@ -30,6 +33,7 @@ while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-d|--depth) opt_depth="$2"; shift ;;
+		-e|--exclude) opt_exclude="$2"; shift ;;
 		-p|--pretty) opt_pretty=1 ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
 		*) break ;;
@@ -44,40 +48,49 @@ opt_app="$1"
 tempfile tmpfile
 
 osascript -s s <<EOF > "$tmpfile"
-using terms from application "System Events"
-	property config : {max_depth:${opt_depth}, exclude_classes:{}}
-end using terms from
-on run argv
-	set _app to "${opt_app}"
-	if _app is false then return false
-	tell application "System Events" to get application process _app
-	return my probeUIElement(result, 0)
-end process
+property config : missing value
+tell application "System Events"
+	set config to {max_depth:${opt_depth}, exclude_classes:{${opt_exclude}}}
+	return my probeUIElement(application process "${opt_app}", 0)
+end tell
 on probeUIElement(_element, _depth)
 	set _depth to _depth + 1
 	if (max_depth of config) > 0 and _depth is greater than (max_depth of config) then return null
+	set output to {}
 	tell application "System Events"
-		set r to properties of _element
-		if (count of (actions of _element)) is greater than 0 then
-			set r to r & {|actions|:{}}
+		try
+			set output to output & properties of _element
+		end try
+(*
+		set a to {}
+		try
+			repeat with i in (attributes of _element)
+				copy properties of i to the end of a
+			end repeat
+		end try
+		if (count of a) is greater than 0 then set output to output & {|attributes|:a}
+*)
+		set a to {}
+		try
 			repeat with i in (actions of _element)
-				--copy (name of i & " - " & description of i) to the end of (|actions| of r)
-				copy properties of i to the end of (|actions| of r)
+				copy properties of i to the end of a
 			end repeat
-		end if
-		-- Children
-		set _children to every UI element of _element
-		if (count of _children) is greater than 0 then
-			set r to r & {children:{}}
-			repeat with c in _children
-				get my indexOf(exclude_classes of config, class of c)
-				-- make sure its not an excluded class
-				if result < 0 then copy my probeUIElement(c, _depth) to the end of (children of r)
+		end try
+		if (count of a) is greater than 0 then set output to output & {|actions|:a}
+
+		set a to {}
+		try
+			repeat with i in (UI elements of _element)
+				if my indexOf(exclude_classes of config, class of i) < 0 then
+					set res to my probeUIElement(i, _depth)
+					if res is not null then copy res to the end of a
+				end if
 			end repeat
-		end if
-		return r
+		end try
+		if (count of a) is greater than 0 then set output to output & {children:a}
 	end tell
-	return null
+	if output is {} return null
+	return output
 end probeUIElement
 on indexOf(_l, _e)
 	repeat with i from 1 to length of _l
@@ -105,14 +118,10 @@ def newline
 	"\n" + indent.to_s
 end
 until input.eos?
-	if input.scan(/"/m) then
-		print "\"" + input.scan(/[^"]*"/).to_s
-	elsif input.scan(/\s*:\s*/)
-		print ": "
-	elsif input.scan(/\s*,\s*/m)
-		print "," + newline
-	elsif input.scan(/\s*\{\s*\}\s*/)
-		print "{}"
+	if input.scan(/"/m) then print "\"" + input.scan(/[^"]*"/).to_s
+	elsif input.scan(/\s*:\s*/) then print ": "
+	elsif input.scan(/\s*,\s*/m) then print "," + newline
+	elsif input.scan(/\s*\{\s*\}\s*/) then print "{}"
 	elsif input.scan(/\s*\{\s*/)
 		$indent_level += 1
 		print "{" + newline

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.7.1 (2012-02-29)"
+SCRIPT_VERSION="1.7.2 2012-03-21"
 
 usage() {
-	cat <<EOF
+cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Find and remove Mac resource & junk files.
 
@@ -63,6 +63,6 @@ $( [[ ! ${opt_dryrun} ]] && echo "-delete" )
 -print
 EOF)
 
-for arg in "${@:-$PWD}"; do
-	echo "$args" | xargs find "$arg"
+for path in "${@:-$PWD}"; do
+	echo "$args" | xargs find -sd "$path"
 done
