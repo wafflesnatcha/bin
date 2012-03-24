@@ -23,6 +23,7 @@ EOF
 FAIL() { [ -n "$1" ] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 opt_dryrun=
+opt_depth=
 
 par_dsstore='-or -name .DS_Store'
 par_forks='-or -name ._\*'
@@ -36,7 +37,11 @@ while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-n|--dry-run) opt_dryrun=1 ;;
-		-d|--depth) fopts="$fopts -maxdepth $2"; shift ;;
+		-d*|--depth)
+			[[ $1 =~ ^\-d.+$ ]] && opt_depth="${1#-d}" || { opt_depth=$2; shift; }
+			[[ ! $opt_depth =~ ^[0-9]*$ ]] && FAIL "invalid depth"
+			[[ $opt_depth ]] && fopts="$fopts -maxdepth $opt_depth"
+		;;
 		-s|--dsstore) fparams="$fparams $par_dsstore" ;;
 		-f|--forks) fparams="$fparams $par_forks" ;;
 		-i|--icons) fparams="$fparams $par_icons" ;;

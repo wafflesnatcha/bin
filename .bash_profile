@@ -108,7 +108,7 @@ fi
 ## lilpete.local
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
-	path_append /usr/local/mysql/bin ~/.pear/bin ~/lib/AdobeAIRSDK/bin ~/lib/phantomjs-1.4.1/bin
+	path_append /usr/local/mysql/bin ~/.pear/bin ~/lib/AdobeAIRSDK/bin ~/lib/phantomjs-current/bin
 
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'
