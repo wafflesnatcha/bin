@@ -29,8 +29,7 @@ else {
 # These are the tags that will be formatted. Comment out to taste!
 #
 $tags = "";
-$tags .=
-"<!DOCTYPE|<html|</html|<body|</body|<head|</head|<title|<meta|<style|</style";
+$tags .= "<!DOCTYPE|<html|</html|<body|</body|<head|</head|<title|<meta|<style|</style";
 $tags .= "<script|</script";
 $tags .= "|<isindex|<link";
 $tags .= "|<table|<tr|<th|<td|</tr|</th|</td|</table";
