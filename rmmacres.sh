@@ -38,7 +38,7 @@ while (($#)); do
 		-h|--help) usage; exit 0 ;;
 		-n|--dry-run) opt_dryrun=1 ;;
 		-d*|--depth)
-			[[ $1 =~ ^\-d.+$ ]] && opt_depth="${1#-d}" || { opt_depth=$2; shift; }
+			[[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1#-d}" || { opt_depth=$2; shift; }
 			[[ ! $opt_depth =~ ^[0-9]*$ ]] && FAIL "invalid depth"
 			[[ $opt_depth ]] && fopts="$fopts -maxdepth $opt_depth"
 		;;

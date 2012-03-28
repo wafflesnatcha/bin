@@ -7,7 +7,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Profile the user interface of an open application.
 
-Usage: ${0##*/} [options] APPLICATION_NAME
+Usage: ${0##*/} [options] application
 
 Options:
  -d, --depth NUM        Maximum depth to recurse
