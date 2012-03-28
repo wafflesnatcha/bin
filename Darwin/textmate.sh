@@ -50,7 +50,6 @@ html_redirect() {
 ## usage: cat some/file.txt | html_error
 html_error() {
 	[[ $TM_FILEPATH ]] && url_param="url=file:\/\/${TM_FILEPATH//\//\\/}\&"
-	
 	. "$TM_SUPPORT_PATH/lib/webpreview.sh"
 	html_header "${2:-ERROR}"
 	echo "<pre>"

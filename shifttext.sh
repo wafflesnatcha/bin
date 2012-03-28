@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="shifttext.sh"
-SCRIPT_VERSION="1.0.8 (2012-02-29)"
+SCRIPT_VERSION="1.0.8 2012-02-29"
 
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-Insert text into the beginning of a file.
+Prepend text to the beginning of a file.
 
 Usage: ${0##*/} file
 EOF

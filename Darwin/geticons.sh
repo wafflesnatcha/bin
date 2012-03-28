@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="geticons.sh"
-SCRIPT_VERSION="1.1.2 (2012-03-01)"
+SCRIPT_VERSION="1.1.2 2012-03-01"
 
 usage() {
 cat <<EOF

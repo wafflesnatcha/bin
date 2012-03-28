@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="extract.sh"
-SCRIPT_VERSION="0.1.4 (2012-02-29)"
+SCRIPT_VERSION="0.1.4 2012-02-29"
 
 usage() {
 cat <<EOF

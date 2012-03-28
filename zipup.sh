@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="zipup.sh"
-SCRIPT_VERSION="1.1.6 (2012-03-14)"
+SCRIPT_VERSION="1.1.7 2012-03-28"
 
 usage() {
 cat <<EOF
@@ -55,10 +55,7 @@ while (($#)); do
 		-h|--help) usage; exit 0 ;;
 		-7|--7zip) opt_format="7z" ;;
 		-d|--date) opt_date="${opt_prefix_date}$(date +$opt_date_format)" ;;
-		-o|--output)
-			[[ ! -d "$2" ]] && FAIL "invalid output directory $2"
-			opt_output="$2"; shift
-		;;
+		-o*|--output) [[ $1 =~ ^\-[a-z].+$ ]] && opt_output="${1:2}" || { opt_output=$2; shift; } ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
 		*) break ;;
 	esac
@@ -66,6 +63,9 @@ while (($#)); do
 done
 
 [[ ${#} < 1 ]] && ( usage; exit 0 )
+
+[[ ! -d "$opt_output" ]] && FAIL "output is not a directory [$opt_output]"
+[[ ! -w "$opt_output" ]] && FAIL "output directory is not writable [$opt_output]"
 
 for f in "$@"; do
 	processFile "$f"

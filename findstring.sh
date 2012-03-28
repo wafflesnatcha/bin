@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="findstring.sh"
-SCRIPT_VERSION="1.1.3 (2012-02-29)"
+SCRIPT_VERSION="1.1.3 2012-02-29"
 
 usage() {
 cat <<EOF
@@ -30,10 +30,13 @@ while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-b|--binary) opt_binary=1 ;;
-		-d|--depth) opt_depth="$2"; shift ;;
+		-d*|--depth)
+			[[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1:2}" || { opt_depth=$2; shift; }
+			[[ ! $opt_depth =~ ^[0-9]*$ ]] && FAIL "invalid depth"
+		;;
 		-f|--filenames) opt_filenames=1 ;;
 		-i|--ignore-case) opt_ignore_case=1 ;;
-		-p|--path) opt_path="$2"; shift ;;
+		-p*|--path) [[ $1 =~ ^\-[a-z].+$ ]] && opt_path="${1:2}" || { opt_path=$2; shift; } ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
 		*) break ;;
 	esac

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="benchmark.sh"
-SCRIPT_VERSION="0.3.9 (2012-03-27)"
+SCRIPT_VERSION="0.3.9 2012-03-28"
 
 opt_delay=0
 opt_iterations=2
