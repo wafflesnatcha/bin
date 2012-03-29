@@ -4,9 +4,16 @@ snapshots_url="http://commondatastorage.googleapis.com/chromium-browser-continuo
 snapshots_url_latest="${snapshots_url}/LAST_CHANGE"
 download_dir="$TMPDIR/chromedownload"
 install_dir="/Applications"
+bundle_identifier="org.chromium.Chromium"
 
 echo -n "checking for existing installation... "
-app_path="$(find_app "org.chromium.Chromium")"
+if [[ $(type -p find_app) ]]; then
+	app_path=$(find_app "${bundle_identifier}")
+else
+	app_path=$(osascript -e 'tell application "Finder" to return POSIX path of (path to application id "'${bundle_identifier}'")')
+	osascript -e 'if application id "'${bundle_identifier}'" is running then tell application id "'${bundle_identifier}'" to quit'
+fi
+
 
 if [[ $? = 0 && -e "$app_path" ]]; then 
 	echo "$app_path"

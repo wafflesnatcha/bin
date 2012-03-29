@@ -3,9 +3,15 @@
 snapshots_url="http://nightly.webkit.org"
 download_dir="$TMPDIR/webkit-nightly"
 install_dir="/Applications"
+bundle_identifier="org.webkit.nightly.WebKit"
 
 echo -n "checking for existing installation... "
-app_path="$(find_app "org.webkit.nightly.WebKit")"
+if [[ $(type -p find_app) ]]; then
+	app_path=$(find_app "${bundle_identifier}")
+else
+	app_path=$(osascript -e 'tell application "Finder" to return POSIX path of (path to application id "'${bundle_identifier}'")')
+	osascript -e 'if application id "'${bundle_identifier}'" is running then tell application id "'${bundle_identifier}'" to quit'
+fi
 
 if [[ $? = 0 && -e "$app_path" ]]; then 
 	echo "$app_path"
