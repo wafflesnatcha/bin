@@ -12,7 +12,7 @@ Usage: ${0##*/} command
 Commands:
  dock addspace             Add a spacer to the dock
  dock noglass [on/off]     Toggle the 3d display of the dock
- dock showhidden [on/off]  Hidden applications appear dimmer on the dock
+ dock dimhidden [on/off]  Hidden applications appear dimmer on the dock
  dock restart              Reload the dock
 
  expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
@@ -57,7 +57,7 @@ case $1 in
 
 		noglass) pref_bool "com.apple.dock no-glass" $2 && killall Dock ;;
 
-		showhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock ;;
+		dimhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock ;;
 
 		restart) killall Dock ;;
 
