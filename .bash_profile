@@ -67,7 +67,6 @@ fi
 ## Mac
 if [ "$(uname)" = "Darwin" ]; then
 
-	path_append ~/lib/cocoaDialog.app/Contents/MacOS
 	path_prepend /opt/local/{bin,sbin} # Macports
 
 	# export COPY_EXTENDED_ATTRIBUTES_DISABLE=true
@@ -79,6 +78,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	alias l='ls -Abhlp'
 	alias l@='l -@'
 	alias mac='mac.sh'
+	alias rmxattr='rmxattr.sh'
 	alias sshc='sshcolor.sh'
 
 	fresh() {
@@ -96,7 +96,6 @@ if [ "$(uname)" = "Darwin" ]; then
 	}
 	freshe() { fresh && exit; }
 	lxattr() { local f; for f in "$@"; do xattr "$f" | { while read a; do xattr -vlp "$a" "$f"; done; } done; }
-	rmxattr() { local f; for f in "$@"; do xattr "$f" | { while read a; do echo "$f: $a"; xattr -d "$a" "$f"; done; } done; }
 
 fi
 
@@ -108,7 +107,13 @@ fi
 ## lilpete.local
 if [ "$HOSTNAME" = "lilpete.local" ]; then
 
-	path_append /usr/local/mysql/bin ~/.pear/bin ~/lib/AdobeAIRSDK/bin ~/lib/phantomjs-current/bin
+	path_append \
+		/usr/local/mysql/bin \
+		~/.pear/bin \
+		~/lib/AdobeAIRSDK/bin \
+		~/lib/cocoaDialog.app/Contents/MacOS \
+		~/lib/node_modules/.bin \
+		~/lib/phantomjs-current/bin
 
 	export EDITOR='mate -w'
 	export GIT_EDITOR='mate -wl1'

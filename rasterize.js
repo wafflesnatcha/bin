@@ -9,12 +9,14 @@ if (phantom.args.length < 1) {
 }
 
 address = phantom.args[0];
+if (address.indexOf("://") == -1) address = "http://" + address;
+
 output = phantom.args[1];
-if (!output) output = phantom.args[0].substr(phantom.args[0].indexOf("://") + 3).replace(/\//g, "_").replace(/[^a-z0-9\-_\.]/gi, "") + ".png";
+if (!output) output = address.substr(address.indexOf("://") + 3).replace(/\//g, "_").replace(/[^a-z0-9\-_\.]/gi, "") + ".png";
 
 page.viewportSize = {
-	width: 600,
-	height: 600
+	width: screen.width,
+	height: screen.height
 };
 page.settings.loadPlugins = true;
 
@@ -27,6 +29,6 @@ page.open(address, function(status) {
 			page.render(output);
 			console.log(output);
 			phantom.exit();
-		}, 100);
+		}, 500);
 	}
 });
