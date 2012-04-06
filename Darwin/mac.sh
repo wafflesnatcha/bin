@@ -1,67 +1,65 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="1.0.1 2012-03-28"
-
-usage() {
-cat <<EOF
-$SCRIPT_NAME $SCRIPT_VERSION
-Do stuff with OS X like changing settings and shit.
-
-Usage: ${0##*/} command
-
-Commands:
- dock addspace             Add a spacer to the dock
- dock noglass [on/off]     Toggle the 3d display of the dock
- dock dimhidden [on/off]  Hidden applications appear dimmer on the dock
- dock restart              Reload the dock
-
- expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
-
- finder showfile PATH ...      Make a file visible in Finder
- finder hidefile PATH ...      Hide a file in Finder
- finder restart                Restart Finder
- finder fullpathview [on/off]  Show the full path in the title of Finder windows
- finder showhidden [on/off]    Toggle visibility of hidden files and folders
-
- itunes hideping [on/off]    Hide the "Ping" arrows
- itunes storelinks [on/off]  Toggle display of the store link arrows
-
- wifi available   Show available wifi networks
- wifi disconnect  Disassociate from any network
- wifi info        Print current wireless status
-
- battery       Display battery charge (if applicable)
- flushdns      Flush system DNS cache
- group [NAME]  List a user (or all users) of this machine
- lockdesktop   Lock the desktop
- updatedb      Update locate database
- user [NAME]   List a user (or all users) of this machine
-EOF
-}
+SCRIPT_VERSION="1.0.2 2012-04-03"
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ ! $2 = -1 ]] && exit ${2:-1}; }
 
-while (($#)); do
-	case $1 in
-		-h|--help) usage; exit 0 ;;
-		*) break ;;
+pref_bool() {
+	case "$(echo $2 | tr '[A-Z]' '[a-z]')" in
+		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
+		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
+		*) [[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "on"; return 1; } || { echo "off"; return 2; } ;;
 	esac
-	shift
-done
+	return
+}
 
-case $1 in
+pref_float() {
+	if [[ ! $2 ]]; then
+		v=$(defaults read $1 2>&1) && { echo $v; return 1; } || { echo "not set"; return 2; }
+	elif [[ $2 = "-" ]]; then
+		defaults delete $1
+	else
+		defaults write $1 -float $2
+	fi
+	return
+}
+
+finder_restart() {
+	osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
+	return
+}
+
+run() {
+	case $1 in
 
 	d|dock) shift
 	case $1 in
 
-		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock ;;
+		addspace)
+		defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
+		;;
 
-		noglass) pref_bool "com.apple.dock no-glass" $2 && killall Dock ;;
+		noglass)
+		pref_bool "com.apple.dock no-glass" $2 && killall Dock
+		;;
 
-		dimhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock ;;
+		dimhidden)
+		pref_bool "com.apple.dock showhidden" $2 && killall Dock
+		;;
 
-		restart) killall Dock ;;
+		restart)
+		killall Dock
+		;;
 
-		*) usage; exit 0 ;;
+		*)
+		cat <<-EOF
+		Usage: ${0##*/} dock|d ...
+		 addspace            Add a spacer to the dock
+		 noglass [on/off]    Toggle the 3d display of the dock
+		 dimhidden [on/off]  Hidden applications appear dimmer on the dock
+		 restart             Reload the dock
+		EOF
+		return 1
+		;;
 
 	esac
 	;;
@@ -69,9 +67,17 @@ case $1 in
 	e|expose) shift
 	case $1 in
 
-		anim-duration) pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock ;;
+		anim-duration)
+		pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock
+		;;
 
-		*) usage; exit 0 ;;
+		*)
+		cat <<-EOF
+		Usage: ${0##*/} expose|e ...
+		 anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
+		EOF
+		return 1
+		;;
 
 	esac
 	;;
@@ -80,7 +86,7 @@ case $1 in
 	case $1 in
 
 		showhidden)
-		pref_bool "com.apple.finder AppleShowAllFiles" && finder_restart
+		pref_bool "com.apple.finder AppleShowAllFiles" $2 && finder_restart
 		;;
 
 		fullpathview)
@@ -101,7 +107,17 @@ case $1 in
 		for f in "$@"; do [[ -e "$f" ]] && $cmd "$f" || FAIL "file doesn't exist: $f" -1; done
 		;;
 
-		*) usage; exit 0 ;;
+		*)
+		cat <<-EOF
+		Usage: ${0##*/} finder|f ...
+		 showfile PATH ...      Make a file visible in Finder
+		 hidefile PATH ...      Hide a file in Finder
+		 restart                Restart Finder
+		 fullpathview [on/off]  Show the full path in the title of Finder windows
+		 showhidden [on/off]    Toggle visibility of hidden files and folders
+		EOF
+		return 1
+		;;
 
 	esac
 	;;
@@ -113,71 +129,100 @@ case $1 in
 
 		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2 ;;
 
-		*) usage; exit 0 ;;
+		*)
+		cat <<-EOF
+		Usage: ${0##*/} itunes|i ...
+		  hideping [on/off]    Hide the "Ping" arrows
+		  storelinks [on/off]  Toggle display of the store link arrows
+		EOF
+		return 1
+		;;
 
 	esac
 	;;
 
 	w|wifi) shift
+	local airport_path="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+	[[ ! -e "$airport_path" ]] && return 1
 	case $1 in
 
-		available) /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s ;;
+		available)
+		"$airport_path" -s
+		;;
 
-		disconnect) sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -z ;;
+		disconnect)
+		sudo "$airport_path" -z
+		;;
 
-		info) /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -i ;;
+		info)
+		"$airport_path" -i
+		;;
 
-		*) usage; exit 0 ;;
+		*)
+		cat <<-EOF
+		Usage: ${0##*/} w | wifi ...
+		 available   Show available wifi networks
+		 disconnect  Disassociate from any network
+		 info        Print current wireless status
+		EOF
+		return 1
+		;;
 
 	esac
 	;;
 
-	battery) ioreg -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}' ;;
+	battery)
+	ioreg -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}'
+	;;
 
-	flushdns) dscacheutil -flushcache ;;
+	flushdns)
+	dscacheutil -flushcache
+	;;
 
-	group) dscacheutil -q group $([[ "$2" ]] && echo "-a name $2") ;;
+	group)
+	dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
+	;;
 
-	lockdesktop) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend ;;
+	lockdesktop)
+	/System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend
+	;;
 
-	updatedb) [ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb ;;
+	updatedb)
+	[ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb
+	;;
 
-	user) dscacheutil -q user $([[ "$2" ]] && echo "-a name $2") ;;
+	user)
+	dscacheutil -q user $([[ "$2" ]] && echo "-a name $2")
+	;;
 
-	*) usage; exit 0 ;;
-esac
+	*)
+	[[ $1 ]] && FAIL "unknown command $1" -1
+	cat <<-EOF
+	$SCRIPT_NAME $SCRIPT_VERSION
+	Do stuff with OS X like changing settings and shit.
 
-##
-## Functions
-##
+	$(run dock help)
 
-pref_bool() {
-	case "$(echo $2 | tr '[A-Z]' '[a-z]')" in
-		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
-		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-		*) [[ $(defaults read $1) = 1 ]] && { echo "on"; return 1; } || { echo "off"; return 2; } ;;
+	$(run expose help)
+
+	$(run finder help)
+
+	$(run itunes help)
+
+	$(run wifi help)
+
+	Usage: ${0##*/} ...
+	 battery       Display battery charge (if applicable)
+	 flushdns      Flush system DNS cache
+	 group [NAME]  List a user (or all users) of this machine
+	 lockdesktop   Lock the desktop
+	 updatedb      Update locate database
+	 user [NAME]   List a user (or all users) of this machine
+	EOF
+	exit 0
+	;;
+
 	esac
-	return
 }
 
-pref_float() {
-	if [[ ! $2 ]]; then
-		v=$(defaults read $1 2>&1) && { echo $v; return 1; } || { echo "not set"; return 2; }
-	elif [[ $2 = "-" ]]; then
-		defaults delete $1
-	else
-		defaults write $1 -float $2
-	fi
-	return
-}
-
-finder_restart() {
-	osascript <<'EOF'
-tell application "Finder" to quit
-try
-	tell application "Finder" to reopen
-on error
-	tell application "Finder" to launch
-end try
-EOF
-}
+run "$@"

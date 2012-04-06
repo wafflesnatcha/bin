@@ -27,7 +27,6 @@ page.open(address, function(status) {
 	} else {
 		window.setTimeout(function() {
 			page.render(output);
-			console.log(output);
 			phantom.exit();
 		}, 500);
 	}

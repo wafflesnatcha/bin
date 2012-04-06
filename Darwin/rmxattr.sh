@@ -20,7 +20,7 @@ while (($#)); do
 	case $1 in
         -h|--help) usage; exit 0 ;;
 		-r|--recursive) opt_recursive=1 ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		-*|--*) FAIL "unknown option $1" ;;
         *) break ;;
 	esac
 	shift

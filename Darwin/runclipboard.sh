@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="runclipboard.sh"
-SCRIPT_VERSION="1.0.1 2012-02-29"
+SCRIPT_VERSION="1.0.2 2012-04-02"
 
 usage() {
 cat <<EOF
@@ -36,9 +36,10 @@ while (($#)); do
 		-h|--help) usage; exit 0 ;;
 		-i|--interpreter)
 		opt_interpreter=$(get_interpreter "$2");
-		[ $? -gt 0 ] && FAIL "${opt_interpreter}"
+		[[ ! $? = 0 ]] && FAIL "${opt_interpreter}"
 		shift
 		;;
+		--) break ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
 		*) break ;;
 	esac
@@ -51,21 +52,21 @@ pbpaste > "$tmpfile"
 first_line="$(HEAD -n 1 "$tmpfile")"
 
 if [[ $opt_interpreter ]]; then
-
-	[[ "$first_line" =~ '^#!' ]] && tail -n +2 "$tmpfile" > "$tmpfile"
+	[[ "$first_line" =~ ^#\! ]] && tail -n +2 "$tmpfile" > "$tmpfile"
 	prepend="#!${opt_interpreter}"
-
-elif [[ ! "$first_line" =~ '^#!' ]]; then
-
+elif [[ ! "$first_line" =~ ^#\! ]]; then
 	case "$first_line" in
 		"<?php"*) prepend="#!$(get_interpreter "php")" ;;
-		*) ;;
+		*) prepend="#!/usr/bin/env bash" ;;
 	esac
-
 fi
 
-[[ $prepend ]] && echo -e "${prepend}\n$(cat "$tmpfile")" > "$tmpfile"
+if [[ $prepend ]]; then
+	tempfile tmpfile2
+	echo "${prepend}" > "$tmpfile2"
+	cat "$tmpfile" >> "$tmpfile2"
+	cp "$tmpfile2" "$tmpfile"
+fi
 
 chmod +x "$tmpfile"
-
 "$tmpfile" "$@"
