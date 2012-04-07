@@ -94,7 +94,7 @@ tooltip_warning() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
 		--color 175,82,0 \
-		--glyph "<span\ style=\"color:yellow\">&#x26A0;</span>" \
+		--glyph '<span style="color:yellow">&#x26A0;</span>' \
 		"$input"
 }
 
@@ -104,7 +104,6 @@ tooltip_warning() {
 ## If your custom template has any %words% in it, simply pass them to this
 ## function as long arguments (i.e. tooltip_html --color 12,139,245)
 tooltip_html() {
-	echo "tooltip_html( \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" )"
 	local template="tooltip_template_$1"
 	local replacement=
 	local lookup=
