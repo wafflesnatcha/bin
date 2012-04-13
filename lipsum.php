@@ -30,7 +30,7 @@
 $common = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 $word_list = array(
 	'lipsum' => array('exercitationem','perferendis','perspiciatis','laborum','eveniet','sunt','iure','nam','nobis','eum','cum','officiis','excepturi','odio','consectetur','quasi','aut','quisquam','vel','eligendi','itaque','non','odit','tempore','quaerat','dignissimos','facilis','neque','nihil','expedita','vitae','vero','ipsum','nisi','animi','cumque','pariatur','velit','modi','natus','iusto','eaque','sequi','illo','sed','ex','et','voluptatibus','tempora','veritatis','ratione','assumenda','incidunt','nostrum','placeat','aliquid','fuga','provident','praesentium','rem','necessitatibus','suscipit','adipisci','quidem','possimus','voluptas','debitis','sint','accusantium','unde','sapiente','voluptate','qui','aspernatur','laudantium','soluta','amet','quo','aliquam','saepe','culpa','libero','ipsa','dicta','reiciendis','nesciunt','doloribus','autem','impedit','minima','maiores','repudiandae','ipsam','obcaecati','ullam','enim','totam','delectus','ducimus','quis','voluptates','dolores','molestiae','harum','dolorem','quia','voluptatem','molestias','magni','distinctio','omnis','illum','dolorum','voluptatum','ea','quas','quam','corporis','quae','blanditiis','atque','deserunt','laboriosam','earum','consequuntur','hic','cupiditate','quibusdam','accusamus','ut','rerum','error','minus','eius','ab','ad','nemo','fugit','officia','at','in','id','quos','reprehenderit','numquam','iste','fugiat','sit','inventore','beatae','repellendus','magnam','recusandae','quod','explicabo','doloremque','aperiam','consequatur','asperiores','commodi','optio','dolor','labore','temporibus','repellat','veniam','architecto','est','esse','mollitia','nulla','a','similique','eos','alias','dolore','tenetur','deleniti','porro','facere','maxime','corrupti'),
-	'cosby' => array('bada', 'badum', 'bip', 'bloo', 'bop', 'caw squee', 'derp', 'dip', 'dum', 'hip', 'ka', 'loo', 'meep', 'mim', 'moom', 'na', 'naw', 'nerp', 'nup', 'pa', 'papa', 'spee', 'squoo', 'woobly', 'yee', 'zap', 'zip', 'zoobity', 'zoop', 'zop')
+	'cosby' => array('bada', 'badum', 'bip', 'bloo', 'bop', 'caw', 'derp', 'dip', 'dum', 'hip', 'ka', 'loo', 'meep', 'mim', 'moom', 'na', 'naw', 'nerp', 'nup', 'pa', 'papa', 'spee', 'squee', 'squoo', 'woobly', 'yee', 'zap', 'zip', 'zoobity', 'zoop', 'zop')
 );
 $words = $word_list['lipsum'];
 
@@ -43,7 +43,9 @@ $words = $word_list['lipsum'];
 function sentence()
 {
 	global $words;
+	$sentence = array();
 	for ($section_count = mt_rand(1, 5); $section_count; --$section_count) {
+		$section = array();
 		foreach (array_rand($words, mt_rand(3, 12)) as $key) 
 			$section[] = $words[$key];
 		$sentence[] = implode($section, ' ');
@@ -60,7 +62,8 @@ function sentence()
 function paragraph()
 {
 	global $words;
-	for ($sentence_count = mt_rand(1, 4); $sentence_count; --$sentence_count) 
+	$paragraph = array();
+	for ($sentence_count = mt_rand(2, 4); $sentence_count; --$sentence_count) 
 		$paragraph[] = sentence();
 	
 	return implode($paragraph, ' ');
@@ -134,7 +137,7 @@ if(isset($result['type'])) {
 if (isset($result['common'])) {
 	echo $common."\n";
 } elseif ($result['paragraphs']) {
-	for ($i = 0; $i < count((int) $result['paragraphs']); $i++)
+	for ($i = 0; $i < (int) $result['paragraphs']; $i++)
 		echo paragraph() . "\n";
 } elseif ($result['words']) {
 	echo words((int) $result['words']);
