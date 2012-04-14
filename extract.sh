@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="extract.sh"
-SCRIPT_VERSION="0.1.4 2012-02-29"
+SCRIPT_VERSION="0.2.0 2012-04-13"
 
 usage() {
 cat <<EOF
@@ -25,13 +25,49 @@ done
 for f in "$@"; do
 	[[ ! -f "$f" ]] && continue
 	case "$(echo $f | tr '[A-Z]' '[a-z]')" in
-		*.tar.bz2|*.tbz2) tar -xvpf "$f" ;;
-		*.tar.gz|*.tgz) tar -xvpf "$f" ;;
-		*.7z) 7z x "$f" ;;
-		*.bz2|*.bzip2|*.bz) bunzip2 "$f" ;;
-		*.gz) gzip -d "$f" ;;
-		*.rar) unrar x "$f" ;;
-		*.zip|*.z01) unzip "$f" ;;
+		
+		*.tar.bz2|*.tbz2|*.tbz)
+		tar -xjvpf "$f"
+		;;
+		
+		*.tar.gz|*.tgz)
+		tar -xzvpf "$f"
+		;;
+		
+		*.tar.xz|*.txz)
+		tar -xvpf "$f"
+		;;
+
+		*.7z)
+		bin=$(which 7z 7zr 2>/dev/null | head -n1)
+		[[ ! $bin ]] && FAIL "couldn't find path to 7z or 7zr"
+		"$bin" x "$f"
+		;;
+
+		*.bz2|*.bzip2|*.bz)
+		bzip2 -dkv "$f"
+		;;
+
+		*.gz|*.gzip)
+		gzip -d "$f"
+		;;
+
+		*.rar)
+		unrar x "$f"
+		;;
+
+		*.xar)
+		xar -d "$f"
+		;;
+
+		*.xz)
+		xz -dv "$f"
+		;;
+
+		*.zip|*.z01)
+		unzip "$f"
+		;;
+		
 		*) FAIL "don't know how to handle '$f'" ;;
 	esac
 done
