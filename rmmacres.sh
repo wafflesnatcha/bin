@@ -5,7 +5,7 @@ SCRIPT_VERSION="1.7.2 2012-03-21"
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-Find and remove Mac resource & junk files.
+Find and delete various Mac-related resource & junk files.
 
 Usage: ${0##*/} [options] [path ...]
 

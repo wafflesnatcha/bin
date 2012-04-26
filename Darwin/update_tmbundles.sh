@@ -10,13 +10,13 @@ git_update() {
 
 		res="$({ cd "$d" 1>/dev/null && git pull | tail -n 1; } 2>&1)"
 		res_code=$?
-		if [[ $COLOR_SUPPORT ]]; then
+		if [[ $COLOR_SUPPORTED ]]; then
 			if [[ $res_code != 0 ]]; then
-				echo -en "\r${COLOR_RED}$name... ${COLOR_R}"
+				echo -en "\r${COLOR_RED}$name... ${COLOR_RESET}"
 			elif [[ "$res" = "Already up-to-date." ]]; then
-				echo -en "\r${COLOR_WHITE}$name... ${COLOR_R}"
+				echo -en "\r${COLOR_WHITE}$name... ${COLOR_RESET}"
 			else
-				echo -en "\r${COLOR_GREEN}$name... ${COLOR_R}"
+				echo -en "\r${COLOR_GREEN}$name... ${COLOR_RESET}"
 			fi
 		fi
 				
@@ -33,9 +33,9 @@ if [[ -d "$support_dir" && -d "$support_dir/.svn" ]]; then
 	echo -en "updating support..."
 	res=$(svn update "$support_dir")
 	if [[ $? != 0 ]]; then
-		echo -en "\r${COLOR_RED}updating support... ${COLOR_R}"
+		echo -en "\r${COLOR_RED}updating support... ${COLOR_RESET}"
 	else
-		echo -en "\r${COLOR_GREEN}updating support... ${COLOR_R}"
+		echo -en "\r${COLOR_GREEN}updating support... ${COLOR_RESET}"
 	fi
 	echo -e "$res"
 fi

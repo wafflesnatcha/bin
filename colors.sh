@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 ## Bash color output
-# 
+#
 ## Usage:
 # . colors.sh
 # echo -e "${COLOR_BLUE}Here is some blue text!${COLOR_RESET}"
-# 
+#
 ## Display available colors:
 # for c in ${!COLOR_*}; do echo -e "${!c}$c $COLOR_RESET"; done
 
 if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
-	COLOR_SUPPORT=1
-	
-	COLOR_RESET='\033[m'        # Reset all formatting
+	COLOR_SUPPORTED=1
+
+	COLOR_RESET='\033[m' # Reset all formatting
 
 	# Text Styling
 	COLOR_BOLD='\033[1m'
@@ -65,8 +65,9 @@ if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
 	COLOR_BG_DEFAULT_BRIGHT='\033[109m'
 
 	# Extra Aliases
-	COLOR_R=$COLOR_RESET
-	COLOR_B=$COLOR_BOLD
-	COLOR_U=$COLOR_UNDERLINE
+	RESET=$COLOR_RESET
+	BOLD=$COLOR_BOLD
+	DIM=$COLOR_DIM
+	UNDERLINE=$COLOR_UNDERLINE
 
 fi
