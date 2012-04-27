@@ -38,12 +38,12 @@ run() {
 		defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
 		;;
 
-		noglass)
-		pref_bool "com.apple.dock no-glass" $2 && killall Dock
-		;;
-
 		dimhidden)
 		pref_bool "com.apple.dock showhidden" $2 && killall Dock
+		;;
+		
+		noglass)
+		pref_bool "com.apple.dock no-glass" $2 && killall Dock
 		;;
 
 		restart)
@@ -52,10 +52,10 @@ run() {
 
 		*)
 		cat <<-EOF
-		Usage: ${0##*/} dock|d ...
+		Usage: ${0##*/} dock ...
 		 addspace            Add a spacer to the dock
-		 noglass [on/off]    Toggle the 3d display of the dock
 		 dimhidden [on/off]  Hidden applications appear dimmer on the dock
+		 noglass [on/off]    Toggle the 3d display of the dock
 		 restart             Reload the dock
 		EOF
 		return 1
@@ -73,7 +73,7 @@ run() {
 
 		*)
 		cat <<-EOF
-		Usage: ${0##*/} expose|e ...
+		Usage: ${0##*/} expose ...
 		 anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
 		EOF
 		return 1
@@ -109,7 +109,7 @@ run() {
 
 		*)
 		cat <<-EOF
-		Usage: ${0##*/} finder|f ...
+		Usage: ${0##*/} finder ...
 		 showfile PATH ...      Make a file visible in Finder
 		 hidefile PATH ...      Hide a file in Finder
 		 restart                Restart Finder
@@ -131,7 +131,7 @@ run() {
 
 		*)
 		cat <<-EOF
-		Usage: ${0##*/} itunes|i ...
+		Usage: ${0##*/} itunes ...
 		  hideping [on/off]    Hide the "Ping" arrows
 		  storelinks [on/off]  Toggle display of the store link arrows
 		EOF
@@ -160,7 +160,7 @@ run() {
 
 		*)
 		cat <<-EOF
-		Usage: ${0##*/} w | wifi ...
+		Usage: ${0##*/} wifi ...
 		 available   Show available wifi networks
 		 disconnect  Disassociate from any network
 		 info        Print current wireless status
