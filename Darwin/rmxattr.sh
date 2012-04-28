@@ -7,7 +7,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Remove all extended attributes from a file
 
-Usage: ${0##*/} [options] path ...
+Usage: ${0##*/} [options] PATH ...
 
 Options:
  -r, --recursive  Recursively search directories

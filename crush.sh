@@ -8,7 +8,7 @@ $SCRIPT_NAME $SCRIPT_VERSION
 A quick interface to simplify the processing of images with pngcrush
 and/or jpgcrush.
 
-Usage: ${0##*/} [options] file ...
+Usage: ${0##*/} [options] FILE ...
 
 Options:
  -p, --percentage  Prefix output lines with overall percent completed (useful

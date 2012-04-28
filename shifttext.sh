@@ -7,7 +7,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Prepend text to the beginning of a file.
 
-Usage: ${0##*/} file
+Usage: ${0##*/} FILE
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }

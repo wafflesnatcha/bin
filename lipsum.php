@@ -29,7 +29,7 @@
 
 $common = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 $word_list = array(
-	'lipsum' => array('exercitationem','perferendis','perspiciatis','laborum','eveniet','sunt','iure','nam','nobis','eum','cum','officiis','excepturi','odio','consectetur','quasi','aut','quisquam','vel','eligendi','itaque','non','odit','tempore','quaerat','dignissimos','facilis','neque','nihil','expedita','vitae','vero','ipsum','nisi','animi','cumque','pariatur','velit','modi','natus','iusto','eaque','sequi','illo','sed','ex','et','voluptatibus','tempora','veritatis','ratione','assumenda','incidunt','nostrum','placeat','aliquid','fuga','provident','praesentium','rem','necessitatibus','suscipit','adipisci','quidem','possimus','voluptas','debitis','sint','accusantium','unde','sapiente','voluptate','qui','aspernatur','laudantium','soluta','amet','quo','aliquam','saepe','culpa','libero','ipsa','dicta','reiciendis','nesciunt','doloribus','autem','impedit','minima','maiores','repudiandae','ipsam','obcaecati','ullam','enim','totam','delectus','ducimus','quis','voluptates','dolores','molestiae','harum','dolorem','quia','voluptatem','molestias','magni','distinctio','omnis','illum','dolorum','voluptatum','ea','quas','quam','corporis','quae','blanditiis','atque','deserunt','laboriosam','earum','consequuntur','hic','cupiditate','quibusdam','accusamus','ut','rerum','error','minus','eius','ab','ad','nemo','fugit','officia','at','in','id','quos','reprehenderit','numquam','iste','fugiat','sit','inventore','beatae','repellendus','magnam','recusandae','quod','explicabo','doloremque','aperiam','consequatur','asperiores','commodi','optio','dolor','labore','temporibus','repellat','veniam','architecto','est','esse','mollitia','nulla','a','similique','eos','alias','dolore','tenetur','deleniti','porro','facere','maxime','corrupti'),
+	'lipsum' => array('a','ac','accumsan','ad','adipiscing','aenean','aliquam','aliquet','amet','ante','aptent','arcu','at','auctor','augue','bibendum','blandit','class','commodo','condimentum','congue','consectetur','consequat','conubia','convallis','cras','cubilia','cum','curabitur','curae','cursus','dapibus','diam','dictum','dictumst','dignissim','dis','dolor','donec','dui','duis','egestas','eget','eleifend','elementum','elit','enim','erat','eros','est','et','etiam','eu','euismod','facilisi','facilisis','fames','faucibus','felis','fermentum','feugiat','fringilla','fusce','gravida','habitant','habitasse','hac','hendrerit','himenaeos','iaculis','id','imperdiet','in','inceptos','integer','interdum','ipsum','justo','lacinia','lacus','laoreet','lectus','leo','libero','ligula','litora','lobortis','lorem','luctus','maecenas','magna','magnis','malesuada','massa','mattis','mauris','metus','mi','molestie','mollis','montes','morbi','mus','nam','nascetur','natoque','nec','neque','netus','nibh','nisi','nisl','non','nostra','nulla','nullam','nunc','odio','orci','ornare','parturient','pellentesque','penatibus','per','pharetra','phasellus','placerat','platea','porta','porttitor','posuere','potenti','praesent','pretium','primis','proin','pulvinar','purus','quam','quis','quisque','rhoncus','ridiculus','risus','rutrum','sagittis','sapien','scelerisque','sed','sem','semper','senectus','sit','sociis','sociosqu','sodales','sollicitudin','suscipit','suspendisse','taciti','tellus','tempor','tempus','tincidunt','torquent','tortor','tristique','turpis','ullamcorper','ultrices','ultricies','urna','ut','varius','vehicula','vel','velit','venenatis','vestibulum','vitae','vivamus','viverra','volutpat','vulputate'),
 	'cosby' => array('bada', 'badum', 'bip', 'bloo', 'bop', 'caw', 'derp', 'dip', 'dum', 'hip', 'ka', 'loo', 'meep', 'mim', 'moom', 'na', 'naw', 'nerp', 'nup', 'pa', 'papa', 'spee', 'squee', 'squoo', 'woobly', 'yee', 'zap', 'zip', 'zoobity', 'zoop', 'zop')
 );
 $words = $word_list['lipsum'];
@@ -44,7 +44,7 @@ function sentence()
 {
 	global $words;
 	$sentence = array();
-	for ($section_count = mt_rand(1, 5); $section_count; --$section_count) {
+	for ($section_count = mt_rand(1, 4); $section_count; --$section_count) {
 		$section = array();
 		foreach (array_rand($words, mt_rand(3, 12)) as $key) 
 			$section[] = $words[$key];
@@ -59,11 +59,12 @@ function sentence()
  * Returns a randomly generated paragraph of lorem ipsum text.
  * The paragraph consists of between 1 and 4 sentences, inclusive.
  */
-function paragraph()
+function paragraph($sentences = null)
 {
 	global $words;
 	$paragraph = array();
-	for ($sentence_count = mt_rand(2, 4); $sentence_count; --$sentence_count) 
+	$sentences = ($sentences) ? $sentences : mt_rand(2, 4);
+	for ($i = 0; $i < $sentences; $i++) 
 		$paragraph[] = sentence();
 	
 	return implode($paragraph, ' ');
@@ -72,7 +73,7 @@ function paragraph()
 /**
  * Returns a string of `count` lorem ipsum words separated by a single space.
  */
-function words()
+function words($count)
 {
 	global $words;
 	$output = array();
@@ -83,29 +84,36 @@ function words()
 }
 
 $opts = array(
-	'words' => array(
-		'short' => 'w:',
-		'long' => 'words:',
-		'definition' => '-w, --words=NUM',
-		'description' => 'output NUM lorem ipsum words separated by a single space',
-	),
 	'paragraphs' => array(
 		'short' => 'p:',
 		'long' => 'paragraphs:',
 		'definition' => '-p, --paragraphs=NUM',
-		'description' => 'output list of NUM paragraphs',
+		'description' => 'Output NUM paragraphs of text',
+	),
+	'sentences' => array(
+		'short' => 's:',
+		'long' => 'sentences:',
+		'definition' => '-s, --sentences=NUM',
+		'description' => 'Output NUM sentences of text',
+	),
+	'words' => array(
+		'short' => 'w:',
+		'long' => 'words:',
+		'definition' => '-w, --words=NUM',
+		'description' => 'Output NUM lorem ipsum words separated by a single space',
 	),
 	'common' => array(
 		'short' => 'c',
 		'long' => 'common',
 		'definition' => '-c, --common',
-		'description' => 'show the common first paragraph ("Lorem ipsum dolor sit amet...")',
+		'description' => 'Show the common first paragraph ("Lorem ipsum dolor sit amet...")',
 	),
 	'type' => array(
 		'short' => 't:',
 		'long' => 'type:',
 		'definition' => '-t, --type=WORDLIST',
-		'description' => 'which word list to generate the text from, currently: ' . implode(', ', array_keys($word_list))
+		'description' => 'Word list to generate the text from, currently: ' . implode(', ',
+		array_keys($word_list)),
 	),
 );
 
@@ -128,17 +136,19 @@ foreach ($options as $opt_name => $opt_value) {
 		}
 	}
 }
-if(isset($result['type'])) {
+if (isset($result['type'])) {
 	$type = strtolower($result['type']);
-	if(array_key_exists($type, $word_list))
+	if (array_key_exists($type, $word_list)) 
 		$words = $word_list[$type];
 }
 
 if (isset($result['common'])) {
-	echo $common."\n";
+	echo $common . "\n";
 } elseif ($result['paragraphs']) {
-	for ($i = 0; $i < (int) $result['paragraphs']; $i++)
+	for ($i = 0; $i <(int) $result['paragraphs']; $i++) 
 		echo paragraph() . "\n";
+} elseif ($result['sentences']) {
+	echo paragraph((int) $result['sentences']);
 } elseif ($result['words']) {
 	echo words((int) $result['words']);
 } else {

@@ -7,7 +7,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Recursively find strings in files.
 
-Usage: ${0##*/} [options] text ...
+Usage: ${0##*/} [options] TEXT ...
 
 Options:
  -b, --binary       Include binary files in the search

@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.1.4 2012-03-21"
+SCRIPT_VERSION="1.1.5 2012-04-27"
 
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Interface to prowl.pl that functions more like growlnotify.
 
-Usage: ${0##*/} [options] message
+Usage: ${0##*/} [options] MESSAGE
+
+Options:
  -a, --application NAME   Name of the application sending the message.
  -e, --event NAME         The name of the Event part of the notification. This
                           is generally the action which occurs, such as disk
                           partitioning completed. (default is HOSTNAME)
- -p, --priority PRIORITY  The priority level of the notification. An integer
-                          value ranging [-2, 2] or one of: Very Low, Moderate,
-                          Normal, High, Emergency.
+ -p, --priority PRIORITY  The priority level of the notification. Can be an
+                          integer ranging from -2 to 2, or one of: Very Low,
+                          Moderate, Normal, High, Emergency.
  -u, --url                Defines the message as a url, allowing the client to
                           redirect.
  -h, --help               Show this help

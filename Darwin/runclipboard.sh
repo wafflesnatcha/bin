@@ -9,7 +9,7 @@ Run the contents of the clipboard as a script.
 
 WARNING: This script will run ANYTHING on the clipboard.
 
-Usage: ${0##*/} [options] [argument ...]
+Usage: ${0##*/} [options] [arguments ...]
 
 Options:
  -i, --interpreter UTILITY  Specify an interpreter (bash, ruby, /bin/sh, ...)

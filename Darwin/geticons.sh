@@ -7,7 +7,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Save file icons recursively.
 
-Usage: ${0##*/} [options] [path]
+Usage: ${0##*/} [options] [PATH]
 
 Options:
  -d, --depth NUM    Maximum depth to search subdirectories

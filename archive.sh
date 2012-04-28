@@ -7,7 +7,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Quickly make archives of files and directories.
 
-Usage: ${0##*/} [options] path ...
+Usage: ${0##*/} [options] PATH ...
 
 Options:
      --7z           Output a 7-zip archive (requires 7z or 7zr)
