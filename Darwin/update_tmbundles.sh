@@ -8,7 +8,7 @@ git_update() {
 		local name=$(basename "$d")
 		echo -en "$name... "
 
-		res="$({ cd "$d" 1>/dev/null && git pull | tail -n 1; } 2>&1)"
+		res="$({ cd "$d" 1>/dev/null && git pull; } 2>&1)"
 		res_code=$?
 		if [[ $COLOR_SUPPORTED ]]; then
 			if [[ $res_code != 0 ]]; then
@@ -16,7 +16,7 @@ git_update() {
 			elif [[ "$res" = "Already up-to-date." ]]; then
 				echo -en "\r${COLOR_WHITE}$name... ${COLOR_RESET}"
 			else
-				echo -en "\r${COLOR_GREEN}$name... ${COLOR_RESET}"
+				echo -en "\r${COLOR_GREEN}$name... ${COLOR_RESET}\n"
 			fi
 		fi
 				
