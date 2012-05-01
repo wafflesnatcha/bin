@@ -3,28 +3,33 @@
 ## Misc helper functions
 ##
 
+# Escape a string for use in perl regex
+# Usage: regex_escape STRING
+regex_escape() { echo "$@" | perl -pe 's/(.*)/\Q\1\E/'; }
+
 tempfile() {
-	eval $1=$(mktemp -t "${0##*/}")
-	tempfile_exit="$tempfile_exit rm -f '${!1}';"
-	trap "{ $tempfile_exit }" EXIT
-}
-
-require() {
-	local c=$(type -p "$@")
-	[ -z "$c" ] && { tooltip_error "Required command not found: $@"; return 1; }
-	echo "$c"
-	return 0
-}
-
-function_input() {
-	while read -r data; do
-		echo -e "$data"
+	for var in "$@"; do
+		eval $var="$(mktemp -t "${0##*/}")"
+		tempfile_files="$tempfile_files '${!var}'"
 	done
+	trap "rm -f $tempfile_files" EXIT
 }
 
-go_to() {
-	ruby -e "require ENV['TM_SUPPORT_PATH'] + '/lib/textmate'" -e "TextMate.go_to :line => ARGV[0], :column => ARGV[1]" "$1" "$2"
-}
+# Output the path to COMMAND, if COMMAND is in the current $PATH and executable. Otherwise, shows and error message and returns 1.
+# Usage: require COMMAND
+require() { type -p "$@" || { tooltip_error "Required command not found: $@"; return 1; }; }
+
+# Allows you to accept STDIN to a function call
+function_input() { while read -r data; do echo -e "$data"; done; }
+
+# Open a file in textmate at
+# Usage: textmate_open FILE [LINE, [COLUMN]]
+textmate_open() { open "txmt://open?url=file://$1${2:+&line=$2}${3:+&column=$3}"; }
+
+# Shortcut to textmate_open "${TM_FILEPATH}"
+# Usage: textmate_goto [LINE, [COLUMN]]
+textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
+
 
 ##
 ## HTML functions
@@ -35,7 +40,7 @@ html_encode() {
 		perl -pe '$| = 1; s/^[\s]*$//g; s/[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
 
-## same as html_encode, but also turns newlines into <br>
+# same as html_encode, but also turns newlines into <br>
 html_encode_pre() {
 	{ [ -z "$1" ] && function_input || echo -e "${@}"; } |
 		perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>/g;'
@@ -45,9 +50,9 @@ html_redirect() {
 	exit_show_html "<script type=\"text/javascript\">window.location='${1//\'/\'}';</script>"
 }
 
-## Switch to a nicely formatted HTML error message
-## usage: html_error "text"
-## usage: cat some/file.txt | html_error
+# Switch to a nicely formatted HTML error message
+# Usage: html_error "text"
+# Usage: cat some/file.txt | html_error
 html_error() {
 	[[ $TM_FILEPATH ]] && url_param="url=file:\/\/${TM_FILEPATH//\//\\/}\&"
 	. "$TM_SUPPORT_PATH/lib/webpreview.sh"
@@ -120,7 +125,7 @@ tooltip_html() {
 	
 	replacement=$(echo "${@:-$(function_input)}" | perl -pe 's/(.*)/\Q\1\E/')
 	html=$(echo "$html" | perl -pe "s/%text%/$replacement/g")
-	"${DIALOG}" tooltip --transparent --html "$html"
+	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
 }
 
 ##
