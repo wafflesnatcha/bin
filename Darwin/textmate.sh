@@ -1,8 +1,3 @@
-
-##
-## Misc helper functions
-##
-
 # Escape a string for use in perl regex
 # Usage: regex_escape STRING
 regex_escape() { echo "$@" | perl -pe 's/(.*)/\Q\1\E/'; }
@@ -31,9 +26,9 @@ textmate_open() { open "txmt://open?url=file://$1${2:+&line=$2}${3:+&column=$3}"
 textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
 
 
-##
-## HTML functions
-##
+#
+# HTML functions
+#
 
 html_encode() {
 	{ [ -z "$1" ] && function_input || echo -e "${@}"; } |
@@ -65,17 +60,17 @@ html_error() {
 	exit_show_html
 }
 
-##
-## Tool Tip functions
-##
+#
+# Tool Tip functions
+#
 
-## Standard tooltip
+# Standard tooltip
 tooltip() {
 	tooltip_html default $(html_encode_pre "$@")
 }
 
-## Red tooltip with an X on it
-## nice to display when a command has failed
+# Red tooltip with an X on it
+# nice to display when a command has failed
 tooltip_error() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
@@ -84,8 +79,8 @@ tooltip_error() {
 		"$input"	
 }
 
-## Green tooltip with a checkmark
-## nice to display when a command has successfully completed
+# Green tooltip with a checkmark
+# nice to display when a command has successfully completed
 tooltip_success() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
@@ -94,7 +89,7 @@ tooltip_success() {
 		"$input"
 }
 
-## Orange tooltip with an ! on it
+# Orange tooltip with an ! on it
 tooltip_warning() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
@@ -103,11 +98,11 @@ tooltip_warning() {
 		"$input"
 }
 
-## Shows a custom tooltip using $tooltip_template
-## Usage:
-##   tooltip_html default --color "12,139,245" --someothervar "this is the value"
-## If your custom template has any %words% in it, simply pass them to this
-## function as long arguments (i.e. tooltip_html --color 12,139,245)
+# Shows a custom tooltip using $tooltip_template
+# Usage:
+#   tooltip_html default --color "12,139,245" --someothervar "this is the value"
+# If your custom template has any %words% in it, simply pass them to this
+# function as long arguments (i.e. tooltip_html --color 12,139,245)
 tooltip_html() {
 	local template="tooltip_template_$1"
 	local replacement=
@@ -128,18 +123,18 @@ tooltip_html() {
 	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
 }
 
-##
-## Extra exit functions
-##
+#
+# Extra exit functions
+#
 
 exit_tooltip() { tooltip "$@" && exit_discard; }
 exit_tooltip_error() { tooltip_error "$@" && exit_discard; }
 exit_tooltip_success() { tooltip_success "$@" && exit_discard; }
 exit_tooltip_warning() { tooltip_warning "$@" && exit_discard; }
 
-##
-## Tooltip Templates
-##
+#
+# Tooltip Templates
+#
 
 tooltip_template_default=$(cat <<'EOF'
 <style>
@@ -263,9 +258,9 @@ EOF)
 
 
 
-##
-## Tests
-##
+#
+# Tests
+#
 
 # tooltip "cache.manifest"
 # tooltip_error "Oh no an error!"
