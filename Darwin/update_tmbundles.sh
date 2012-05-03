@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-source colors.sh 2>/dev/null 
+source colors.sh 2>/dev/null
 
 git_update() {
 	for d in "$@"; do
 		[[ ! -d "$d/.git" ]] && continue
-
 		local name=$(basename "$d")
 		echo -en "$name... "
-
 		res="$({ cd "$d" 1>/dev/null && git pull; } 2>&1)"
 		res_code=$?
 		if [[ $COLOR_SUPPORTED ]]; then
@@ -19,7 +17,6 @@ git_update() {
 				echo -en "\r${COLOR_GREEN}$name... ${COLOR_RESET}\n"
 			fi
 		fi
-				
 		echo -e "$res"
 	done
 }

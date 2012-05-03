@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.7.2 2012-03-21"
+SCRIPT_VERSION="1.7.3 2012-05-02"
 
 usage() {
 cat <<EOF
@@ -12,18 +13,15 @@ Usage: ${0##*/} [options] [PATH ...]
 Options:
  -a, --all        Same as -fism
  -f, --forks      Remove resource forks (._*)
- -i, --icons      Remove custom icons (Icon^M)
+ -i, --icons      Remove custom icons (Icon\r)
  -s, --dsstore    Remove Finder settings files (.DS_Store)
  -m, --misc       Remove other miscellaneous files (.localized)
- -d, --depth NUM  Maximum depth to search subdirectories
+ -d, --depth NUM  Maximum depth to search in subdirectories
  -n, --dry-run    Show what would be deleted and exit
  -h, --help       Show this help
 EOF
 }
 FAIL() { [ -n "$1" ] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
-
-opt_dryrun=
-opt_depth=
 
 par_dsstore='-or -name .DS_Store'
 par_forks='-or -name ._\*'
@@ -55,16 +53,15 @@ done
 
 [[ ! $fparams ]] && { usage; exit 0; }
 
-
 args=$(cat <<EOF
-${fopts}
+$fopts
 -not -path '*/.Trash/*'
 -not -path '*/.Trashes/*'
 (
 	-false
-	${fparams}
+	$fparams
 )
-$( [[ ! ${opt_dryrun} ]] && echo "-delete" )
+$( [[ ! $opt_dryrun ]] && echo "-delete" )
 -print
 EOF)
 

@@ -14,8 +14,7 @@ else
 	osascript -e 'if application id "'${bundle_identifier}'" is running then tell application id "'${bundle_identifier}'" to quit'
 fi
 
-
-if [[ $? = 0 && -e "$app_path" ]]; then 
+if [[ $? = 0 && -e "$app_path" ]]; then
 	echo "$app_path"
 	install_dir="$(dirname "$app_path")"
 	echo -n "getting installed revision... "

@@ -16,6 +16,9 @@ fi
 if [[ $? = 0 && -e "$app_path" ]]; then 
 	echo "$app_path"
 	install_dir="$(dirname "$app_path")"
+	echo -n "getting installed revision... "
+	current_version=$(osascript -e "tell application \"System Events\" to tell property list file \"${app_path}/Contents/Info.plist\" to return |CFBundleShortVersionString| of (value of contents as record)")
+	[[ $? > 0 ]] && { echo "?"; current_version=0; } || echo "$current_version"
 else
 	echo "not found"
 fi
@@ -23,7 +26,10 @@ fi
 echo -n "finding latest build... "
 URL="$(curl -qsSL --max-time 10 --connect-timeout 15 ${snapshots_url} | grep dmg | head -1 | perl -pe 's/.*(http.*dmg).*/$1/')"
 FILE="$(basename "$URL")"
-echo $FILE
+latest_version=$(echo "$FILE" | perl -pe 's/.*(r\d{6,})\.dmg.*/$1/')
+echo "$latest_version"
+
+[[ ${current_version:1} -ge ${latest_version:1} ]] && { echo "No update necessary"; exit 0; }
 
 echo "downloading... "
 mkdir -p "$download_dir" && cd "$download_dir"

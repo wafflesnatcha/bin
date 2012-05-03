@@ -113,12 +113,12 @@ tooltip_html() {
 	while (($#)); do
 		[[ ! "$1" =~ ^-- ]] && break
 		lookup="${1:2}"
-		replacement=$(echo "$2" | perl -pe 's/(.*)/\Q\1\E/')
+		replacement=$(regex_escape "$2")
 		html=$(echo "$html" | perl -pe "s/%${lookup}%/${replacement}/g")
 		shift 2
 	done
 	
-	replacement=$(echo "${@:-$(function_input)}" | perl -pe 's/(.*)/\Q\1\E/')
+	replacement=$(regex_escape "${@:-$(function_input)}")
 	html=$(echo "$html" | perl -pe "s/%text%/$replacement/g")
 	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
 }
