@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
 SCRIPT_DESC="Do stuff with OS X like changing settings and shit."
 SCRIPT_VERSION="1.0.3 2012-05-04"

@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
+# runclipboard.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="runclipboard.sh"
-SCRIPT_VERSION="1.0.2 2012-04-02"
+SCRIPT_VERSION="1.0.3 2012-05-08"
 
 usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Run the contents of the clipboard as a script.
-
+$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;5;31m')
 WARNING: This script will run ANYTHING on the clipboard.
-
+$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[m')
 Usage: ${0##*/} [options] [arguments ...]
 
 Options:
@@ -16,9 +17,8 @@ Options:
  -h, --help                 Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-opt_interpreter=
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")
@@ -26,21 +26,18 @@ tempfile() {
 	trap "{ $tempfile_exit }" EXIT
 }
 
-get_interpreter() {
-	echo "$(which "$1")"
-	return 0
-}
+get_interpreter() { which "$1" 2>&1; }
 
 while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-i|--interpreter)
-		opt_interpreter=$(get_interpreter "$2");
-		[[ ! $? = 0 ]] && FAIL "${opt_interpreter}"
+		opt_interpreter=$(get_interpreter "$2" 2>&1)
+		[[ ! $? = 0 ]] && ERROR "bad interpreter" 1
 		shift
 		;;
 		--) break ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift
@@ -56,8 +53,13 @@ if [[ $opt_interpreter ]]; then
 	prepend="#!${opt_interpreter}"
 elif [[ ! "$first_line" =~ ^#\! ]]; then
 	case "$first_line" in
-		"<?php"*) prepend="#!$(get_interpreter "php")" ;;
-		*) prepend="#!/usr/bin/env bash" ;;
+		"<?php"*)
+		prepend="#!$(get_interpreter "php")"
+		[[ ! $? = 0 ]] && prepend=
+		;;
+		*)
+		prepend="#!/usr/bin/env bash"
+		;;
 	esac
 fi
 

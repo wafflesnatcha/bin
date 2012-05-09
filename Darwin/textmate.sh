@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+# textmate.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# Handy functions when running commands in TextMate
+
 # Escape a string for use in perl regex
 # Usage: regex_escape STRING
 regex_escape() { echo "$@" | perl -pe 's/(.*)/\Q\1\E/'; }
@@ -76,7 +80,7 @@ tooltip_error() {
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
 		--color 170,14,14 \
 		--glyph "&#x2718;" \
-		"$input"	
+		"$input"
 }
 
 # Green tooltip with a checkmark
@@ -98,13 +102,13 @@ tooltip_warning() {
 		"$input"
 }
 
-# Shows a custom tooltip using $tooltip_template
+# Shows a custom tooltip using $TM_tooltip_template
 # Usage:
 #   tooltip_html default --color "12,139,245" --someothervar "this is the value"
 # If your custom template has any %words% in it, simply pass them to this
 # function as long arguments (i.e. tooltip_html --color 12,139,245)
 tooltip_html() {
-	local template="tooltip_template_$1"
+	local template="TM_tooltip_template_$1"
 	local replacement=
 	local lookup=
 	local html="$(echo "${!template}")"
@@ -117,7 +121,7 @@ tooltip_html() {
 		html=$(echo "$html" | perl -pe "s/%${lookup}%/${replacement}/g")
 		shift 2
 	done
-	
+
 	replacement=$(regex_escape "${@:-$(function_input)}")
 	html=$(echo "$html" | perl -pe "s/%text%/$replacement/g")
 	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
@@ -136,7 +140,7 @@ exit_tooltip_warning() { tooltip_warning "$@" && exit_discard; }
 # Tooltip Templates
 #
 
-tooltip_template_default=$(cat <<'EOF'
+TM_tooltip_template_default=$(cat <<'EOF'
 <style>
 html, body {
 	background: none;
@@ -168,7 +172,7 @@ pre, code, tt {
 <div class="tooltip">%text%</div>
 EOF)
 
-tooltip_template_styled=$(cat <<'EOF'
+TM_tooltip_template_styled=$(cat <<'EOF'
 <style>
 html, body {
 	background: none;
@@ -223,7 +227,7 @@ pre, code, tt {
 </div>
 EOF)
 
-tooltip_template_styled_empty=$(cat <<'EOF'
+TM_tooltip_template_styled_empty=$(cat <<'EOF'
 <style>
 html, body {
 	background: none;
@@ -251,11 +255,9 @@ body {
 	width: 25px;
 }
 @-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
-
 </style>
 <div class="tooltip">%glyph%</div>
 EOF)
-
 
 
 #

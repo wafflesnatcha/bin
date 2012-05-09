@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# findstring.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="findstring.sh"
 SCRIPT_VERSION="1.1.3 2012-02-29"
 

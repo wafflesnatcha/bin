@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+# shifttext.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="shifttext.sh"
-SCRIPT_VERSION="1.0.8 2012-02-29"
+SCRIPT_VERSION="1.0.9 2012-05-08"
 
 usage() {
 cat <<EOF
@@ -10,7 +11,6 @@ Prepend text to the beginning of a file.
 Usage: ${0##*/} FILE
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")

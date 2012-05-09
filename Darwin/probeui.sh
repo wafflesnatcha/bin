@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+# probeui.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="probeui.sh"
-SCRIPT_VERSION="1.0.5 2012-03-21"
+SCRIPT_VERSION="1.0.6 2012-05-08"
 
 usage() {
 cat <<EOF
@@ -20,8 +21,6 @@ EOF
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
 opt_depth=0
-opt_exclude=
-opt_pretty=
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")
@@ -32,8 +31,12 @@ tempfile() {
 while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
-		-d|--depth) opt_depth="$2"; shift ;;
-		-e|--exclude) opt_exclude="$2"; shift ;;
+		-d*|--depth) [[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1:2}" || { opt_depth=$2; shift; } ;;
+		-e*|--exclude)
+		[[ $1 =~ ^\-[a-z].+$ ]] && opt_exclude="${1:2}" || { opt_exclude=$2; shift; }
+		opt_exclude=$(echo "$opt_exclude" | tr ',' '\n' | xargs -I % echo -n '"'%'",')
+		opt_exclude="${opt_exclude%,}"
+		;;
 		-p|--pretty) opt_pretty=1 ;;
 		-*|--*) FAIL "unknown option ${1}" ;;
 		*) break ;;
@@ -42,9 +45,7 @@ while (($#)); do
 done
 
 [[ ! "$1" ]] && { usage; exit 0; }
-
 opt_app="$1"
-
 tempfile tmpfile
 
 osascript -s s <<EOF > "$tmpfile"
@@ -81,7 +82,7 @@ on probeUIElement(_element, _depth)
 		set a to {}
 		try
 			repeat with i in (UI elements of _element)
-				if my indexOf(exclude_classes of config, class of i) < 0 then
+				if my indexOf(exclude_classes of config, class of i as string) < 0 then
 					set res to my probeUIElement(i, _depth)
 					if res is not null then copy res to the end of a
 				end if
@@ -89,7 +90,7 @@ on probeUIElement(_element, _depth)
 		end try
 		if (count of a) is greater than 0 then set output to output & {children:a}
 	end tell
-	if output is {} return null
+	if output is {} then return null
 	return output
 end probeUIElement
 on indexOf(_l, _e)

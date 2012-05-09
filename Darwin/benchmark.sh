@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# benchmark.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="benchmark.sh"
 SCRIPT_VERSION="0.3.9 2012-03-28"
 

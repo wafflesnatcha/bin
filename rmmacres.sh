@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
+# rmmacres.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.7.3 2012-05-02"
+SCRIPT_VERSION="1.7.4 2012-05-08"
 
 usage() {
 cat <<EOF
@@ -21,7 +21,8 @@ Options:
  -h, --help       Show this help
 EOF
 }
-FAIL() { [ -n "$1" ] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
 
 par_dsstore='-or -name .DS_Store'
 par_forks='-or -name ._\*'
@@ -37,7 +38,7 @@ while (($#)); do
 		-n|--dry-run) opt_dryrun=1 ;;
 		-d*|--depth)
 			[[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1:2}" || { opt_depth=$2; shift; }
-			[[ ! $opt_depth =~ ^[0-9]*$ ]] && FAIL "invalid depth"
+			[[ ! $opt_depth =~ ^[0-9]*$ ]] && ERROR "invalid depth" 1
 			[[ $opt_depth ]] && fopts="$fopts -maxdepth $opt_depth"
 		;;
 		-s|--dsstore) fparams="$fparams $par_dsstore" ;;
@@ -45,7 +46,7 @@ while (($#)); do
 		-i|--icons) fparams="$fparams $par_icons" ;;
 		-m|--misc) fparams="$fparams $par_misc" ;;
 		-a|--all) fparams="$fparams $par_dsstore $par_forks $par_icons $par_misc" ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift

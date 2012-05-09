@@ -84,17 +84,11 @@ $script = (object) array(
 			'description' => 'Show this help',
 		),
 	),
-	'error_handler' =>
-
-	function($errno,
-	$errstr,
-	$errfile,
-	$errline)
-	{
+	'error_handler' => function($errno, $errstr, $errfile, $errline) {
 		$message = basename($errfile) . ": " . trim($errstr);
 		error_log($message);
 		exit($code);
-	},
+	}
 );
 set_error_handler($script->error_handler, E_USER_NOTICE);
 

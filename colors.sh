@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-## Bash color output
+# Bash color output
 #
-## Usage:
-# . colors.sh
-# echo -e "${COLOR_BLUE}Here is some blue text!${COLOR_RESET}"
+# Usage:
+# $ . colors.sh
+# $ echo -e "${COLOR_BLUE}Here is some blue text!${COLOR_RESET}"
 #
-## Display available colors:
-# for c in ${!COLOR_*}; do echo -e "${!c}$c $COLOR_RESET"; done
+# Display available colors:
+# $ for c in ${!COLOR_*}; do echo -e "${!c}$c $COLOR_RESET"; done
 
 if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
 	COLOR_SUPPORTED=1
@@ -20,50 +20,15 @@ if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
 	COLOR_BLINK='\033[5m'
 	COLOR_INVERT='\033[7m'
 
-	# Colors
-	COLOR_BLACK='\033[30m'
-	COLOR_RED='\033[31m'
-	COLOR_GREEN='\033[32m'
-	COLOR_YELLOW='\033[33m'
-	COLOR_BLUE='\033[34m'
-	COLOR_MAGENTA='\033[35m'
-	COLOR_CYAN='\033[36m'
-	COLOR_WHITE='\033[37m'
-	COLOR_DEFAULT='\033[39m'
-
-	# Bright Colors
-	COLOR_BLACK_BRIGHT='\033[90m'
-	COLOR_RED_BRIGHT='\033[91m'
-	COLOR_GREEN_BRIGHT='\033[92m'
-	COLOR_YELLOW_BRIGHT='\033[93m'
-	COLOR_BLUE_BRIGHT='\033[94m'
-	COLOR_MAGENTA_BRIGHT='\033[95m'
-	COLOR_CYAN_BRIGHT='\033[96m'
-	COLOR_WHITE_BRIGHT='\033[97m'
-	COLOR_DEFAULT_BRIGHT='\033[99m'
-
-	# Background Colors
-	COLOR_BG_BLACK='\033[40m'
-	COLOR_BG_RED='\033[41m'
-	COLOR_BG_GREEN='\033[42m'
-	COLOR_BG_YELLOW='\033[43m'
-	COLOR_BG_BLUE='\033[44m'
-	COLOR_BG_MAGENTA='\033[45m'
-	COLOR_BG_CYAN='\033[46m'
-	COLOR_BG_WHITE='\033[47m'
-	COLOR_BG_DEFAULT='\033[49m'
-
-	# Bright Background Colors
-	COLOR_BG_BLACK_BRIGHT='\033[100m'
-	COLOR_BG_RED_BRIGHT='\033[101m'
-	COLOR_BG_GREEN_BRIGHT='\033[102m'
-	COLOR_BG_YELLOW_BRIGHT='\033[103m'
-	COLOR_BG_BLUE_BRIGHT_BRIGHT='\033[104m'
-	COLOR_BG_MAGENTA_BRIGHT='\033[105m'
-	COLOR_BG_CYAN_BRIGHT='\033[106m'
-	COLOR_BG_WHITE_BRIGHT='\033[107m'
-	COLOR_BG_DEFAULT_BRIGHT='\033[109m'
-
+	COLOR_NAMES=(BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE "" DEFAULT)
+	for i in {0..7} 9; do
+		eval COLOR_${COLOR_NAMES[$i]}='\\033[3${i}m'
+		eval COLOR_${COLOR_NAMES[$i]}_BRIGHT='\\033[9${i}m'
+		eval COLOR_BG_${COLOR_NAMES[$i]}='\\033[4${i}m'
+		eval COLOR_BG_${COLOR_NAMES[$i]}_BRIGHT='\\033[10${i}m'
+	done
+	unset COLOR_NAMES
+	
 	# Extra Aliases
 	RESET=$COLOR_RESET
 	BOLD=$COLOR_BOLD

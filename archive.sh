@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# archive.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="archive.sh"
 SCRIPT_VERSION="1.1.8 2012-04-13"
 
