@@ -4,94 +4,97 @@
  * Generate "dummy" text.
  *
  * Based on {@link http://pastebin.com/eA3nsJ83}
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
+ * 
  * @author    Scott Buchanan <buchanan.sc@gmail.com>
  * @copyright 2012 Scott Buchanan
  * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
+ * @version   0.1.3 2012-05-10
  * @link      http://wafflesnatcha.github.com
- * @version   0.1.1 2012-05-04
  */
 
-$script = (object) array(
-	'name' => 'lipsum.php',
-	'version' => '0.1.1 2012-05-04',
-	'description' => 'Generate "dummy" text.',
-	'usage' => basename($_SERVER['argv'][0]) . ' [options]',
-	'options' => array(
-		'paragraphs' => array(
-			'short' => 'p:',
-			'long' => 'paragraphs:',
-			'filter' => FILTER_VALIDATE_INT,
-			'filter_options' => array(
-				'options' => array(
-					'min_range' => 1,
-				),
-			),
-			'usage' => '-p, --paragraphs=NUM',
-			'description' => 'Output NUM paragraphs of text',
-		),
-		'sentences' => array(
-			'short' => 's:',
-			'long' => 'sentences:',
-			'filter' => FILTER_VALIDATE_INT,
-			'filter_options' => array(
-				'options' => array(
-					'min_range' => 1,
-				),
-			),
-			'usage' => '-s, --sentences=NUM',
-			'description' => 'Output NUM sentences of text',
-		),
-		'words' => array(
-			'short' => 'w:',
-			'long' => 'words:',
-			'filter' => FILTER_VALIDATE_INT,
-			'filter_options' => array(
-				'options' => array(
-					'min_range' => 1,
-				),
-			),
-			'usage' => '-w, --words=NUM',
-			'description' => 'Output NUM lorem ipsum words separated by a single space',
-		),
-		'list' => array(
-			'short' => 'l:',
-			'long' => 'list:',
-			'usage' => '-l, --list=WORDLIST',
-			'description' => 'Available words lists: ' . implode(', ',
-			array_keys(Lipsum::$lists)),
-		),
-		'help' => array(
-			'short' => 'h',
-			'long' => 'help',
-			'usage' => '-h, --help',
-			'description' => 'Show this help',
-		),
-	),
-	'error_handler' => function($errno, $errstr, $errfile, $errline) {
-		$message = basename($errfile) . ": " . trim($errstr);
-		error_log($message);
+/**
+ * Command line script utility
+ */
+class CLIScript {
+	
+	function __construct($config)
+	{
+		set_error_handler(array($this, "error_handler"), E_USER_NOTICE);
+		foreach($config as $k => $v) {
+			$this->$k = $v;
+		}
+	}
+
+	function error_handler($errno, $errstr, $errfile, $errline)
+	{
+		error_log(basename($errfile) . ": " . trim($errstr));
 		exit($code);
 	}
-);
-set_error_handler($script->error_handler, E_USER_NOTICE);
 
+	function usage()
+	{
+		echo $this->name . " " . $this->version . "\n" . ($this->description ? $this->description . "\n" : "");
+		if ($this->usage)
+			echo "\nUsage: " . $this->usage . "\n";
+		if (!$this->options)
+			return;
+		$lines = array();
+		$longest = 0;
+		foreach ($this->options as $def_name => $def_array) {
+			$lines[] = array(
+				$def_array['usage'],
+				$def_array['description'],
+			);
+			if (strlen($def_array['usage']) > $longest)
+				$longest = strlen($def_array['usage']);
+		}
+		$longest = ($longest > 0) ? $longest + 2 : 0;
+		echo "\nOptions:\n";
+		foreach ($lines as $line) {
+			printf(" %-{$longest}s%s\n", $line[0], wordwrap($line[1], 79 - $longest, "\n" . str_repeat(" ", $longest + 1)));
+		}
+	}
+
+	function parseArgs()
+	{
+		$defs = $this->options;
+		$short_opts = "";
+		$long_opts = array();
+
+		foreach ($defs as $k => $v) {
+			if (isset($v['short']))
+				$short_opts .= $v['short'];
+			if (isset($v['long']))
+				$long_opts[] = $v['long'];
+		}
+
+		$options = getopt($short_opts, $long_opts);
+		$args = array();
+		foreach ($options as $opt_name => $opt_value) {
+			foreach ($defs as $def_name => $def_array) {
+				if ($opt_name == rtrim($def_array['short'], ':') || $opt_name == rtrim($def_array['long'], ':')) {
+					if ($def_array['filter'] && !$args[$def_name] = filter_var($opt_value, $def_array['filter'], $def_array['filter_options']))
+						trigger_error("invalid value for " . $def_name . " '$opt_value' ");
+					else
+						$args[$def_name] = $opt_value;
+					continue 2;
+				}
+			}
+		}
+
+		// Show usage
+		if (isset($args['help'])) {
+			$this->usage();
+			exit;
+		}
+
+		return $args;
+	}
+}
+
+/**
+ * Lipsum generator
+ */
 abstract class Lipsum
 {
 	static $common = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
@@ -176,72 +179,64 @@ abstract class Lipsum
 	}
 }
 
-function usage($s)
-{
-	echo $s->name . " " . $s->version . "\n" . ($s->description ? $s->description . "\n" : "");
-	if ($s->usage)
-		echo "\nUsage: " . $s->usage . "\n";
-	if ($s->options) {
-		echo "\nOptions:\n";
-		$lines = array();
-		$longest = 0;
-		foreach ($s->options as $def_name => $def_array) {
-			$lines[] = array(
-				$def_array['usage'],
-				$def_array['description'],
-			);
-			if (strlen($def_array['usage']) > $longest)
-				$longest = strlen($def_array['usage']);
-		}
-		$longest = ($longest > 0) ? $longest + 2 : 0;
-		foreach ($lines as $line) {
-			$l2 = 79 - $longest;
-			$a = explode("\n", wordwrap($line[1], $l2));
-			printf(" %-{$longest}s%s\n", $line[0], array_shift($a));
-			foreach ($a as $l) {
-				printf(" %{$longest}s%s\n", "", array_shift($a));
-			}
-		}
-	}
-}
+$script = new CLIScript(array(
+	'name' => 'lipsum.php',
+	'description' => 'Generate "dummy" text.',
+	'usage' => basename($_SERVER['argv'][0]) . ' [options]',
+	'version' => preg_filter('/.*?\/\*\*.*?[\n\r]+\s*\*\s*@version\s*([^\n\r]+).*/is', '$1', file_get_contents($_SERVER['PHP_SELF'])),
+	'options' => array(
+		'paragraphs' => array(
+			'short' => 'p:',
+			'long' => 'paragraphs:',
+			'filter' => FILTER_VALIDATE_INT,
+			'filter_options' => array(
+				'options' => array(
+					'min_range' => 1,
+				),
+			),
+			'usage' => '-p, --paragraphs NUM',
+			'description' => 'Output NUM paragraphs of text',
+		),
+		'sentences' => array(
+			'short' => 's:',
+			'long' => 'sentences:',
+			'filter' => FILTER_VALIDATE_INT,
+			'filter_options' => array(
+				'options' => array(
+					'min_range' => 1,
+				),
+			),
+			'usage' => '-s, --sentences NUM',
+			'description' => 'Output NUM sentences of text',
+		),
+		'words' => array(
+			'short' => 'w:',
+			'long' => 'words:',
+			'filter' => FILTER_VALIDATE_INT,
+			'filter_options' => array(
+				'options' => array(
+					'min_range' => 1,
+				),
+			),
+			'usage' => '-w, --words NUM',
+			'description' => 'Output NUM words separated by a single space Consequat per sociis tincidunt torquent vitae, luctus netus venenatis. Congue diam eros etiam facilisis fermentum non tortor ultrices urna ut venenatis, aptent libero praesent rhoncus sit ultricies urna.',
+		),
+		'list' => array(
+			'short' => 'l:',
+			'long' => 'list:',
+			'usage' => '-l, --list WORDLIST',
+			'description' => 'Available words lists: ' . implode(', ', array_keys(Lipsum::$lists)),
+		),
+		'help' => array(
+			'short' => 'h',
+			'long' => 'help',
+			'usage' => '-h, --help',
+			'description' => 'Show this help',
+		),
+	)
+));
 
-function parseOptions($s)
-{
-	$defs = $s->options;
-	$short_opts = "";
-	$long_opts = array();
-
-	foreach ($defs as $k => $v) {
-		if (isset($v['short']))
-			$short_opts .= $v['short'];
-		if (isset($v['long']))
-			$long_opts[] = $v['long'];
-	}
-
-	$options = getopt($short_opts, $long_opts);
-	$args = array();
-	foreach ($options as $opt_name => $opt_value) {
-		foreach ($defs as $def_name => $def_array) {
-			if ($opt_name == rtrim($def_array['short'], ':') || $opt_name == rtrim($def_array['long'], ':')) {
-				if ($def_array['filter'] && !$args[$def_name] = filter_var($opt_value, $def_array['filter'], $def_array['filter_options']))
-					trigger_error("invalid value for option '$opt_name'");
-				else
-					$args[$def_name] = $opt_value;
-				continue 2;
-			}
-		}
-	}
-
-	// Show usage
-	if (isset($args['help'])) {
-		usage($s);
-		exit;
-	}
-
-	return $args;
-}
-
-$args = parseOptions($script);
+$args = $script->parseArgs();
 if (isset($args['list'])) {
 	if (!Lipsum::setList($args['list']))
 		trigger_error('invalid word list');
