@@ -2,7 +2,7 @@
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
 SCRIPT_DESC="Do stuff with OS X like changing settings and shit."
-SCRIPT_VERSION="1.0.3 2012-05-04"
+SCRIPT_VERSION="1.0.4 2012-05-11"
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
 
@@ -22,15 +22,37 @@ pref_float() {
 }
 
 mac() {
+	
+	# Commands that accept subcommands (and their shorthand)
+	COMMANDS=(
+		"dock" "d"
+		"expose" "e"
+		"finder" "f"
+		"itunes" "i"
+		"wifi" "w"
+	)
+
+	# Create some variables for the first 2 current arguments:
+	#  $Arg1, $Arg2 = raw input of $1, $2
+	#  $lArg1, $lArg2 = actual (long) command as defined in $COMMANDS, otherwise just lowercase of raw
 	for (( i = 0 ; i <= ${#@} ; i++ )); do
-		eval local ARG${i}=${!i}
-		eval local lARG${i}="$(echo ${!i} | tr '[:upper:]' '[:lower:]')"
+		eval Arg${i}=${!i}
+		for (( x = 0 ; x < ${#COMMANDS[@]} ; x+=2 )); do
+			if [[ ${!i} = ${COMMANDS[$x]} || ${!i} = ${COMMANDS[$x+1]} ]]; then
+				eval lArg${i}="${COMMANDS[$x]}"
+				continue 2
+			fi
+		done
+		eval local lArg${i}="$(echo ${!i} | tr '[:upper:]' '[:lower:]')"	
 	done
 
-	case $lARG1 in
+	unknown_command() { [[ $Arg2 ]] && ERROR "unknown command '$Arg1 $Arg2'"; mac help ${1:-$lArg1}; return 1; }
+	
+
+	case $lArg1 in
 
 	dock|d) shift
-	case $lARG2 in
+	case $lArg2 in
 
 		--usage) cat <<-EOF
 		addspace            Add a spacer to the dock
@@ -52,14 +74,14 @@ mac() {
 		restart) killall Dock
 		;;
 
-		*) [[ $1 ]] && ERROR "unknown command $ARG1 $ARG2"; mac help $ARG1; return 1
+		*) unknown_command; return
 		;;
 
 	esac
 	;;
 
 	expose|e) shift
-	case $lARG2 in
+	case $lArg2 in
 
 		--usage) cat <<-EOF
 		anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
@@ -69,14 +91,14 @@ mac() {
 		anim-duration) pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock
 		;;
 
-		*) [[ $1 ]] && ERROR "unknown command $ARG1 $ARG2"; mac help $ARG1; return 1
+		*) unknown_command; return
 		;;
 
 	esac
 	;;
 
 	finder|f) shift
-	case $lARG2 in
+	case $lArg2 in
 
 		--usage) cat <<-EOF
 		showfile PATH ...      Make a file visible in Finder
@@ -118,14 +140,14 @@ mac() {
 		done
 		;;
 
-		*) [[ $1 ]] && ERROR "unknown command $ARG1 $ARG2"; mac help $ARG1; return 1
+		*) unknown_command; return
 		;;
 
 	esac
 	;;
 
 	itunes|i) shift
-	case $lARG2 in
+	case $lArg2 in
 
 		--usage) cat <<-EOF
 		hideping [on/off]    Hide the "Ping" arrows
@@ -139,7 +161,7 @@ mac() {
 		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2
 		;;
 
-		*) [[ $1 ]] && ERROR "unknown command $ARG1 $ARG2"; mac help $ARG1; return 1
+		*) unknown_command; return
 		;;
 
 	esac
@@ -147,9 +169,9 @@ mac() {
 
 	wifi|w) shift
 	local airport_path="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-	[[ ! -e "$airport_path" ]] && return 1
+	[[ ! -e "$airport_path" ]] && ERROR "\`airport\` not found in '$(dirname "$airport_path")'" 1
 	
-	case $lARG2 in
+	case $lArg2 in
 
 		--usage) cat <<-EOF
 		available   Show available wifi networks
@@ -167,7 +189,7 @@ mac() {
 		info) "$airport_path" -I
 		;;
 
-		*) [[ $1 ]] && ERROR "unknown command $ARG1 $ARG2"; mac help $ARG1; return 1
+		*) unknown_command; return
 		;;
 
 	esac
@@ -191,37 +213,27 @@ mac() {
 	user) dscacheutil -q user $([[ "$2" ]] && echo "-a name $2")
 	;;
 
-	help|h)
-	[[ ! $2 ]] && echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESC\n"
-	echo -e "Usage: ${0##*/} ${2:-<command>}${2:+ <action>}\n"
-	if [[ $2 ]]; then
-		echo "Actions:"
-		mac $2 --usage 2>/dev/null | sed 's/^/ /'
-	else
-		echo "Commands:"
-		cat <<-EOF | sed 's/^/ /'
-		$(mac dock --usage | sed 's/^/dock /')
-		
-		$(mac expose --usage | sed 's/^/expose /')
-		
-		$(mac finder --usage | sed 's/^/finder /')
-		
-		$(mac itunes --usage | sed 's/^/itunes /')
-		
-		$(mac wifi --usage | sed 's/^/wifi /')
-		
-		battery       Display battery charge (if applicable)
-		flushdns      Flush system DNS cache
-		group [NAME]  List a user (or all users) of this machine
-		help          Show this help
-		lockdesktop   Lock the desktop
-		updatedb      Update locate database
-		user [NAME]   List a user (or all users) of this machine
-		EOF
-	fi
+	help|h|--help|-h)
+	[[ ! $lArg2 ]] && echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESC\n"
+	echo -e "Usage: ${0##*/} ${lArg2:-<command>}${lArg2:+ <command>}\n\nCommands:"
+	[[ $lArg2 ]] && { mac $lArg2 --usage 2>/dev/null | sed 's/^/ /'; return; }
+
+	for (( i = 0 ; i < ${#COMMANDS[@]} ; i+=2 )); do
+		mac ${COMMANDS[$i]} --usage | sed "s/^/ ${COMMANDS[$i]} /"
+		echo
+	done
+	cat <<-EOF | sed 's/^/ /'
+	battery         Display battery charge (if applicable)
+	flushdns        Flush system DNS cache
+	group [NAME]    List a user (or all users) of this machine
+	help [command]  Show this help
+	lockdesktop     Lock the desktop
+	updatedb        Update locate database
+	user [NAME]     List a user (or all users) of this machine
+	EOF
 	;;
 
-	*) [[ $1 ]] && ERROR "unknown command $ARG1"; mac help; return 1
+	*) [[ $Arg1 ]] && ERROR "unknown command $Arg1"; mac help; return 1
 	;;
 
 	esac
