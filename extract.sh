@@ -8,7 +8,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Automatically extract compressed files of various types.
 
-Usage: ${0##*/} FILE ...
+Usage: ${0##*/} FILE...
 EOF
 }
 FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }

@@ -8,7 +8,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Find and delete various Mac-related resource & junk files.
 
-Usage: ${0##*/} [options] [PATH ...]
+Usage: ${0##*/} [OPTION]... [PATH]...
 
 Options:
  -a, --all        Same as -fism

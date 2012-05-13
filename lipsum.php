@@ -182,7 +182,7 @@ abstract class Lipsum
 $script = new CLIScript(array(
 	'name' => 'lipsum.php',
 	'description' => 'Generate "dummy" text.',
-	'usage' => basename($_SERVER['argv'][0]) . ' [options]',
+	'usage' => basename($_SERVER['argv'][0]) . ' [OPTION]...',
 	'version' => preg_filter('/.*?\/\*\*.*?[\n\r]+\s*\*\s*@version\s*([^\n\r]+).*/is', '$1', file_get_contents($_SERVER['PHP_SELF'])),
 	'options' => array(
 		'paragraphs' => array(

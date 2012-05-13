@@ -10,7 +10,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Save file icons recursively.
 
-Usage: ${0##*/} [options] [PATH]
+Usage: ${0##*/} [OPTION]... [PATH]
 
 Options:
  -e, --extension FILEEXT  Only extract icons from files with this extension

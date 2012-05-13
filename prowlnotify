@@ -8,7 +8,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Interface to prowl.pl that functions more like growlnotify.
 
-Usage: ${0##*/} [options] MESSAGE
+Usage: ${0##*/} [OPTION]... MESSAGE
 
 Options:
  -a, --application NAME   Name of the application sending the message.

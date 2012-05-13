@@ -7,10 +7,10 @@ usage() {
 cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Run the contents of the clipboard as a script.
-$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;5;31m')
-WARNING: This script will run ANYTHING on the clipboard.
+$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;31m\033[7m')
+WARNING: This script will run ANYTHING on the clipboard!
 $([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[m')
-Usage: ${0##*/} [options] [arguments ...]
+Usage: ${0##*/} [OPTION]... [-- [ARGUMENT]...]
 
 Options:
  -i, --interpreter UTILITY  Specify an interpreter (bash, ruby, /bin/sh, ...)

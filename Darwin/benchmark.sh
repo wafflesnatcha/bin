@@ -11,7 +11,7 @@ cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Benchmark a shell script.
 
-Usage: ${0##*/} [options] [COMMAND]
+Usage: ${0##*/} [OPTION]... [COMMAND]
 
 Options:
  -d, --delay SECONDS    Seconds to wait in between executions (${opt_delay})

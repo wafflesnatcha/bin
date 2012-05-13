@@ -1,0 +1,5 @@
+alias cpath='/bin/echo -n "$PWD" | pbcopy'
+alias gl='gls -Ahlp --color=auto'
+alias l='ls -Abhlp'
+alias l@='l -@'
+alias mac='mac.sh'
