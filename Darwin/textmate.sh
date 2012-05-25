@@ -19,7 +19,7 @@ tempfile() {
 require() { type -p "$@" || { tooltip_error "Required command not found: $@"; return 1; }; }
 
 # Allows you to accept STDIN to a function call
-function_input() { while read -r data; do echo -e "$data"; done; }
+function_stdin() { local oldIFS=$IFS; IFS="$(printf "\n")"; local line; while read -r line; do echo -e "$line"; done; IFS=$oldIFS; }
 
 # Open a file in textmate at
 # Usage: textmate_open FILE [LINE, [COLUMN]]
@@ -34,14 +34,17 @@ textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
 # HTML functions
 #
 
+# HTML encode text (specifically: <, >, &) and remove blank lines
+# Usage: html_encode "<some text> you want to encode & stuff"
+# Usage: cat "/some/file.html" | html_encode
 html_encode() {
-	{ [ -z "$1" ] && function_input || echo -e "${@}"; } |
+	{ [ -z "$1" ] && function_stdin || echo -e "${@}"; } |
 		perl -pe '$| = 1; s/^[\s]*$//g; s/[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
 
 # same as html_encode, but also turns newlines into <br>
 html_encode_pre() {
-	{ [ -z "$1" ] && function_input || echo -e "${@}"; } |
+	{ [ -z "$1" ] && function_stdin || echo -e "${@}"; } |
 		perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>/g;'
 }
 
@@ -122,7 +125,7 @@ tooltip_html() {
 		shift 2
 	done
 
-	replacement=$(regex_escape "${@:-$(function_input)}")
+	replacement=$(regex_escape "${@:-$(function_stdin)}")
 	html=$(echo "$html" | perl -pe "s/%text%/$replacement/g")
 	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
 }
