@@ -2,9 +2,14 @@
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
 SCRIPT_DESC="Do stuff with OS X like changing settings and shit."
-SCRIPT_VERSION="1.0.5 2012-05-13"
+SCRIPT_VERSION="1.0.6 2012-05-24"
 
-ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
+
+pref() {
+	[[ $2 ]] && { defaults write $1 "$2"; return; }
+	v=$(defaults read $1 2>&1) && { echo "$v"; return 1; } || { echo "not set" 1>&2; return 2; }
+}
 
 pref_bool() {
 	case "$(echo $2 | tr '[:upper:]' '[:lower:]')" in
@@ -21,6 +26,7 @@ pref_float() {
 	fi
 }
 
+
 mac() {
 	local ARGS="$@"
 	unknown_command() { [[ -n $1 ]] && ERROR "unknown command '$ARGS'" 1; mac help; return 1; }
@@ -30,8 +36,7 @@ mac() {
 
 	case $arg1 in
 
-	dock|d) shift
-	case $arg2 in
+	dock|d) shift; case $arg2 in
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
 		;;
@@ -51,8 +56,7 @@ mac() {
 	esac
 	;;
 
-	expose|e) shift
-	case $arg2 in
+	expose|e) shift; case $arg2 in
 
 		anim-duration) pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock
 		;;
@@ -63,8 +67,7 @@ mac() {
 	esac
 	;;
 
-	finder|f) shift
-	case $arg2 in
+	finder|f) shift; case $arg2 in
 
 		showhidden) pref_bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
 		;;
@@ -91,14 +94,16 @@ mac() {
 		done
 		;;
 
+		screenshots) pref "com.apple.screencapture location" $2 && killall SystemUIServer
+		;;
+		
 		*) unknown_command "$1"; return
 		;;
 
 	esac
 	;;
 
-	itunes|i) shift
-	case $arg2 in
+	itunes|i) shift; case $arg2 in
 
 		hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2
 		;;
@@ -115,7 +120,6 @@ mac() {
 	wifi|w) shift
 	local airport_path="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
 	[[ ! -e "$airport_path" ]] && ERROR "\`airport\` not found in '$(dirname "$airport_path")'" 1
-
 	case $arg2 in
 
 		available) "$airport_path" -s
@@ -148,7 +152,7 @@ mac() {
 	updatedb) [ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb
 	;;
 
-	user) dscacheutil -q user $([[ "$2" ]] && echo "-a name $2")
+	user) echo "$(dscacheutil -q user $([[ "$2" ]] && echo "-a name $2"))"
 	;;
 
 	help|--help|-h)
@@ -156,32 +160,35 @@ mac() {
 
 	cat <<-EOF | sed 's/^/ /'
 	dock addspace            Add a spacer to the dock
-	dock dimhidden [on/off]  Hidden applications appear dimmer on the dock
-	dock noglass [on/off]    Toggle the 3d display of the dock
+	dock dimhidden [on|off]  Hidden applications appear dimmer on the dock
+	dock noglass [on|off]    Toggle the 3d display of the dock
 	dock restart             Reload the dock
 	
 	expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
 	
-	finder showfile PATH...       Make a file visible in Finder
-	finder hidefile PATH...       Hide a file in Finder
+	finder showfile PATH ...      Make a file visible in Finder
+	finder hidefile PATH ...      Hide a file in Finder
 	finder restart                Restart Finder
-	finder fullpathview [on/off]  Show the full path in the title of Finder windows
-	finder showhidden [on/off]    Toggle visibility of hidden files and folders
+	finder fullpathview [on|off]  Show the full path in the title of Finder 
+	                              windows
+	finder showhidden [on|off]    Toggle visibility of hidden files and folders
+	finder screenshots PATH       Change the default save location for
+	                              screenshots taken with the hotkeys
 	
-	itunes hideping [on/off]    Hide the "Ping" arrows
-	itunes storelinks [on/off]  Toggle display of the store link arrows
+	itunes hideping [on|off]    Hide the "Ping" arrows
+	itunes storelinks [on|off]  Toggle display of the store link arrows
 	
 	wifi available   Show available wifi networks
 	wifi disconnect  Disassociate from any network
 	wifi info        Print current wireless status
 	
-	battery         Display battery charge (if applicable)
-	flushdns        Flush system DNS cache
-	group [NAME]    List a user (or all users) of this machine
-	help [COMMAND]  Show this help
-	lockdesktop     Lock the desktop
-	updatedb        Update locate database
-	user [NAME]     List a user (or all users) of this machine
+	battery       Display battery charge (if applicable)
+	flushdns      Flush system DNS cache
+	group [NAME]  List a user (or all users) of this machine
+	help          Show this help
+	lockdesktop   Lock the desktop
+	updatedb      Update locate database
+	user [NAME]   List users of this machine
 	EOF
 	;;
 
