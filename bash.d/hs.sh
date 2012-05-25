@@ -1,2 +1,3 @@
-# Search command history (or list all if no parameters). Usage: hs "TEXT"
+# hs [TEXT]
+# List command history matching `TEXT`.
 hs() { [ ${#} -lt 1 ] && history || history | grep -i "$@"; }

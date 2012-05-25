@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # probeui.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="probeui.sh"
-SCRIPT_VERSION="1.0.6 2012-05-08"
+SCRIPT_VERSION="1.0.7 2012-05-25"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Profile the user interface of an open application.
 
@@ -18,14 +17,18 @@ Options:
  -h, --help             Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
 opt_depth=0
 
-tempfile() {
-	eval $1=$(mktemp -t "${0##*/}")
-	tempfile_exit="$tempfile_exit rm -f '${!1}';"
-	trap "{ $tempfile_exit }" EXIT
+temp_file() {
+	local var
+	for var in "$@"; do
+		eval $var=\"$(mktemp -t "${0##*/}")\"
+		temp_file__files="$temp_file__files '${!var}'"
+	done
+	trap "rm -f $temp_file__files" EXIT
 }
 
 while (($#)); do
@@ -38,7 +41,8 @@ while (($#)); do
 		opt_exclude="${opt_exclude%,}"
 		;;
 		-p|--pretty) opt_pretty=1 ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		--) break ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift
@@ -46,7 +50,7 @@ done
 
 [[ ! "$1" ]] && { usage; exit 0; }
 opt_app="$1"
-tempfile tmpfile
+temp_file tmpfile
 
 osascript -s s <<EOF > "$tmpfile"
 property config : missing value
@@ -101,7 +105,7 @@ on indexOf(_l, _e)
 end indexOf
 EOF
 
-[[ $? > 0 ]] && FAIL
+[[ $? > 0 ]] && ERROR "$(tail -n1 "$tmpfile")" 1
 
 [[ ! $opt_pretty ]] && { cat "$tmpfile"; exit 0; }
 

@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 # crush.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="0.6.1 2012-03-21"
+SCRIPT_VERSION="0.6.2 2012-05-25"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 A quick interface to simplify the processing of images with pngcrush
 and/or jpgcrush.
 
-Usage: ${0##*/} [options] FILE ...
+Usage: ${0##*/} [OPTION]... FILE...
 
 Options:
  -p, --percentage  Prefix output lines with overall percent completed (useful
@@ -17,22 +16,26 @@ Options:
  -h, --help        Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
-or_FAIL() { [[ ! $? = 0 ]] && FAIL "$@"; }
 
-opt_percentage=
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
-tempfile() {
-	eval $1=$(mktemp -t "${0##*/}")
-	tempfile_exit="$tempfile_exit rm -f '${!1}';"
-	trap "{ $tempfile_exit }" EXIT
+or_fail() { [[ ! $? = 0 ]] && ERROR "$@" 1; }
+
+temp_file() {
+	local var
+	for var in "$@"; do
+		eval $var=\"$(mktemp -t "${0##*/}")\"
+		temp_file__files="$temp_file__files '${!var}'"
+	done
+	trap "rm -f $temp_file__files" EXIT
 }
 
 while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-p|--percentage) opt_percentage=1 ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		--) break ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift
@@ -47,18 +50,18 @@ for f in "$@"; do
 	percent=$(echo "$count/$#*100" | bc -l | xargs printf "%1.0f%%";)
 	[[ $opt_percentage ]] && echo -n "$percent [$percent] "
 	echo "$(basename "$f")"
-	
+
 	case "${f##*.}" in
 		png)
-			[[ ! $pngcrush ]] && { pngcrush=$(which pngcrush 2>/dev/null) || FAIL "pngcrush not found"; }
-			tempfile tmpfile
+			[[ ! $pngcrush ]] && { pngcrush=$(which pngcrush 2>/dev/null) || ERROR "pngcrush not found" 2; }
+			temp_file tmpfile
 			chmod $(stat -f%p "$f") "$tmpfile"
-			or_FAIL "$("$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
-			or_FAIL "$(mv "$tmpfile" "$f")"
+			or_fail "$("$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile")"
+			or_fail "$(mv "$tmpfile" "$f")"
 		;;
 		jpg|jpeg)
-			[[ ! $jpgcrush ]] && { jpgcrush=$(which jpgcrush 2>/dev/null) || FAIL "jpgcrush not found"; }
-			or_FAIL "$("$jpgcrush" "$f")"
+			[[ ! $jpgcrush ]] && { jpgcrush=$(which jpgcrush 2>/dev/null) || ERROR "jpgcrush not found" 2; }
+			or_fail "$("$jpgcrush" "$f")"
 		;;
 	esac
 done

@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # rmmacres.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.7.4 2012-05-08"
+SCRIPT_VERSION="1.7.5 2012-05-25"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Find and delete various Mac-related resource & junk files.
 
@@ -46,6 +45,7 @@ while (($#)); do
 		-i|--icons) fparams="$fparams $par_icons" ;;
 		-m|--misc) fparams="$fparams $par_misc" ;;
 		-a|--all) fparams="$fparams $par_dsstore $par_forks $par_icons $par_misc" ;;
+		--) break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

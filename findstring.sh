@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # findstring.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="findstring.sh"
-SCRIPT_VERSION="1.1.3 2012-02-29"
+SCRIPT_VERSION="1.1.4 2012-05-25"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Recursively find strings in files.
 
@@ -19,7 +18,8 @@ Options:
  -h, --help         Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
+
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
 opt_binary=
 opt_depth=
@@ -33,18 +33,19 @@ while (($#)); do
 		-b|--binary) opt_binary=1 ;;
 		-d*|--depth)
 			[[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1:2}" || { opt_depth=$2; shift; }
-			[[ ! $opt_depth =~ ^[0-9]*$ ]] && FAIL "invalid depth"
+			[[ ! $opt_depth =~ ^[0-9]*$ ]] && ERROR "invalid depth" 1
 		;;
 		-f|--filenames) opt_filenames=1 ;;
 		-i|--ignore-case) opt_ignore_case=1 ;;
 		-p*|--path) [[ $1 =~ ^\-[a-z].+$ ]] && opt_path="${1:2}" || { opt_path=$2; shift; } ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		--) break ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift
 done
 
-[[ ! -d "$opt_path" ]] && FAIL "invalid path"
+[[ ! -d "$opt_path" ]] && ERROR "invalid path" 1
 
 [[ ! $1 ]] && { usage; exit 0; }
 

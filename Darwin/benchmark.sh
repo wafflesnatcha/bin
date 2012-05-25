@@ -1,34 +1,37 @@
 #!/usr/bin/env bash
 # benchmark.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="benchmark.sh"
-SCRIPT_VERSION="0.3.9 2012-03-28"
+SCRIPT_VERSION="0.4.0 2012-05-25"
 
 opt_delay=0
 opt_iterations=2
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Benchmark a shell script.
 
 Usage: ${0##*/} [OPTION]... [COMMAND]
 
 Options:
- -d, --delay SECONDS    Seconds to wait in between executions (${opt_delay})
- -i, --iterations NUM   Number of iterations to run (${opt_iterations})
- -h, --help             Show this help
+ -d, --delay SECONDS   Seconds to wait in between executions (default ${opt_delay})
+ -i, --iterations NUM  Number of iterations to run (default ${opt_iterations})
+ -h, --help            Show this help
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-tempfile() {
-	eval $1=$(mktemp -t "${0##*/}")
-	tempfile_exit="$tempfile_exit rm -f '${!1}';"
-	trap "{ $tempfile_exit }" EXIT
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
+
+temp_file() {
+	local var
+	for var in "$@"; do
+		eval $var=\"$(mktemp -t "${0##*/}")\"
+		temp_file__files="$temp_file__files '${!var}'"
+	done
+	trap "rm -f $temp_file__files" EXIT
 }
 
 make_cmd() {
-	tempfile TMPCMD
+	temp_file TMPCMD
 	if [[ ! $1 ]]; then
 		[[ ! -p /dev/stdin ]] && echo -e "Enter a command, followed by newline, followed by Ctrl-D (End of File).\nTo cancel, press Ctrl-C."
 		cat - > "$TMPCMD"
@@ -38,20 +41,20 @@ make_cmd() {
 	chmod +x "$TMPCMD"
 }
 
-TIME_BIN=$(which time 2>/dev/null) || FAIL "time program not found"
+TIME_BIN=$(which time 2>/dev/null) || ERROR "\`time\` not found" 2
 
 while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-d*|--delay)
 			[[ $1 =~ ^\-[a-z].+$ ]] && opt_delay="${1:2}" || { opt_delay=$2; shift; }
-			{ echo -n "$opt_delay" | grep -E "^[0-9]{0,}\.?[0-9]{1,}$" &>/dev/null; } || FAIL "invalid delay"
+			{ echo -n "$opt_delay" | grep -E "^[0-9]{0,}\.?[0-9]{1,}$" &>/dev/null; } || ERROR "invalid delay" 1
 		;;
 		-i*|--iterations)
 			[[ $1 =~ ^\-[a-z].+$ ]] && opt_iterations="${1:2}" || { opt_iterations=$2; shift; }
-			[[ ! $opt_iterations =~ ^[0-9]+$ || $opt_iterations < 1 ]] && FAIL "invalid iterations"
+			[[ ! $opt_iterations =~ ^[0-9]+$ || $opt_iterations < 1 ]] && ERROR "invalid iterations" 1
 		;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift

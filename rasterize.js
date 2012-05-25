@@ -4,7 +4,7 @@ var page = require('webpage').create(),
 	address, output, size;
 
 if (phantom.args.length < 1) {
-	console.error('Usage: rasterize.js URL [filename]');
+	console.error('Usage: rasterize.js URL [FILE]');
 	phantom.exit(1);
 }
 

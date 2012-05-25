@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # runclipboard.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="runclipboard.sh"
-SCRIPT_VERSION="1.0.3 2012-05-08"
+SCRIPT_VERSION="1.0.4 2012-05-25"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Run the contents of the clipboard as a script.
 $([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;31m\033[7m')
@@ -20,10 +19,13 @@ EOF
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
-tempfile() {
-	eval $1=$(mktemp -t "${0##*/}")
-	tempfile_exit="$tempfile_exit rm -f '${!1}';"
-	trap "{ $tempfile_exit }" EXIT
+temp_file() {
+	local var
+	for var in "$@"; do
+		eval $var=\"$(mktemp -t "${0##*/}")\"
+		temp_file__files="$temp_file__files '${!var}'"
+	done
+	trap "rm -f $temp_file__files" EXIT
 }
 
 get_interpreter() { which "$1" 2>&1; }
@@ -43,7 +45,7 @@ while (($#)); do
 	shift
 done
 
-tempfile tmpfile
+temp_file tmpfile
 pbpaste > "$tmpfile"
 
 first_line="$(HEAD -n 1 "$tmpfile")"
@@ -64,7 +66,7 @@ elif [[ ! "$first_line" =~ ^#\! ]]; then
 fi
 
 if [[ $prepend ]]; then
-	tempfile tmpfile2
+	temp_file tmpfile2
 	echo "${prepend}" > "$tmpfile2"
 	cat "$tmpfile" >> "$tmpfile2"
 	cp "$tmpfile2" "$tmpfile"

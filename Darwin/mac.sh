@@ -96,7 +96,7 @@ mac() {
 
 		screenshots) pref "com.apple.screencapture location" $2 && killall SystemUIServer
 		;;
-		
+
 		*) unknown_command "$1"; return
 		;;
 
@@ -139,7 +139,7 @@ mac() {
 
 	battery) ioreg -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}'
 	;;
-	
+
 	flushdns) dscacheutil -flushcache
 	;;
 
@@ -163,25 +163,25 @@ mac() {
 	dock dimhidden [on|off]  Hidden applications appear dimmer on the dock
 	dock noglass [on|off]    Toggle the 3d display of the dock
 	dock restart             Reload the dock
-	
+
 	expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
-	
+
 	finder showfile PATH ...      Make a file visible in Finder
 	finder hidefile PATH ...      Hide a file in Finder
 	finder restart                Restart Finder
-	finder fullpathview [on|off]  Show the full path in the title of Finder 
+	finder fullpathview [on|off]  Show the full path in the title of Finder
 	                              windows
 	finder showhidden [on|off]    Toggle visibility of hidden files and folders
 	finder screenshots PATH       Change the default save location for
 	                              screenshots taken with the hotkeys
-	
+
 	itunes hideping [on|off]    Hide the "Ping" arrows
 	itunes storelinks [on|off]  Toggle display of the store link arrows
-	
+
 	wifi available   Show available wifi networks
 	wifi disconnect  Disassociate from any network
 	wifi info        Print current wireless status
-	
+
 	battery       Display battery charge (if applicable)
 	flushdns      Flush system DNS cache
 	group [NAME]  List a user (or all users) of this machine

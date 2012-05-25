@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # prowlnotify by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.1.5 2012-04-27"
+SCRIPT_VERSION="1.1.6 2012-05-25"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Interface to prowl.pl that functions more like growlnotify.
 
@@ -28,9 +27,10 @@ PROWL_API_KEY being a key, and PROWL_API_KEYFILE being a file with the key as
 its contents.
 EOF
 }
-FAIL() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; exit ${2:-1}; }
 
-prowlbin=$(which prowl.pl 2>/dev/null) || FAIL "prowl.pl not found"
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
+
+prowlbin=$(which prowl.pl 2>/dev/null) || ERROR "prowl.pl not found" 2
 
 opt_application="-application=prowlnotify"
 opt_event="-event=$HOSTNAME"
@@ -63,7 +63,8 @@ while (($#)); do
 		shift
 		;;
 		-u|--url) opt_is_url=1 ;;
-		-*|--*) FAIL "unknown option ${1}" ;;
+		--) break ;;
+		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
 	shift
