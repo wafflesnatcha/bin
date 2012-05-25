@@ -18,7 +18,7 @@ Options:
 EOF
 }
 
-ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
 tempfile() {
 	eval $1=$(mktemp -t "${0##*/}")

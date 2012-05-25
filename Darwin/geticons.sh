@@ -22,7 +22,7 @@ Note: Ignores extracting icons from .icns files by default.
 EOF
 }
 
-ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
 geticon=$(which geticon 2>/dev/null) || ERROR "geticon not found" 1
 

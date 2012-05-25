@@ -22,7 +22,7 @@ Options:
 EOF
 }
 
-ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" >&2; [[ $2 > -1 ]] && exit $2; }
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
 par_dsstore='-or -name .DS_Store'
 par_forks='-or -name ._\*'
