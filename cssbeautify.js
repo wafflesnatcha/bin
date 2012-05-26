@@ -416,26 +416,48 @@ function cssbeautify(style, opt) {
     return formatted;
 }
 
+/**
+ * Processing instructions for nodejs
+ */
+
 var options = {
-	indent: process.env.TM_SOFT_TABS.toLowerCase() == 'yes' ? new Array(parseInt(process.env.TM_TAB_SIZE) + 1).join(' ') : '\t',
-	openbrace: 'end-of-line' // openbrace: 'separate-line'
+	indent: '    ',
+	openbrace: 'end-of-line'
 };
 
-process.stdin.resume();
+var args = process.argv.slice(2);
+while (args.length) {
+	switch (args.shift()) {
+	case '--indent':
+	case '-i':
+		options.indent = args.shift(); //array[index + 1];
+		break;
+	case '--openbrace':
+	case '-o':
+		options.openbrace = args.shift(); //array[index + 1];
+		break;
+	case '--help':
+	case '-h':
+		process.stdout.write('Usage: ' + process.argv[1].replace(/^.*?([^\/]+)$/i, '$1') + ' [-i|--indent STRING] [-o|--openbrace end-of-line|separate-line]\n');
+		process.exit();
+		break;
+	}
+}
+
 process.stdin.setEncoding('utf8');
+process.stdin.resume();
 process.stdin.on('data', function(text) {
 	var indent = "";
 	var match = text.match(/^[\n\r]*([ \t]*)(<style[^>]*?>)\s*([\s\S]*?)\s*(<\/style>)([ \t]*)([\n\r]*)$/i);
-	var output = cssbeautify((match)? match[3] : text, options);
+	var output = cssbeautify((match) ? match[3] : text, options);
 	if (match) {
 		var m = process.env.TM_CURRENT_LINE.match(/^([ \t]*).*?<style/m);
-		indent = (m)? m[1] : match[1];
-		output = match[2].replace(/^/gm, indent) + 
-			"\n" + output.replace(/^(?!$)/gm, indent) + 
-			"\n" + match[4].replace(/^/gm, indent) + match[6];
-			
-		// remove tabs and spaces on blank lines
-		output = output.replace(/^\s*$/gm, '');
+		indent = (m) ? m[1] : match[1];
+		output = match[2].replace(/^/gm, indent) + "\n" + output.replace(/^(?!$)/gm, indent) + "\n" + match[4].replace(/^/gm, indent) + match[6];
 	}
+
+	// remove tabs and spaces on blank lines
+	output = output.replace(/^\s*$/gm, '');
+
 	process.stdout.write(output);
 });

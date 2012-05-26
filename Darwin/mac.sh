@@ -2,7 +2,7 @@
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
 SCRIPT_DESC="Do stuff with OS X like changing settings and shit."
-SCRIPT_VERSION="1.0.6 2012-05-24"
+SCRIPT_VERSION="1.0.7 2012-05-25"
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
@@ -94,9 +94,6 @@ mac() {
 		done
 		;;
 
-		screenshots) pref "com.apple.screencapture location" $2 && killall SystemUIServer
-		;;
-
 		*) unknown_command "$1"; return
 		;;
 
@@ -109,6 +106,17 @@ mac() {
 		;;
 
 		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2
+		;;
+
+		*) unknown_command "$1"; return
+		;;
+
+	esac
+	;;
+
+	screencapture|s) shift; case $arg2 in
+
+		save_location) pref "com.apple.screencapture location" $2 && killall SystemUIServer
 		;;
 
 		*) unknown_command "$1"; return
@@ -172,11 +180,11 @@ mac() {
 	finder fullpathview [on|off]  Show the full path in the title of Finder
 	                              windows
 	finder showhidden [on|off]    Toggle visibility of hidden files and folders
-	finder screenshots PATH       Change the default save location for
-	                              screenshots taken with the hotkeys
-
 	itunes hideping [on|off]    Hide the "Ping" arrows
 	itunes storelinks [on|off]  Toggle display of the store link arrows
+
+	screencapture location PATH  Change the default save location for screenshots 
+	                             taken using the global hotkeys
 
 	wifi available   Show available wifi networks
 	wifi disconnect  Disassociate from any network
