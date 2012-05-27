@@ -36,6 +36,26 @@ mac() {
 
 	case $arg1 in
 
+	apache|a) shift; case $arg2 in
+
+		configtest) apachectl -t
+		;;
+
+		restart) sudo apachectl -k restart
+		;;
+
+		start) sudo apachectl -k start
+		;;
+
+		stop) sudo apachectl -k stop
+		;;
+
+		*) unknown_command "$1"; return
+		;;
+
+	esac
+	;;
+
 	dock|d) shift; case $arg2 in
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
@@ -167,6 +187,11 @@ mac() {
 	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESC\nUsage: ${0##*/} COMMAND\n\nCommands:"
 
 	cat <<-EOF | sed 's/^/ /'
+	apache configtest  Run syntax check for config files
+	apache restart     Restart the httpd daemon
+	apache start       Start the Apache httpd daemon
+	apache stop        Stop the Apache httpd daemon
+
 	dock addspace            Add a spacer to the dock
 	dock dimhidden [on|off]  Hidden applications appear dimmer on the dock
 	dock noglass [on|off]    Toggle the 3d display of the dock
