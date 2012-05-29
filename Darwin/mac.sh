@@ -1,8 +1,55 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_DESC="Do stuff with OS X like changing settings and shit."
-SCRIPT_VERSION="1.0.7 2012-05-25"
+SCRIPT_VERSION="r1 2012-05-28"
+
+usage() { cat <<EOF
+$SCRIPT_NAME $SCRIPT_VERSION
+Do stuff with OS X like changing settings and shit.
+
+Usage: ${0##*/} COMMAND
+
+Commands:
+ apache configtest  Run syntax check for config files
+ apache restart     Restart the httpd daemon
+ apache start       Start the Apache httpd daemon
+ apache stop        Stop the Apache httpd daemon
+
+ directory groups [NAME]  List groups of this machine
+ directory members GROUP  List users belonging to GROUP
+ directory users [NAME]   List users of this machine
+
+ dock addspace            Add a spacer to the dock
+ dock dimhidden [on|off]  Hidden applications appear dimmer on the dock
+ dock noglass [on|off]    Toggle the 3d display of the dock
+ dock restart             Reload the dock
+
+ expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
+
+ finder showfile PATH...       Make a file visible in Finder
+ finder hidefile PATH...       Hide a file in Finder
+ finder restart                Restart Finder
+ finder fullpathview [on|off]  Show the full path in the title of Finder
+                               windows
+ finder showhidden [on|off]    Toggle visibility of hidden files and folders
+
+ itunes hideping [on|off]    Hide the "Ping" arrows
+ itunes storelinks [on|off]  Toggle display of the store link arrows
+
+ screencap location [PATH]  Change the default save location for screenshots
+                            taken using the global hotkeys
+
+ wifi available   Show available wifi networks
+ wifi disconnect  Disassociate from any network
+ wifi info        Print current wireless status
+
+ battery       Display battery charge (if applicable)
+ flushdns      Flush system DNS cache
+ help          Show this help
+ lock          Lock the desktop
+ updatedb      Update locate database
+EOF
+}
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
@@ -26,6 +73,18 @@ pref_float() {
 	fi
 }
 
+# runForEach COMMAND FILE...
+# Runs COMMAND with FILE as it's argument for every FILE specified.
+runForEach() {
+	[[ ${#} < 2 ]] && return 1;
+	local cmd=$1
+	shift
+	local f
+	for f in "$@"; do
+		[[ ! -e "$f" ]] && { ERROR "$f: No such file or directory"; continue; }
+		$cmd "$f"
+	done
+}
 
 mac() {
 	local ARGS="$@"
@@ -33,10 +92,11 @@ mac() {
 
 	# Create a lowercase version of every argument
 	for (( i = 0 ; i <= $# ; i++ )); do eval local arg${i}='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'; done
-
+	
 	case $arg1 in
 
-	apache|a) shift; case $arg2 in
+	apache|a) shift
+	case $arg2 in
 
 		configtest) apachectl -t
 		;;
@@ -56,7 +116,26 @@ mac() {
 	esac
 	;;
 
-	dock|d) shift; case $arg2 in
+	directory) shift
+	case $arg2 in
+
+		groups) dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
+		;;
+
+		members) [[ ! $2 ]] && return 1; dscl . -list /Users | while read u; do [[ $(dsmemberutil checkmembership -U "$u" -G "$2" 2>/dev/null) =~ is\ a\ member ]] && echo $u; done; return
+		;;
+
+		users) result="$(dscacheutil -q user $([[ "$2" ]] && echo "-a name $2"))"; [[ $result ]] && echo "$result" || return 1
+		;;
+
+		*) unknown_command "$1"; return
+		;;
+
+	esac
+	;;
+
+	dock|d) shift
+	case $arg2 in
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
 		;;
@@ -76,7 +155,8 @@ mac() {
 	esac
 	;;
 
-	expose|e) shift; case $arg2 in
+	expose|e) shift
+	case $arg2 in
 
 		anim-duration) pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock
 		;;
@@ -87,7 +167,8 @@ mac() {
 	esac
 	;;
 
-	finder|f) shift; case $arg2 in
+	finder|f) shift
+	case $arg2 in
 
 		showhidden) pref_bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
 		;;
@@ -98,20 +179,10 @@ mac() {
 		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
 		;;
 
-		showfile|sf) shift
-		[[ ! $(type -p setfile) && $(type -p chflags) ]] && finder_showfile_cmd="chflags nohidden" || finder_showfile_cmd="setfile -a v"
-		for f in "$@"; do
-			[[ ! -e "$f" ]] && ERROR "file doesn't exist: $f" 1
-			$finder_showfile_cmd "$f"
-		done
+		showfile|sf) shift; which chflags &>/dev/null && runForEach "chflags nohidden" "$@" || runForEach "setfile -a v" "$@"
 		;;
 
-		hidefile|hf) shift
-		[[ ! $(type -p setfile) && $(type -p chflags) ]] && finder_hidefile_cmd="chflags hidden" || finder_hidefile_cmd="setfile -a V"
-		for f in "$@"; do
-			[[ ! -e "$f" ]] && ERROR "file doesn't exist: $f" 1
-			$finder_hidefile_cmd "$f"
-		done
+		hidefile|hf) shift; which chflags &>/dev/null && runForEach "chflags hidden" "$@" || runForEach "setfile -a V" "$@"
 		;;
 
 		*) unknown_command "$1"; return
@@ -120,7 +191,8 @@ mac() {
 	esac
 	;;
 
-	itunes|i) shift; case $arg2 in
+	itunes|i) shift
+	case $arg2 in
 
 		hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2
 		;;
@@ -134,9 +206,10 @@ mac() {
 	esac
 	;;
 
-	screencapture|s) shift; case $arg2 in
+	screencap|s) shift
+	case $arg2 in
 
-		save_location) pref "com.apple.screencapture location" $2 && killall SystemUIServer
+		location) pref "com.apple.screencapture location" $2 && killall SystemUIServer
 		;;
 
 		*) unknown_command "$1"; return
@@ -171,58 +244,13 @@ mac() {
 	flushdns) dscacheutil -flushcache
 	;;
 
-	group) dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
-	;;
-
-	lockdesktop) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend
+	lock) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend
 	;;
 
 	updatedb) [ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb
 	;;
 
-	user) echo "$(dscacheutil -q user $([[ "$2" ]] && echo "-a name $2"))"
-	;;
-
-	help|--help|-h)
-	echo -e "$SCRIPT_NAME $SCRIPT_VERSION\n$SCRIPT_DESC\nUsage: ${0##*/} COMMAND\n\nCommands:"
-
-	cat <<-EOF | sed 's/^/ /'
-	apache configtest  Run syntax check for config files
-	apache restart     Restart the httpd daemon
-	apache start       Start the Apache httpd daemon
-	apache stop        Stop the Apache httpd daemon
-
-	dock addspace            Add a spacer to the dock
-	dock dimhidden [on|off]  Hidden applications appear dimmer on the dock
-	dock noglass [on|off]    Toggle the 3d display of the dock
-	dock restart             Reload the dock
-
-	expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
-
-	finder showfile PATH ...      Make a file visible in Finder
-	finder hidefile PATH ...      Hide a file in Finder
-	finder restart                Restart Finder
-	finder fullpathview [on|off]  Show the full path in the title of Finder
-	                              windows
-	finder showhidden [on|off]    Toggle visibility of hidden files and folders
-	itunes hideping [on|off]    Hide the "Ping" arrows
-	itunes storelinks [on|off]  Toggle display of the store link arrows
-
-	screencapture location PATH  Change the default save location for screenshots 
-	                             taken using the global hotkeys
-
-	wifi available   Show available wifi networks
-	wifi disconnect  Disassociate from any network
-	wifi info        Print current wireless status
-
-	battery       Display battery charge (if applicable)
-	flushdns      Flush system DNS cache
-	group [NAME]  List a user (or all users) of this machine
-	help          Show this help
-	lockdesktop   Lock the desktop
-	updatedb      Update locate database
-	user [NAME]   List users of this machine
-	EOF
+	help|--help|-h) usage
 	;;
 
 	*) unknown_command "$1"; return

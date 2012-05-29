@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # rmmacres.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="1.7.5 2012-05-25"
+SCRIPT_VERSION="r1 2012-05-28"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -56,8 +56,7 @@ done
 
 args=$(cat <<EOF
 $fopts
--not -path '*/.Trash/*'
--not -path '*/.Trashes/*'
+( -name '.Trash' -o -name '.Trashes' -o -name 'lost+found' ) -prune -o
 (
 	-false
 	$fparams
@@ -67,5 +66,5 @@ $( [[ ! $opt_dryrun ]] && echo "-delete" )
 EOF)
 
 for path in "${@:-$PWD}"; do
-	echo "$args" | xargs find -sd "$path"
+	echo "$args" | xargs find -s "$path"
 done

@@ -1,3 +1,3 @@
-# mkd PATH
-# mkdir and cd into it
-mkd() { mkdir -p "$@" && cd "$@"; }
+# mkd DIRECTORY
+# Create a directory and change to it.
+mkd() { [[ $1 ]] && mkdir -p "$1" && cd "$1" 1>/dev/null && echo "$PWD"; }
