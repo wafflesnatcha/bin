@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # textmate.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
-# Handy functions when running commands in TextMate
+# Handy functions to include in your TextMate commands
 
+# regex_escape STRING
 # Escape a string for use in perl regex
-# Usage: regex_escape STRING
 regex_escape() { echo "$@" | perl -pe 's/(.*)/\Q\1\E/'; }
 
 tempfile() {
@@ -14,19 +14,35 @@ tempfile() {
 	trap "rm -f $tempfile_files" EXIT
 }
 
-# Output the path to COMMAND, if COMMAND is in the current $PATH and executable. Otherwise, shows and error message and returns 1.
-# Usage: require COMMAND
+# require COMMAND
+# Output the path to COMMAND, if COMMAND is in the current $PATH and executable.
+# Otherwise, shows an error tooltip and returns 1.
+#
+# Example:
+# $ bin=$(require uglifyjs) || exit_discard
 require() { type -p "$@" || { tooltip_error "Required command not found: $@"; return 1; }; }
 
+# function_stdin
 # Allows you to accept STDIN to a function call
-function_stdin() { local oldIFS=$IFS; IFS="$(printf "\n")"; local line; while read -r line; do echo -e "$line"; done; IFS=$oldIFS; }
+#
+# Example:
+# $ fn() { echo "${@:-$(function_stdin)}"; }; fn "testing"; echo "testing" | fn
+function_stdin() {
+	local oldIFS=$IFS
+	IFS="$(printf "\n")"
+	local line
+	while read -r line; do
+		echo -e "$line"
+	done
+	IFS=$oldIFS
+}
 
-# Open a file in textmate at
-# Usage: textmate_open FILE [LINE, [COLUMN]]
+# textmate_open FILE [LINE, [COLUMN]]
+# Open a file in textmate at a given LINE and COLUMN
 textmate_open() { open "txmt://open?url=file://$1${2:+&line=$2}${3:+&column=$3}"; }
 
-# Shortcut to textmate_open "${TM_FILEPATH}"
-# Usage: textmate_goto [LINE, [COLUMN]]
+# textmate_goto [LINE, [COLUMN]]
+# Alias to `textmate_open "${TM_FILEPATH}" LINE COLUMN`
 textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
 
 
@@ -35,16 +51,19 @@ textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
 #
 
 # HTML encode text (specifically: <, >, &) and remove blank lines
-# Usage: html_encode "<some text> you want to encode & stuff"
-# Usage: cat "/some/file.html" | html_encode
+#
+# Example:
+# $ html_encode "<some text> you want to encode & stuff"
+#
+# Example:
+# $ cat "/some/file.html" | html_encode
 html_encode() {
-	{ [ -z "$1" ] && function_stdin || echo -e "${@}"; } |
-		perl -pe '$| = 1; s/^[\s]*$//g; s/[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
+	echo "${@:-$(function_stdin)}" | perl -pe '$| = 1; s/^[\s]*$//g; s/[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
 
 # same as html_encode, but also turns newlines into <br>
 html_encode_pre() {
-	{ [ -z "$1" ] && function_stdin || echo -e "${@}"; } |
+	{ [ -z "$1" ] && function_stdin || echo -e "$@"; } |
 		perl -pe '$| = 1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g; s/$\\n/<br>/g;'
 }
 
@@ -52,17 +71,21 @@ html_redirect() {
 	exit_show_html "<script type=\"text/javascript\">window.location='${1//\'/\'}';</script>"
 }
 
-# Switch to a nicely formatted HTML error message
-# Usage: html_error "text"
-# Usage: cat some/file.txt | html_error
+# Open a nicely formatted HTML error message
+#
+# Example:
+# $ html_error "text"
+#
+# Example:
+# $ cat some/file.txt | html_error
 html_error() {
 	[[ $TM_FILEPATH ]] && url_param="url=file:\/\/${TM_FILEPATH//\//\\/}\&"
 	. "$TM_SUPPORT_PATH/lib/webpreview.sh"
 	html_header "${2:-ERROR}"
-	echo "<pre>"
+	echo '<pre style="border:2px solid #f00;">'
 	html_encode "$@" |
 		perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?'${url_param}'line=$3\&column=$4\">$2<\/a>$5/mi'
-	echo "</pre>"
+	echo '</pre>'
 	html_footer
 	exit_show_html
 }
@@ -76,8 +99,7 @@ tooltip() {
 	tooltip_html default $(html_encode_pre "$@")
 }
 
-# Red tooltip with an X on it
-# nice to display when a command has failed
+# Red tooltip with a ✘, used for a command has failed.
 tooltip_error() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
@@ -86,8 +108,7 @@ tooltip_error() {
 		"$input"
 }
 
-# Green tooltip with a checkmark
-# nice to display when a command has successfully completed
+# Green tooltip with a ✔, used for a command has successfully completed.
 tooltip_success() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
@@ -96,7 +117,7 @@ tooltip_success() {
 		"$input"
 }
 
-# Orange tooltip with an ! on it
+# Orange tooltip with a ⚠, used for warnings and such.
 tooltip_warning() {
 	local input=$(html_encode_pre "$@")
 	tooltip_html $([[ $input ]] && echo "styled" || echo "styled_empty") \
@@ -105,11 +126,14 @@ tooltip_warning() {
 		"$input"
 }
 
-# Shows a custom tooltip using $TM_tooltip_template
-# Usage:
-#   tooltip_html default --color "12,139,245" --someothervar "this is the value"
+# Show a custom tooltip using $TM_tooltip_template
+#
 # If your custom template has any %words% in it, simply pass them to this
-# function as long arguments (i.e. tooltip_html --color 12,139,245)
+# function as long arguments (i.e. tooltip_html --color 12,139,245).
+# See the included templates for more information.
+#
+# Example:
+# $ tooltip_html default --color "12,139,245" --someothervar "this is the value"
 tooltip_html() {
 	local template="TM_tooltip_template_$1"
 	local replacement=

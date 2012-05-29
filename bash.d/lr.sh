@@ -1,7 +1,7 @@
 # lr [OPTION]... [FILE]...
 # Replacement for `ls -R`
 # 
-# `OPTIONS` includes any options specified by the system's ls command
+# OPTIONS includes any options specified by the system's ls command
 lr() {
 	while [[ "$1" =~ ^- && ! -e "$1" ]]; do
 		local f="$f $1" && shift
