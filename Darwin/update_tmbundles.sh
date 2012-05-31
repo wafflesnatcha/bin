@@ -5,7 +5,7 @@ git_update() {
 	for d in "$@"; do
 		[[ ! -d "$d/.git" ]] && continue
 		local name=$(basename "$d")
-		echo -en "${COLOR_BLUE}$name...${COLOR_RESET} "
+		echo -en "${COLOR_YELLOW}$name...${COLOR_RESET} "
 		
 		local res="$({ cd "$d" 1>/dev/null && git pull; } 2>&1)"
 		local code=$?
