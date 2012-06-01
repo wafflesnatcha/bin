@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r2 2012-05-31"
+SCRIPT_VERSION="r3 2012-06-01"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -10,11 +10,6 @@ Do stuff with OS X like changing settings and shit.
 Usage: ${0##*/} COMMAND
 
 Commands:
- apache configtest  Run syntax check for config files
- apache restart     Restart the httpd daemon
- apache start       Start the Apache httpd daemon
- apache stop        Stop the Apache httpd daemon
-
  directory groups [NAME]  List groups of this machine
  directory members GROUP  List users belonging to GROUP
  directory users [NAME]   List users of this machine
@@ -104,27 +99,6 @@ mac() {
 	for (( i = 0 ; i <= $# ; i++ )); do eval local arg${i}='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'; done
 
 	case $arg1 in
-
-	apache|a) shift
-	case $arg2 in
-
-		configtest) apachectl -t
-		;;
-
-		restart) sudo apachectl -k restart
-		;;
-
-		start) sudo apachectl -k start
-		;;
-
-		stop) sudo apachectl -k stop
-		;;
-
-		*) unknown_command "$1"; return
-		;;
-
-	esac
-	;;
 
 	directory) shift
 	case $arg2 in
