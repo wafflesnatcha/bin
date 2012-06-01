@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r1 2012-05-28"
+SCRIPT_VERSION="r2 2012-05-31"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -19,22 +19,22 @@ Commands:
  directory members GROUP  List users belonging to GROUP
  directory users [NAME]   List users of this machine
 
- dock addspace            Add a spacer to the dock
- dock dimhidden [on|off]  Hidden applications appear dimmer on the dock
- dock noglass [on|off]    Toggle the 3d display of the dock
- dock restart             Reload the dock
+ dock addspace          Add a spacer to the dock
+ dock dimhidden [BOOL]  Hidden applications appear dimmer on the dock
+ dock noglass [BOOL]    Toggle the 3d display of the dock
+ dock restart           Reload the dock
 
  expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
 
- finder showfile PATH...       Make a file visible in Finder
- finder hidefile PATH...       Hide a file in Finder
- finder restart                Restart Finder
- finder fullpathview [on|off]  Show the full path in the title of Finder
-                               windows
- finder showhidden [on|off]    Toggle visibility of hidden files and folders
+ finder showfile PATH...     Make a file visible in Finder
+ finder hidefile PATH...     Hide a file in Finder
+ finder restart              Restart Finder
+ finder fullpathview [BOOL]  Show the full path in the title of Finder windows
+ finder showhidden [BOOL]    Toggle visibility of hidden files and folders
 
- itunes hideping [on|off]    Hide the "Ping" arrows
- itunes storelinks [on|off]  Toggle display of the store link arrows
+ itunes halfstars [BOOL]   Enable ratings with half stars
+ itunes hideping [BOOL]    Hide the "Ping" arrows
+ itunes storelinks [BOOL]  Toggle display of the store link arrows
 
  screencap location [PATH]  Change the default save location for screenshots
                             taken using the global hotkeys
@@ -53,21 +53,31 @@ EOF
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
+# Set/read a preference item
 pref() {
 	[[ $2 ]] && { defaults write $1 "$2"; return; }
-	v=$(defaults read $1 2>&1) && { echo "$v"; return 1; } || { echo "not set" 1>&2; return 2; }
+	v=$(defaults read $1 2>&1) && { echo "$v"; return 3; } || { echo "not set" 1>&2; return 4; }
 }
 
+# Set/read a boolean preference item
 pref_bool() {
 	case "$(echo $2 | tr '[:upper:]' '[:lower:]')" in
 		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
 		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-		*) [[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "on"; return 1; } || { echo "off"; return 2; } ;;
+		*) [[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "yes"; return 3; } || { echo "no"; return 4; } ;;
 	esac
 }
 
+pref_bool_inverse() {
+	pref_bool $1 $2 1>/dev/null
+	code=$?
+	[[ $code = 3 ]] && echo "no" || [[ $code = 4 ]] && echo "yes"
+	return $code
+}
+
+# Set/read a float preference item
 pref_float() {
-	if [[ ! $2 ]]; then v=$(defaults read $1 2>&1) && { echo $v; return 1; } || { echo "not set"; return 2; }
+	if [[ ! $2 ]]; then v=$(defaults read $1 2>&1) && { echo $v; return 3; } || { echo "not set"; return 4; }
 	elif [[ $2 = "-" ]]; then defaults delete $1
 	else defaults write $1 -float $2
 	fi
@@ -92,7 +102,7 @@ mac() {
 
 	# Create a lowercase version of every argument
 	for (( i = 0 ; i <= $# ; i++ )); do eval local arg${i}='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'; done
-	
+
 	case $arg1 in
 
 	apache|a) shift
@@ -193,6 +203,9 @@ mac() {
 
 	itunes|i) shift
 	case $arg2 in
+
+		halfstars) pref_bool "com.apple.iTunes allow-half-stars" $2
+		;;
 
 		hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2
 		;;
