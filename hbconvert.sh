@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
 input="$1"
+[[ ! -f "$input" ]] && { echo "$1: not found"; exit 1; }
+
 output="${input%.*}.mp4"
+[[ -e "$output" ]] && { echo "$output: file exists"; exit 1; }
+
 shift
 
-[[ ! -f "$input" ]] && { echo "invalid input file"; exit 1; }
-[[ -e "$output" ]] && { echo "output file already exists: $output"; exit 1; }
 
-#nohup nice HandBrakeCLI --preset "Normal" -i "$1" -o "${1%.*}.mp4" 2>&1
-nice HandBrakeCLI --preset "Normal" "$@" -i "$input" -o "$output"
+#nohup \
+nice HandBrakeCLI --preset "Normal" -O "$@" -i "$input" -o "$output"
 
