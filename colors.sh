@@ -34,5 +34,4 @@ if [ "$TERM" = "xterm-color" -o "$TERM" = "xterm-256color" ]; then
 	BOLD=$COLOR_BOLD
 	DIM=$COLOR_DIM
 	UNDERLINE=$COLOR_UNDERLINE
-
 fi

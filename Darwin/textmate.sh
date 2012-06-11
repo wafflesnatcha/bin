@@ -58,7 +58,8 @@ textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
 # Example:
 # $ cat "/some/file.html" | html_encode
 html_encode() {
-	echo "${@:-$(function_stdin)}" | perl -pe '$| = 1; s/^[\s]*$//g; s/[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
+	echo -e "${@:-$(function_stdin)}" |
+		perl -pe '$| = 1; s/^[\s]*$|[ \t]*$//g; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
 
 # same as html_encode, but also turns newlines into <br>

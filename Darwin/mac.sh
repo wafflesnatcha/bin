@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r3 2012-06-01"
+SCRIPT_VERSION="r4 2012-06-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -29,6 +29,8 @@ Commands:
 
  itunes halfstars [BOOL]   Enable ratings with half stars
  itunes hideping [BOOL]    Hide the "Ping" arrows
+ itunes status [-s]        Show current track and artist. With -s, output is
+                           displayed on 1 line.
  itunes storelinks [BOOL]  Toggle display of the store link arrows
 
  screencap location [PATH]  Change the default save location for screenshots
@@ -63,13 +65,6 @@ pref_bool() {
 	esac
 }
 
-pref_bool_inverse() {
-	pref_bool $1 $2 1>/dev/null
-	code=$?
-	[[ $code = 3 ]] && echo "no" || [[ $code = 4 ]] && echo "yes"
-	return $code
-}
-
 # Set/read a float preference item
 pref_float() {
 	if [[ ! $2 ]]; then v=$(defaults read $1 2>&1) && { echo $v; return 3; } || { echo "not set"; return 4; }
@@ -100,7 +95,7 @@ mac() {
 
 	case $arg1 in
 
-	directory) shift
+	directory|dir) shift
 	case $arg2 in
 
 		groups) dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
@@ -182,6 +177,16 @@ mac() {
 		;;
 
 		hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2
+		;;
+
+		status)
+		osascript <<-'APPLESCRIPT'
+		tell application "iTunes"
+			set s to (round (duration of current track as integer) mod 60)
+			if s < 10 then set s to "0" & s
+			return "[" & (player state as string) & "] \"" & name of current track & "\" by " & artist of current track & " (" & (round ((duration of current track as integer) / 60) rounding down) & ":" & s & ")"
+		end tell
+		APPLESCRIPT
 		;;
 
 		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2
