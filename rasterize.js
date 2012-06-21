@@ -1,13 +1,19 @@
-#!/usr/bin/env phantomjs --web-security=no
+#!/usr/bin/env phantomjs --disk-cache=yes
 
 var config = {
-	delay: 500,
-	width: screen.width,
-	height: screen.height
+	'delay': 0.5,
+	'width': screen.width,
+	'height': screen.height,
+	'settings': {
+		'loadImages': true,
+		'loadPlugins': true,
+		'webSecurityEnabled': false,
+		'localToRemoteUrlAccessEnabled': true,
+	}
 };
 
 function usage() {
-	console.log('Usage: rasterize.js [--delay MILLISECONDS] [--height NUM] [--width NUM] URL [FILE]');
+	console.log('Usage: rasterize.js [--delay SECONDS] [--height PIXELS] [--width PIXELS] URL [FILE]');
 }
 
 // Parse command line arguments
@@ -38,6 +44,7 @@ function parseArgs() {
 		}
 		args.shift();
 	}
+	return args;
 }
 
 var args = parseArgs();
@@ -62,20 +69,18 @@ page.viewportSize = {
 	width: config.width,
 	height: config.height
 };
-
-page.settings.loadPlugins = true;
-page.settings.loadImages = true;
-
+for(var prop in config.settings) {
+	page.settings[prop] = config.settings[prop];
+}
 
 page.open(address, function (status) {
 	if (status !== 'success') {
 		console.error("Unable to load '" + address + "'");
 		phantom.exit(1);
 	}
-	// console.debug('page loaded, waiting ' + config.delay + ' milliseconds...');
 	window.setTimeout(function () {
 		page.render(output);
-		console.log(output);
+		console.log("output: " + output);
 		phantom.exit();
-	}, config.delay);
+	}, config.delay * 1000);
 });
