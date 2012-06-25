@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # crush.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="0.6.2 2012-05-25"
+SCRIPT_VERSION="r1 2012-06-25"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -18,8 +18,6 @@ EOF
 }
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
-
-or_fail() { [[ ! $? = 0 ]] && ERROR "$@" 1; }
 
 temp_file() {
 	local var
@@ -56,12 +54,12 @@ for f in "$@"; do
 			[[ ! $pngcrush ]] && { pngcrush=$(which pngcrush 2>/dev/null) || ERROR "pngcrush not found" 2; }
 			temp_file tmpfile
 			chmod $(stat -f%p "$f") "$tmpfile"
-			or_fail "$("$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile" 2>&1)"
-			or_fail "$(mv "$tmpfile" "$f")"
+			"$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile" 2>/dev/null &&
+				mv "$tmpfile" "$f"
 		;;
 		jpg|jpeg)
 			[[ ! $jpgcrush ]] && { jpgcrush=$(which jpgcrush 2>/dev/null) || ERROR "jpgcrush not found" 2; }
-			or_fail "$("$jpgcrush" "$f")"
+			"$jpgcrush" "$f"
 		;;
 	esac
 done
