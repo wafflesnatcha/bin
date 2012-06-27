@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r4 2012-06-11"
+SCRIPT_VERSION="r5 2012-06-26"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -158,10 +158,10 @@ mac() {
 		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
 		;;
 
-		showfile|sf) shift; which chflags &>/dev/null && runForEach "chflags nohidden" "$@" || runForEach "setfile -a v" "$@"
+		showfile|sf) shift; which chflags &>/dev/null && runForEach "chflags -h nohidden" "$@" || runForEach "setfile -P -a v" "$@"
 		;;
 
-		hidefile|hf) shift; which chflags &>/dev/null && runForEach "chflags hidden" "$@" || runForEach "setfile -a V" "$@"
+		hidefile|hf) shift; which chflags &>/dev/null && runForEach "chflags -h hidden" "$@" || runForEach "setfile -P -a V" "$@"
 		;;
 
 		*) unknown_command "$1"; return
@@ -180,13 +180,13 @@ mac() {
 		;;
 
 		status)
-		osascript <<-'APPLESCRIPT'
+		osascript <<-'EOF'
 		tell application "iTunes"
 			set s to (round (duration of current track as integer) mod 60)
 			if s < 10 then set s to "0" & s
 			return "[" & (player state as string) & "] \"" & name of current track & "\" by " & artist of current track & " (" & (round ((duration of current track as integer) / 60) rounding down) & ":" & s & ")"
 		end tell
-		APPLESCRIPT
+		EOF
 		;;
 
 		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2
