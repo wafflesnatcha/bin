@@ -1,4 +1,4 @@
-#!/usr/bin/env php -d display_errors=1
+#!/usr/bin/env php
 <?php
 /**
  * Generate "dummy" text.

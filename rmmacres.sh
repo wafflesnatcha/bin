@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # rmmacres.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="r1 2012-05-28"
+SCRIPT_VERSION="r2 2012-07-02"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -61,8 +61,8 @@ $fopts
 	-false
 	$fparams
 )
-$( [[ ! $opt_dryrun ]] && echo "-delete" )
 -print
+$( [[ ! $opt_dryrun ]] && echo '-exec rm \{\} \;' )
 EOF)
 
 for path in "${@:-$PWD}"; do
