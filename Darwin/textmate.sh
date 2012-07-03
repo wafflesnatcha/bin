@@ -6,12 +6,24 @@
 # Escape a string for use in perl regex
 regex_escape() { echo "$@" | perl -pe 's/(.*)/\Q\1\E/'; }
 
-tempfile() {
-	for var in "$@"; do
-		eval $var="$(mktemp -t "${0##*/}")"
-		tempfile_files="$tempfile_files '${!var}'"
+# temp_file VARIABLE_NAME...
+# Generate a temporary file, saving its path in a variable named `VARIABLE_NAME`.
+#
+# Automatically deletes the file when the current script/program ends.
+#
+# Example:
+# $ temp_file temp1 temp2 temp3
+# $ echo "temp1=$temp1"
+# $ echo "temp2=$temp2"
+# $ echo "temp3=$temp3"
+# $ echo "but these files will be deleted as soon as this script ends..."
+temp_file() {
+	local _temp_file__var
+	for _temp_file__var in "$@"; do
+		eval $_temp_file__var=\"$(mktemp -t "${0##*/}")\"
+		_temp_file__files="$_temp_file__files '${!_temp_file__var}'"
 	done
-	trap "rm -f $tempfile_files" EXIT
+	trap "rm -f $_temp_file__files" EXIT
 }
 
 # require COMMAND
