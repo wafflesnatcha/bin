@@ -58,12 +58,12 @@ function output_html($file)
 	<style type="text/css" media="screen">
 	html,body{ margin: 0; padding: 0; }
 	body { background: #fff; color: #000; font-family: "Menlo", "Consolas", "DejaVu Sans Mono", "Courier", monospace; font-size: 12px; line-height: normal; }
-	#code { margin: 18px 24px; }
-	.token { background: #ebebff; padding: 0; margin: 0; box-sizing: border-box; border-right: 1px solid rgba(50,50,50,.1); border-top: 0; border-bottom: 0; }
-	.token.t_whitespace { background: #eee; border: none; }
-	.token.t_string     { background: #ffebf4; }
-	.token.t_comment    { background: #ebffec; font-style: italic; }
-	.token:hover    { background: #008eff; color: #fff; }
+	#code { margin: 18px 24px; font: inherit; }
+	.token { background: #ebebff; padding: 0 1px; margin: 0; box-sizing: border-box; border-right: 1px solid rgba(50,50,50,.1); border-top: 0; border-bottom: 0; }
+	.t_whitespace { background: #eee; }
+	.t_constant_encapsed_string { background: #ffebf4; }
+	.t_comment, .t_doc_comment { background: #e0ffe2; font-style: italic; }
+	.token:hover { background: #444; color: #fff; }
 	</style>
 	<style type="text/css" media="screen">.tipsy{font-size:10px;position:absolute;padding:5px;z-index:100000}.tipsy-inner{background-color:#000;color:#FFF;max-width:200px;padding:5px 8px 4px;text-align:center;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px}.tipsy-arrow{position:absolute;width:0;height:0;line-height:0;border:5px dashed #000}.tipsy-arrow-n{border-bottom-color:#000}.tipsy-arrow-s{border-top-color:#000}.tipsy-arrow-e{border-left-color:#000}.tipsy-arrow-w{border-right-color:#000}.tipsy-n .tipsy-arrow{top:0;left:50%;margin-left:-5px;border-bottom-style:solid;border-top:none;border-left-color:transparent;border-right-color:transparent}.tipsy-nw .tipsy-arrow{top:0;left:10px;border-bottom-style:solid;border-top:none;border-left-color:transparent;border-right-color:transparent}.tipsy-ne .tipsy-arrow{top:0;right:10px;border-bottom-style:solid;border-top:none;border-left-color:transparent;border-right-color:transparent}.tipsy-s .tipsy-arrow{bottom:0;left:50%;margin-left:-5px;border-top-style:solid;border-bottom:none;border-left-color:transparent;border-right-color:transparent}.tipsy-sw .tipsy-arrow{bottom:0;left:10px;border-top-style:solid;border-bottom:none;border-left-color:transparent;border-right-color:transparent}.tipsy-se .tipsy-arrow{bottom:0;right:10px;border-top-style:solid;border-bottom:none;border-left-color:transparent;border-right-color:transparent}.tipsy-e .tipsy-arrow{right:0;top:50%;margin-top:-5px;border-left-style:solid;border-right:none;border-top-color:transparent;border-bottom-color:transparent}.tipsy-w .tipsy-arrow{left:0;top:50%;margin-top:-5px;border-right-style:solid;border-left:none;border-top-color:transparent;border-bottom-color:transparent}</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -100,16 +100,6 @@ EOF;
 	
 	$content = '';
 	
-	$search = array(
-		"\n",
-		"\t",
-	);
-	$replace = array(
-		"<span class=\"newline\"></span>\n",
-		"<span class=\"tab\"></span>\t",
-	);
-	test();
-	
 	$tokens = token_get_all(file_get_contents($file));
 	for ($i = 0; $i<count($tokens); $i++) {
 		$t = $tokens[$i];
@@ -122,8 +112,8 @@ EOF;
 			$classes = array("string");
 			$text = $t;
 		}
-		strtr($text = htmlspecialchars($text);
-		$text = str_replace($search, $replace, $text);
+		
+		$text = htmlspecialchars($text);
 		$content .= "<span class=\"" . implode(" ", $classes) . "\"" . ($title ? " title=\"$title\"" : "") . ">$text</span>";
 	};
 	
