@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 # crush.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="r1 2012-06-25"
+SCRIPT_VERSION="r2 2012-07-04"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-A quick interface to simplify the processing of images with pngcrush
+A quick interface to simplify the processing of images with pngcrush, optipng,
 and/or jpgcrush.
 
 Usage: ${0##*/} [OPTION]... FILE...
 
 Options:
+     --optipng     Use optipng for png files (default)
+     --pngcrush    Use pngcrush for png files
  -p, --percentage  Prefix output lines with overall percent completed (useful
                    when piping to CocoaDialog progressbar)
  -h, --help        Show this help
@@ -28,8 +30,12 @@ temp_file() {
 	trap "rm -f $temp_file__files" EXIT
 }
 
+opt_pngbin="optipng"
+
 while (($#)); do
 	case $1 in
+		--optipng) opt_pngbin="optipng" ;;
+		--pngcrush) opt_pngbin="pngcrush" ;;
 		-h|--help) usage; exit 0 ;;
 		-p|--percentage) opt_percentage=1 ;;
 		--) break ;;
@@ -51,11 +57,20 @@ for f in "$@"; do
 
 	case "${f##*.}" in
 		png)
-			[[ ! $pngcrush ]] && { pngcrush=$(which pngcrush 2>/dev/null) || ERROR "pngcrush not found" 2; }
-			temp_file tmpfile
-			chmod $(stat -f%p "$f") "$tmpfile"
-			"$pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile" 2>/dev/null &&
-				mv "$tmpfile" "$f"
+			[[ ! $pngbin ]] && { pngbin=$(which "$opt_pngbin" 2>/dev/null) || ERROR "$opt_pngbin not found" 2; }
+			
+			case "$opt_pngbin" in
+				pngcrush)
+				temp_file tmpfile
+				chmod $(stat -f%p "$f") "$tmpfile"
+				"$pngbin" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile" 2>/dev/null &&
+					mv "$tmpfile" "$f"
+				;;
+				
+				optipng)
+				"$pngbin" -quiet -preserve "$f"
+				;;
+			esac
 		;;
 		jpg|jpeg)
 			[[ ! $jpgcrush ]] && { jpgcrush=$(which jpgcrush 2>/dev/null) || ERROR "jpgcrush not found" 2; }

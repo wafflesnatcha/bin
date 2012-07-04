@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r5 2012-06-26"
+SCRIPT_VERSION="r7 2012-07-04"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -18,8 +18,9 @@ Commands:
  dock dimhidden [BOOL]  Hidden applications appear dimmer on the dock
  dock noglass [BOOL]    Toggle the 3d display of the dock
  dock restart           Reload the dock
+ dock size [PIXELS]     Set the tile size of dock items
 
- expose anim-duration [FLOAT/-]  Expose (Mission Control) animation duration
+ expose anim-duration [FLOAT|-]  Expose (Mission Control) animation duration
 
  finder showfile PATH...     Make a file visible in Finder
  finder hidefile PATH...     Hide a file in Finder
@@ -29,12 +30,11 @@ Commands:
 
  itunes halfstars [BOOL]   Enable ratings with half stars
  itunes hideping [BOOL]    Hide the "Ping" arrows
- itunes status [-s]        Show current track and artist. With -s, output is
-                           displayed on 1 line.
+ itunes status             Show current track and artist
  itunes storelinks [BOOL]  Toggle display of the store link arrows
 
  screencap location [PATH]  Change the default save location for screenshots
-                            taken using the global hotkeys
+ screencap type [TYPE]      Format of screen captures (BMP, GIF, JPG, PDF, PNG, TIFF)
 
  wifi available   Show available wifi networks
  wifi disconnect  Disassociate from any network
@@ -50,28 +50,46 @@ EOF
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 
+# pref (TYPE) (DOMAIN&KEY) [VALUE]
 # Set/read a preference item
 pref() {
-	[[ $2 ]] && { defaults write $1 "$2"; return; }
-	v=$(defaults read $1 2>&1) && { echo "$v"; return 3; } || { echo "not set" 1>&2; return 4; }
-}
-
-# Set/read a boolean preference item
-pref_bool() {
-	case "$(echo $2 | tr '[:upper:]' '[:lower:]')" in
-		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
-		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-		*) [[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "yes"; return 3; } || { echo "no"; return 4; } ;;
-	esac
-}
-
-# Set/read a float preference item
-pref_float() {
-	if [[ ! $2 ]]; then v=$(defaults read $1 2>&1) && { echo $v; return 3; } || { echo "not set"; return 4; }
-	elif [[ $2 = "-" ]]; then defaults delete $1
-	else defaults write $1 -float $2
+	local vartype="$1"
+	shift
+	
+	if [[ ! $2 && ! $vartype = "bool" ]]; then
+		v=$(defaults read $1 2>&1) && { echo $v; return 3; } || { echo "not set"; return 4; }
 	fi
+	
+	case "$vartype" in
+		date|string)
+		defaults write $1 -$vartype "$2"
+		;;
+
+		float|int)
+		[[ $2 = "-" ]] && defaults delete $1 || defaults write $1 -$vartype $2
+		;;
+		
+		array|array-add|dict|dict-add)
+		local key=$1
+		shift
+		defaults write $key -array "$@"
+		;;
+		
+		bool)
+		case "$(echo $2 | tr '[:upper:]' '[:lower:]')" in
+			y|yes|1|true|on) defaults write $1 -bool TRUE ;;
+			n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
+			*) [[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "true"; return 3; } || { echo "false"; return 4; } ;;
+		esac
+		;;
+		
+		*)
+		defaults write $1 $2
+		;;
+	esac
+	return
 }
+
 
 # runForEach COMMAND FILE...
 # Runs COMMAND with FILE as it's argument for every FILE specified.
@@ -119,13 +137,16 @@ mac() {
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
 		;;
 
-		dimhidden) pref_bool "com.apple.dock showhidden" $2 && killall Dock
+		dimhidden) pref bool "com.apple.dock showhidden" $2 && killall Dock
 		;;
 
-		noglass) pref_bool "com.apple.dock no-glass" $2 && killall Dock
+		noglass) pref bool "com.apple.dock no-glass" $2 && killall Dock
 		;;
 
 		restart) killall Dock
+		;;
+
+		size) pref int "com.apple.dock tilesize" $2 && killall Dock
 		;;
 
 		*) unknown_command "$1"; return
@@ -137,7 +158,7 @@ mac() {
 	expose|e) shift
 	case $arg2 in
 
-		anim-duration) pref_float "com.apple.dock expose-animation-duration" $2 && killall Dock
+		anim-duration) pref float "com.apple.dock expose-animation-duration" $2 && killall Dock
 		;;
 
 		*) unknown_command "$1"; return
@@ -149,10 +170,10 @@ mac() {
 	finder|f) shift
 	case $arg2 in
 
-		showhidden) pref_bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
+		showhidden) pref bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
 		;;
 
-		fullpathview) pref_bool "com.apple.finder _FXShowPosixPathInTitle" $2
+		fullpathview) pref bool "com.apple.finder _FXShowPosixPathInTitle" $2
 		;;
 
 		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
@@ -173,10 +194,10 @@ mac() {
 	itunes|i) shift
 	case $arg2 in
 
-		halfstars) pref_bool "com.apple.iTunes allow-half-stars" $2
+		halfstars) pref bool "com.apple.iTunes allow-half-stars" $2
 		;;
 
-		hideping) pref_bool "com.apple.iTunes hide-ping-dropdown" $2
+		hideping) pref bool "com.apple.iTunes hide-ping-dropdown" $2
 		;;
 
 		status)
@@ -189,7 +210,7 @@ mac() {
 		EOF
 		;;
 
-		storelinks) pref_bool "com.apple.iTunes show-store-link-arrows" $2
+		storelinks) pref bool "com.apple.iTunes show-store-link-arrows" $2
 		;;
 
 		*) unknown_command "$1"; return
@@ -201,9 +222,12 @@ mac() {
 	screencap|s) shift
 	case $arg2 in
 
-		location) pref "com.apple.screencapture location" $2 && killall SystemUIServer
+		location) pref string "com.apple.screencapture location" $2 && killall SystemUIServer
 		;;
 
+		type) pref string "com.apple.screencapture type" $2 && killall SystemUIServer
+		;;
+		
 		*) unknown_command "$1"; return
 		;;
 
