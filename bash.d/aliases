@@ -1,6 +1,7 @@
 alias ..='cd ..'
 alias cd..='cd ..'
 alias finds='findstring.sh -i'
+alias geminfo='gem list -dr'
 alias gitc='git clone --recursive'
 alias gits='git status'
 alias gitu='git pull --stat --recurse-submodules=yes'

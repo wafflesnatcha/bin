@@ -8,13 +8,10 @@
  * @author    Scott Buchanan <buchanan.sc@gmail.com>
  * @copyright 2012 Scott Buchanan
  * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
- * @version   r1 2012-05-31
+ * @version   r2 2012-07-06
  * @link      http://wafflesnatcha.github.com
  */
 
-/**
- * Command line script utility
- */
 class CLIScript
 {
 	var $wrap = 80;
@@ -26,9 +23,10 @@ class CLIScript
 			$this->$k = $v;
 		}
 		// Attempt to decipher version info from this file's `@version` tag
-		if (!$this->version)
+		if (!isset($config['version'])) {
 			$this->version = preg_filter('/.*?\/\*\*.*?[\n\r]+\s*\*\s*@version\s*([^\n\r]+).*/is', '$1', file_get_contents($_SERVER['PHP_SELF']));
-
+		}
+		
 		// Add -h|--help flag
 		if (is_array($this->options) && !array_key_exists("help", $this->options))
 			$this->options['help'] = array(
@@ -39,10 +37,10 @@ class CLIScript
 			);
 	}
 
-	function error_handler($errno, $errstr, $errfile, $errline)
+	function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
 	{
 		error_log(basename($errfile) . ": " . trim($errstr));
-		exit($code);
+		exit(2);
 	}
 
 	function usage()
@@ -52,13 +50,13 @@ class CLIScript
 		if ($this->options) {
 			$lines = array();
 			$longest = 0;
-			foreach ($this->options as $def_name => $def_array) {
+			foreach ($this->options as $def_name => $def_arr) {
 				$lines[] = array(
-					$def_array['usage'],
-					$def_array['description'],
+					$def_arr['usage'],
+					$def_arr['description'],
 				);
-				if (strlen($def_array['usage']) > $longest)
-					$longest = strlen($def_array['usage']);
+				if (strlen($def_arr['usage']) > $longest)
+					$longest = strlen($def_arr['usage']);
 			}
 			$longest = ($longest > 0) ? $longest + 2 : 0;
 			echo "\nOptions:\n";
@@ -73,11 +71,10 @@ class CLIScript
 
 	function parseArgs()
 	{
-		$defs = $this->options;
 		$short_opts = "";
 		$long_opts = array();
 
-		foreach ($defs as $k => $v) {
+		foreach ($this->options as $k => $v) {
 			if (isset($v['short']))
 				$short_opts .= $v['short'];
 			if (isset($v['long']))
@@ -87,9 +84,9 @@ class CLIScript
 		$options = getopt($short_opts, $long_opts);
 		$args = array();
 		foreach ($options as $opt_name => $opt_value) {
-			foreach ($defs as $def_name => $def_array) {
-				if ($opt_name == rtrim($def_array['short'], ':') || $opt_name == rtrim($def_array['long'], ':')) {
-					if ($def_array['filter'] && !$args[$def_name] = filter_var($opt_value, $def_array['filter'], $def_array['filter_options']))
+			foreach ($this->options as $def_name => $def_arr) {
+				if ($opt_name == rtrim($def_arr['short'], ':') || $opt_name == rtrim($def_arr['long'], ':')) {
+					if (isset($def_arr['filter']) && !$args[$def_name] = filter_var($opt_value, $def_arr['filter'], $def_arr['filter_options']))
 						trigger_error("invalid value for " . $def_name . " '$opt_value' ");
 					else
 						$args[$def_name] = $opt_value;
@@ -259,7 +256,7 @@ if (isset($args['list'])) {
 }
 
 if (isset($args['paragraphs']) || isset($args['sentences']))
-	echo Lipsum::paragraphs($args['paragraphs']? : 1, $args['sentences']? : null) . "\n";
+	echo Lipsum::paragraphs(isset($args['paragraphs'])? $args['paragraphs'] : 1, isset($args['sentences'])? $args['sentences'] : null) . "\n";
 elseif (isset($args['words']))
 	echo Lipsum::words((int) $args['words']);
 else

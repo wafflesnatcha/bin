@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # probeui.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="probeui.sh"
-SCRIPT_VERSION="1.0.7 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-06"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -11,10 +11,12 @@ Usage: ${0##*/} [OPTION]... APPLICATION
 
 Options:
  -d, --depth NUM        Maximum depth to recurse
- -e, --exclude CLASSES  A comma separated list of UI Element child classes to
-                        ignore (i.e. "menu bar, slider, grow area")
+ -e, --exclude CLASSES  UI Element child classes to ignore
  -p, --pretty           Output in a more human friendly format
  -h, --help             Show this help
+
+Example:
+    ${0##*/} -d2 -p -e "menu bar, slider, grow area" Finder
 EOF
 }
 
@@ -36,9 +38,9 @@ while (($#)); do
 		-h|--help) usage; exit 0 ;;
 		-d*|--depth) [[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1:2}" || { opt_depth=$2; shift; } ;;
 		-e*|--exclude)
-		[[ $1 =~ ^\-[a-z].+$ ]] && opt_exclude="${1:2}" || { opt_exclude=$2; shift; }
-		opt_exclude=$(echo "$opt_exclude" | tr ',' '\n' | xargs -I % echo -n '"'%'",')
-		opt_exclude="${opt_exclude%,}"
+		[[ $1 =~ ^\-[a-z].+$ ]] && v="${1:2}" || { v="$2"; shift; }
+		v=$(echo "$v" | tr ',' '\n' | xargs -I % echo -n '"'%'",')
+		opt_exclude="${v%,}"
 		;;
 		-p|--pretty) opt_pretty=1 ;;
 		--) break ;;
@@ -70,7 +72,7 @@ on probeUIElement(_element, _depth)
 		set a to {}
 		try
 			repeat with i in (attributes of _element)
-				copy properties of i to the end of a
+				if (name of i) is not "AXChildren" then copy { name: name of i, value: value of i, settable: settable of i} to the end of a
 			end repeat
 		end try
 		if (count of a) is greater than 0 then set output to output & {|attributes|:a}
@@ -78,7 +80,7 @@ on probeUIElement(_element, _depth)
 		set a to {}
 		try
 			repeat with i in (actions of _element)
-				copy properties of i to the end of a
+				copy { name: name of i, description: description of i} to the end of a
 			end repeat
 		end try
 		if (count of a) is greater than 0 then set output to output & {|actions|:a}
@@ -110,31 +112,33 @@ EOF
 [[ ! $opt_pretty ]] && { cat "$tmpfile"; exit 0; }
 
 ruby <<'EOF' - "$tmpfile"
-require 'strscan'
 if ! ARGV[0] then exit end
-input = StringScanner.new(File.read(ARGV[0]))
-$indent_level = 0
-$indent_string = "	"
+require 'strscan'
+$level = 0
+$indent_string = "    "
 def indent
-	if $indent_level < 0 then $indent_level = 0 end
-	$indent_string * $indent_level
+	$level = 0 if $level < 0
+	$indent_string * $level
 end
 def newline
 	"\n" + indent.to_s
 end
+input = StringScanner.new(File.read(ARGV[0]))
 until input.eos?
-	if input.scan(/"/m) then print "\"" + input.scan(/[^"]*"/).to_s
+	if input.scan(/"([^"]*)"/) then print '"' + input[1] + '"'
 	elsif input.scan(/\s*:\s*/) then print ": "
-	elsif input.scan(/\s*,\s*/m) then print "," + newline
+	elsif input.scan(/\s*,\s*/) then print "," + newline
+	elsif input.scan(/\s*\{\s*([\d,\s]+)\s*\}\s*/)
+		print "{ " + input[1].gsub(/\s/, '').gsub(/,/, ', ').chomp() + " }"
+		input.scan(/\s*\}\s*/)
 	elsif input.scan(/\s*\{\s*\}\s*/) then print "{}"
 	elsif input.scan(/\s*\{\s*/)
-		$indent_level += 1
+		$level += 1
 		print "{" + newline
-	elsif input.scan(/\s*\}\s*/m)
-		$indent_level -= 1
+	elsif input.scan(/\s*\}\s*/)
+		$level -= 1
 		print newline + "}"
-	else
-		print input.scan(/[^\{\},:"]+/m).to_s
+	else print input.scan(/.{1}/).to_s
 	end
 end
 EOF
