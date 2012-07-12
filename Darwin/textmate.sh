@@ -62,6 +62,8 @@ textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
 # HTML functions
 #
 
+html_redirect() { . "$TM_SUPPORT_PATH/lib/html.sh" && redirect "$@" && exit_show_html; }
+
 # HTML encode text <, >, &
 #
 # Examples:
