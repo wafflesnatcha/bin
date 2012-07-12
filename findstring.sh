@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # findstring.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="findstring.sh"
-SCRIPT_VERSION="1.1.4 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -38,7 +38,7 @@ while (($#)); do
 		-f|--filenames) opt_filenames=1 ;;
 		-i|--ignore-case) opt_ignore_case=1 ;;
 		-p*|--path) [[ $1 =~ ^\-[a-z].+$ ]] && opt_path="${1:2}" || { opt_path=$2; shift; } ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

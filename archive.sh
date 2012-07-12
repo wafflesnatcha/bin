@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # archive.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="archive.sh"
-SCRIPT_VERSION="1.1.9 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -97,7 +97,7 @@ while (($#)); do
 		--zip)  opt_format="zip" ;;
 		-d|--date) opt_date="${opt_prefix_date}$(date +$opt_date_format)" ;;
 		-o*|--output) [[ $1 =~ ^\-[a-z].+$ ]] && opt_output="${1:2}" || { opt_output=$2; shift; } ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

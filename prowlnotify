@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # prowlnotify by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="prowlnotify"
-SCRIPT_VERSION="1.1.6 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -63,7 +63,7 @@ while (($#)); do
 		shift
 		;;
 		-u|--url) opt_is_url=1 ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

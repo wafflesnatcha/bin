@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # crush.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="r2 2012-07-04"
+SCRIPT_VERSION="r3 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -38,7 +38,7 @@ while (($#)); do
 		--pngcrush) opt_pngbin="pngcrush" ;;
 		-h|--help) usage; exit 0 ;;
 		-p|--percentage) opt_percentage=1 ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

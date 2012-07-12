@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # benchmark.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="benchmark.sh"
-SCRIPT_VERSION="0.4.0 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-11"
 
 opt_delay=0
 opt_iterations=2
@@ -54,6 +54,7 @@ while (($#)); do
 			[[ $1 =~ ^\-[a-z].+$ ]] && opt_iterations="${1:2}" || { opt_iterations=$2; shift; }
 			[[ ! $opt_iterations =~ ^[0-9]+$ || $opt_iterations < 1 ]] && ERROR "invalid iterations" 1
 		;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

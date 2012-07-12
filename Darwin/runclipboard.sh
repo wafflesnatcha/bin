@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # runclipboard.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="runclipboard.sh"
-SCRIPT_VERSION="1.0.4 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -38,7 +38,7 @@ while (($#)); do
 		[[ ! $? = 0 ]] && ERROR "bad interpreter" 1
 		shift
 		;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

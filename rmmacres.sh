@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # rmmacres.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="r2 2012-07-02"
+SCRIPT_VERSION="r3 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -45,7 +45,7 @@ while (($#)); do
 		-i|--icons) fparams="$fparams $par_icons" ;;
 		-m|--misc) fparams="$fparams $par_misc" ;;
 		-a|--all) fparams="$fparams $par_dsstore $par_forks $par_icons $par_misc" ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

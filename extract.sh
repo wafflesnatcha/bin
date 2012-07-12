@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # extract.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="extract.sh"
-SCRIPT_VERSION="0.2.1 2012-05-25"
+SCRIPT_VERSION="r1 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -16,7 +16,7 @@ ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
 while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac

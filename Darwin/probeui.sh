@@ -43,7 +43,7 @@ while (($#)); do
 		opt_exclude="${v%,}"
 		;;
 		-p|--pretty) opt_pretty=1 ;;
-		--) break ;;
+		--) shift; break ;;
 		-*|--*) ERROR "unknown option ${1}" 1 ;;
 		*) break ;;
 	esac
