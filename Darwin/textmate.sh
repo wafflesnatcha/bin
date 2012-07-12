@@ -97,18 +97,19 @@ html_error() {
 }
 
 #
-# Tool Tip functions
+# Tooltip functions
 #
 
 # Standard tooltip
-tooltip() {
-	tooltip_html default --text "$(html_encode_br "$@")"
-}
+tooltip() { tooltip_template default --text "$(html_encode_br "$@")"; }
+
+# Standard tooltip, but don't HTML encode
+tooltip_html() { tooltip_template default --text "${@:-$(function_stdin)}"; }
 
 # Red tooltip with a ✘, used for a command has failed.
 tooltip_error() {
 	local input=$(html_encode_br "$@")
-	tooltip_html \
+	tooltip_template \
 		$([[ $input ]] && echo "styled" || echo "styled_notext") \
 		--color 170,14,14 --glyph "&#x2718;" --text "$input"
 }
@@ -116,7 +117,7 @@ tooltip_error() {
 # Green tooltip with a ✔, used for a command has successfully completed.
 tooltip_success() {
 	local input=$(html_encode_br "$@")
-	tooltip_html \
+	tooltip_template \
 		$([[ $input ]] && echo "styled" || echo "styled_notext") \
 		--color 57,154,21 \
 		--glyph "&#x2714;" \
@@ -126,25 +127,25 @@ tooltip_success() {
 # Orange tooltip with a ⚠, used for warnings and such.
 tooltip_warning() {
 	local input=$(html_encode_br "$@")
-	tooltip_html \
+	tooltip_template \
 		$([[ $input ]] && echo "styled" || echo "styled_notext") \
 		--color 175,82,0 \
 		--glyph '<span style="color:yellow">&#x26A0;</span>' \
 		--text "$input"
 }
 
-# tooltip_html TEMPLATE [--VAR REPLACEMENT]...
+# tooltip_template TEMPLATE [--VAR REPLACEMENT]...
 # Show a custom tooltip using $TM_tooltip_template
 #
 # If your custom template has any %%words%% in it, simply pass them to this
-# function as long arguments (i.e. tooltip_html --color 12,139,245).
+# function as long arguments (i.e. tooltip_template --color 12,139,245).
 # See the included templates for more information.
 #
 # Example:
-# $ tooltip_html default --text "This is the tooltip text."
-# $ tooltip_html default --color "12,139,245" --text "This is the tooltip text."
-# $ tooltip_html default --color "12,139,245" --text "This is the tooltip text."
-tooltip_html() {
+# $ tooltip_template default --text "This is the tooltip text."
+# $ tooltip_template default --color "12,139,245" --text "This is the tooltip text."
+# $ tooltip_template default --color "12,139,245" --text "This is the tooltip text."
+tooltip_template() {
 	local template="TM_tooltip_template_$1"
 	local replacement=
 	local lookup=
@@ -163,7 +164,7 @@ tooltip_html() {
 
 	# Replace %%words%% that weren't specified (with their default values if possible)
 	html=$(echo "$html" | perl -pe "s/%%([a-z0-9\-\_]+)%([^%]*)%/\$2/gi")
-	
+
 	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
 }
 
@@ -184,7 +185,8 @@ exit_tooltip_warning() { tooltip_warning "$@" && exit_discard; }
 TM_tooltip_template_default=$(cat <<'EOF'
 <style>
 html,body{background:0;border:0;margin:0;padding:0}
-body{padding:1px 10px 14px}
+body{font:small-caption;padding:1px 10px 14px}
+h1,h2,h3,h4,h5,h6{display:inline;margin:0;padding:0;}
 pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}
 .tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#000;font:small-caption;opacity:0;padding:2px 3px 3px;position:relative}
 @-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
@@ -196,9 +198,6 @@ EOF)
 TM_tooltip_template_styled=$(cat <<'EOF'
 <style>
 html,body{background:0;border:0;margin:0;padding:0}
-
-
-
 body{padding:1px 10px 14px}
 pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}
 .tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;font:small-caption;opacity:0;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.2)}
