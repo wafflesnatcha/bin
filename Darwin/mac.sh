@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r7 2012-07-04"
+SCRIPT_VERSION="r8 2012-07-15"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -143,7 +143,7 @@ mac() {
 		noglass) pref bool "com.apple.dock no-glass" $2 && killall Dock
 		;;
 
-		restart) killall Dock
+		restart|r) killall Dock
 		;;
 
 		size) pref int "com.apple.dock tilesize" $2 && killall Dock
