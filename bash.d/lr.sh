@@ -9,5 +9,5 @@ lr() {
 	
 	find "${1:-.}" -print |
 		perl -pe 's/^(?:.\/)?(.*)$\\n/$1\x00/gim;' |
-		xargs -0 $(alias l | sed -E 's/^alias [^=]+='\''(.*)'\''$/\1/g') -d $f
+		xargs -0 $(alias l | sed -E 's/^alias [^=]+='\''(.*)'\''$/\1/g') $f -d
 }

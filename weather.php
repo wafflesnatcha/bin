@@ -5,7 +5,8 @@ $config = array(
 	'city' => 'Dublin',
 	'state' => 'CA',
 	'url' => 'http://rss.wunderground.com/auto/rss_full/%%state%%/%%city%%.xml?units=english',
-	'say' => '%%temperature%% degrees. %%conditions%%. %%wind speed%% mile an hour winds. %%humidity%% humidity.',
+	'say' => '%%temperature%% degrees, %%conditions%%.',
+	//'say' => '%%temperature%% degrees, %%conditions%%, %%wind speed%% mile an hour winds, %%humidity%% humidity.',
 	'say_command' => '/usr/bin/say'
 );
 
@@ -87,6 +88,8 @@ $say = preg_replace_callback('/%%([^%]*)%%/i', function($m) {
 	return $params[$m[1]];
 }, $config['say']);
 
-if($config['say_command']) {
-	shell_exec(escapeshellarg($config['say_command']). ' '. escapeshellarg($say));
+if(isset($config['say_command'])) {
+	shell_exec($config['say_command']. ' '. escapeshellarg($say));
+} else {
+	echo "$say\n";
 }
