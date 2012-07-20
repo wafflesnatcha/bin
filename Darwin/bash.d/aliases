@@ -1,3 +1,4 @@
+alias coords="CoreLocationCLI -once | perl -pe '"'s/^<\+?(\-?[\d\.]+),\s*(\-?[\d\.]+).*$/$1, $2/i'"'"
 alias cpath='/bin/echo -n "$PWD" | pbcopy'
 alias gl='gls -Ahlp --color=auto'
 alias l='ls -Abhlp'

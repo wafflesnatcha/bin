@@ -13,3 +13,4 @@ alias l='ls -Ahlp --color=auto'
 alias phpstylist='php -f "`type -p phpStylist.php`" --'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias rmxattr='xattr -cr'
+alias wan_ip="curl -qsL 'http://checkip.dyndns.com' | perl -pe 's/^.*Current IP Address: ([0-9\.]+)\<.*$/\$1/i'"
