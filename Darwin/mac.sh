@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r8 2012-07-15"
+SCRIPT_VERSION="r9 2012-07-19"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -16,6 +16,7 @@ Commands:
 
  dock addspace          Add a spacer to the dock
  dock dimhidden [BOOL]  Hidden applications appear dimmer on the dock
+ dock lock-size [BOOL]  Disallow changes to the dock size
  dock noglass [BOOL]    Toggle the 3d display of the dock
  dock restart           Reload the dock
  dock size [PIXELS]     Set the tile size of dock items
@@ -134,19 +135,22 @@ mac() {
 	dock|d) shift
 	case $arg2 in
 
-		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && killall Dock
+		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart
 		;;
 
-		dimhidden) pref bool "com.apple.dock showhidden" $2 && killall Dock
+		dimhidden) pref bool "com.apple.dock showhidden" $2 && mac dock restart
 		;;
 
-		noglass) pref bool "com.apple.dock no-glass" $2 && killall Dock
+		lock-size) pref bool "com.apple.Dock size-immutable" $2 && mac dock restart
+		;;
+
+		noglass) pref bool "com.apple.dock no-glass" $2 && mac dock restart
 		;;
 
 		restart|r) killall Dock
 		;;
 
-		size) pref int "com.apple.dock tilesize" $2 && killall Dock
+		size) pref int "com.apple.dock tilesize" $2 && mac dock restart
 		;;
 
 		*) unknown_command "$1"; return

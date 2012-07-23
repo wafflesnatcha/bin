@@ -70,7 +70,7 @@ html_redirect() { . "$TM_SUPPORT_PATH/lib/html.sh" && redirect "$@" && exit_show
 # $ html_encode "<some text> you want to encode & stuff"
 # $ cat "/some/file.html" | html_encode
 html_encode() {
-	echo -e "${@:-$(function_stdin)}" |
+	echo -en "${@:-$(function_stdin)}" |
 		perl -pe '$|=1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
 
@@ -107,30 +107,25 @@ tooltip_html() { tooltip_template default --text "${@:-$(function_stdin)}"; }
 
 # Red tooltip with a ✘, used for a command has failed.
 tooltip_error() {
-	local input=$(html_encode_br "$@")
-	tooltip_template \
-		$([[ $input ]] && echo "styled" || echo "styled_notext") \
-		--color 170,14,14 --glyph "&#x2718;" --text "$input"
+	local input="$(html_encode_br "$@")"
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" \
+		--color 170,14,14 --glyph "&#x2718;"
 }
 
 # Green tooltip with a ✔, used for a command has successfully completed.
 tooltip_success() {
-	local input=$(html_encode_br "$@")
-	tooltip_template \
-		$([[ $input ]] && echo "styled" || echo "styled_notext") \
-		--color 57,154,21 \
-		--glyph "&#x2714;" \
-		--text "$input"
+	local input="$(html_encode_br "$@")"
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input"\
+		--color 57,154,21 --glyph "&#x2714;"
 }
 
 # Orange tooltip with a ⚠, used for warnings and such.
 tooltip_warning() {
-	local input=$(html_encode_br "$@")
-	tooltip_template \
-		$([[ $input ]] && echo "styled" || echo "styled_notext") \
-		--color 175,82,0 \
-		--glyph '<span style="color:yellow">&#x26A0;</span>' \
-		--text "$input"
+	local input="$(html_encode_br "$@")"
+	[[ $input ]] && echo "TRUE" || echo "FALSE"
+	echo "\$input='$input'"
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" \
+		--color 175,82,0 --glyph '<span style="color:yellow">&#x26A0;</span>'
 }
 
 # tooltip_template TEMPLATE [--VAR REPLACEMENT]...
@@ -149,7 +144,6 @@ tooltip_template() {
 	local replacement=
 	local lookup=
 	local html="$(echo "${!template}")"
-	echo "$html"
 	shift
 
 	# Replace %%words%%
@@ -183,8 +177,7 @@ exit_tooltip_warning() { tooltip_warning "$@" && exit_discard; }
 # Variables: text, [color]
 TM_tooltip_template_default=$(cat <<'EOF'
 <style>
-html,body{background:0;border:0;margin:0;padding:0}
-body{font:small-caption;padding:1px 10px 14px}
+html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;padding:1px 10px 14px}
 h1,h2,h3,h4,h5,h6{display:inline;margin:0;padding:0;}
 pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}
 .tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#000;font:small-caption;opacity:0;padding:2px 3px 3px;position:relative}
@@ -196,11 +189,10 @@ EOF)
 # Variables: glyph, text, [color]
 TM_tooltip_template_styled=$(cat <<'EOF'
 <style>
-html,body{background:0;border:0;margin:0;padding:0}
-body{padding:1px 10px 14px}
+html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;font-size:11px;line-height:13px;padding:1px 10px 14px}
 pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;font:small-caption;opacity:0;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.2)}
-.glyph{-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:-8px 0 8px -8px rgba(0,0,0,.3) inset;-webkit-box-sizing:border-box;-webkit-mask-image:-webkit-linear-gradient(top,rgba(0,0,0,1) 75%,rgba(0,0,0,.5));background-image:-webkit-linear-gradient(top,rgba(0,0,0,.2),rgba(0,0,0,.1));box-sizing:border-box;font-family:monospace,webdings;height:100%;padding:2px 0 0;position:absolute;text-align:center;text-shadow:0 -1px 0 rgba(0,0,0,.2);width:18px}
+.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:2px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;opacity:0;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+.glyph{-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:-8px 0 8px -8px rgba(0,0,0,.3) inset;-webkit-box-sizing:border-box;-webkit-mask-image:-webkit-linear-gradient(top,rgba(0,0,0,1) 75%,rgba(0,0,0,.5));background-image:-webkit-linear-gradient(top,rgba(0,0,0,.2),rgba(0,0,0,.1));box-sizing:border-box;font-family:webdings,monospace,sans-serif,serif;height:100%;padding:2px 0 0;position:absolute;text-align:center;text-shadow:0 -1px 0 rgba(0,0,0,.2);width:18px}
 .text{margin-left:18px;padding:2px 3px 3px 4px}
 @-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
 </style>
@@ -210,9 +202,8 @@ EOF)
 # Variables: glyph, [color]
 TM_tooltip_template_styled_notext=$(cat <<'EOF'
 <style>
-html,body{background:0;border:0;margin:0;padding:0}
-body{padding:1px 10px 14px}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:5px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;font:16px/25px monospace,webdings;height:25px;opacity:0;padding:3px;position:relative;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.2);width:25px}
+html,body{background:0;border:0;margin:0;padding:0}body{padding:1px 10px 14px}
+.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:5px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;font:16px/25px webdings,monospace,sans-serif,serif;height:25px;opacity:0;padding:3px;position:relative;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.2);width:25px}
 @-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
 </style>
 <div class="tooltip">%%glyph%%</div>
