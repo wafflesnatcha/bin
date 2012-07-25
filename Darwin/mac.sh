@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r9 2012-07-19"
+SCRIPT_VERSION="r10 2012-07-24"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -23,11 +23,12 @@ Commands:
 
  expose anim-duration [FLOAT|-]  Expose (Mission Control) animation duration
 
- finder showfile PATH...     Make a file visible in Finder
- finder hidefile PATH...     Hide a file in Finder
- finder restart              Restart Finder
- finder fullpathview [BOOL]  Show the full path in the title of Finder windows
- finder showhidden [BOOL]    Toggle visibility of hidden files and folders
+ finder showfile FILE...      Make a file visible in Finder
+ finder hidefile FILE...      Hide a file in Finder
+ finder restart               Restart Finder
+ finder fullpathview [BOOL]   Show the full path in the title of Finder windows
+ finder seticon ICNS FILE...  Change the icon for a file using a .icns file
+ finder showhidden [BOOL]     Toggle visibility of hidden files and folders
 
  itunes halfstars [BOOL]   Enable ratings with half stars
  itunes hideping [BOOL]    Hide the "Ping" arrows
@@ -114,7 +115,7 @@ mac() {
 
 	case $arg1 in
 
-	directory|dir) shift
+	directory|di|dir) shift
 	case $arg2 in
 
 		groups) dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
@@ -132,7 +133,7 @@ mac() {
 	esac
 	;;
 
-	dock|d) shift
+	dock|d|do|doc) shift
 	case $arg2 in
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart
@@ -159,7 +160,7 @@ mac() {
 	esac
 	;;
 
-	expose|e) shift
+	expose|e|ex|exp) shift
 	case $arg2 in
 
 		anim-duration) pref float "com.apple.dock expose-animation-duration" $2 && killall Dock
@@ -171,10 +172,13 @@ mac() {
 	esac
 	;;
 
-	finder|f) shift
+	finder|f|fi|fin) shift
 	case $arg2 in
 
-		showhidden) pref bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
+		hidefile|hf) shift; which chflags &>/dev/null && runForEach "chflags -h hidden" "$@" || runForEach "setfile -P -a V" "$@"
+		;;
+
+		showfile|sf) shift; which chflags &>/dev/null && runForEach "chflags -h nohidden" "$@" || runForEach "setfile -P -a v" "$@"
 		;;
 
 		fullpathview) pref bool "com.apple.finder _FXShowPosixPathInTitle" $2
@@ -183,10 +187,18 @@ mac() {
 		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
 		;;
 
-		showfile|sf) shift; which chflags &>/dev/null && runForEach "chflags -h nohidden" "$@" || runForEach "setfile -P -a v" "$@"
+		seticon|si)
+		shift; local icns="$1"; shift
+		cat <<-EOF | python - "$icns" "$@"
+		import sys
+		from AppKit import *
+		i=NSImage.alloc().initWithContentsOfFile_(sys.argv[1])
+		for p in sys.argv[2:]:
+		    NSWorkspace.sharedWorkspace().setIcon_forFile_options_(i, p, 0)
+		EOF
 		;;
 
-		hidefile|hf) shift; which chflags &>/dev/null && runForEach "chflags -h hidden" "$@" || runForEach "setfile -P -a V" "$@"
+		showhidden|sh) pref bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
 		;;
 
 		*) unknown_command "$1"; return
@@ -195,7 +207,7 @@ mac() {
 	esac
 	;;
 
-	itunes|i) shift
+	itunes|i|it) shift
 	case $arg2 in
 
 		halfstars) pref bool "com.apple.iTunes allow-half-stars" $2
