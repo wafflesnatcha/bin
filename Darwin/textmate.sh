@@ -51,12 +51,22 @@ function_stdin() {
 
 # textmate_open FILE [LINE, [COLUMN]]
 # Open a file in textmate at a given LINE and COLUMN
-textmate_open() { open "txmt://open?url=file://$1${2:+&line=$2}${3:+&column=$3}"; }
+textmate_open() {
+	growlnotify -m "open \"txmt://open?url=file://$1${2:+&line=$2}${3:+&column=$3}\"" -t ""
+	open "txmt://open?url=file://$1${2:+&line=$2}${3:+&column=$3}"
+}
 
-# textmate_goto [LINE, [COLUMN]]
-# Alias to `textmate_open "${TM_FILEPATH}" LINE COLUMN`
-textmate_goto() { textmate_open "${TM_FILEPATH}" $1 $2; }
-
+# textmate_goto [FILE [LINE [COLUMN]]] | [LINE [COLUMN]]
+# Open a file (or the current file) in textmate at a given LINE and COLUMN
+textmate_goto() {
+	if [[ ! -f "$1" ]]; then
+		open "txmt://open?url=file://${TM_FILEPATH}${1:+&line=$1}${2:+&column=$2}"
+		return
+	fi
+	local f="$1"
+	[[ ! "${1:0:1}" = "/" && -f "$PWD/$1" ]] && f="$PWD/$1"
+	open "txmt://open?url=file://${f}${2:+&line=$2}${3:+&column=$3}"
+}
 
 #
 # HTML functions
@@ -69,14 +79,8 @@ html_redirect() { . "$TM_SUPPORT_PATH/lib/html.sh" && redirect "$@" && exit_show
 # Examples:
 # $ html_encode "<some text> you want to encode & stuff"
 # $ cat "/some/file.html" | html_encode
-html_encode() {
-	echo -en "${@:-$(function_stdin)}" |
-		perl -pe '$|=1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
-}
-
-html_encode_br() {
-	html_encode "${@:-$(function_stdin)}" | perl -pe 's/\n/<br>/g;'
-}
+html_encode() { echo -en "${@:-$(function_stdin)}" | perl -pe '$|=1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'; }
+html_encode_br() { html_encode "${@:-$(function_stdin)}" | perl -pe 's/\n/<br>/g;'; }
 
 # Open a nicely formatted HTML error message
 #
@@ -89,7 +93,8 @@ html_error() {
 	. "$TM_SUPPORT_PATH/lib/webpreview.sh"
 	html_header "${2:-Error}"
 	echo '<pre class="viewport theme-error" style="border:3px solid #f00;"><code>'
-	echo "$(html_encode "$@" | perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?'"${url_param}"'line=$3\&column=$4\">$2<\/a>$5/mi')"
+	# echo "$(html_encode "$@" | perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?'"${url_param}"'line=$3\&column=$4\">$2<\/a>$5/mi')"
+	echo "$(html_encode "$@")"
 	echo '</code></pre>'
 	html_footer
 	exit_show_html
@@ -108,30 +113,25 @@ tooltip_html() { tooltip_template default --text "${@:-$(function_stdin)}"; }
 # Red tooltip with a ✘, used for a command has failed.
 tooltip_error() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" \
-		--color 170,14,14 --glyph "&#x2718;"
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" --color 170,14,14 --glyph '&#x2718;'
 }
 
 # Green tooltip with a ✔, used for a command has successfully completed.
 tooltip_success() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input"\
-		--color 57,154,21 --glyph "&#x2714;"
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" --color 57,154,21 --glyph '&#x2714;'
 }
 
 # Orange tooltip with a ⚠, used for warnings and such.
 tooltip_warning() {
 	local input="$(html_encode_br "$@")"
-	[[ $input ]] && echo "TRUE" || echo "FALSE"
-	echo "\$input='$input'"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" \
-		--color 175,82,0 --glyph '<span style="color:yellow">&#x26A0;</span>'
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" --color 175,82,0 --glyph '<b class="bigger" style="color:yellow">&#x26A0;</b>'
 }
 
 # tooltip_template TEMPLATE [--VAR REPLACEMENT]...
 # Show a custom tooltip using $TM_tooltip_template
 #
-# If your custom template has any %%words%% in it, simply pass them to this
+# If your custom template has any <%words%> in it, simply pass them to this
 # function as long arguments (i.e. tooltip_template --color 12,139,245).
 # See the included templates for more information.
 #
@@ -146,17 +146,17 @@ tooltip_template() {
 	local html="$(echo "${!template}")"
 	shift
 
-	# Replace %%words%%
+	# Replace <%words%>
 	while (($#)); do
 		[[ ! "$1" =~ ^-- ]] && break
 		lookup="${1:2}"
-		replacement=$(regex_escape "$2")
-		html=$(echo "$html" | perl -pe "s/%%${lookup}%([^%]*)%/${replacement}/g")
+		# replacement=$(regex_escape "$2")
+		html=$(echo "$html" | perl -pe "s/<%${lookup}%([^>]*)>/$(regex_escape "$2")/g")
 		shift 2
 	done
 
-	# Replace %%words%% that weren't specified (with their default values if possible)
-	html=$(echo "$html" | perl -pe "s/%%([a-z0-9\-\_]+)%([^%]*)%/\$2/gi")
+	# Replace <%words%> that weren't specified (with their default values if possible)
+	html=$(echo "$html" | perl -pe "s/<%([a-z0-9\-\_]+)%([^>]*)>/\$2/gi")
 
 	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
 }
@@ -176,39 +176,33 @@ exit_tooltip_warning() { tooltip_warning "$@" && exit_discard; }
 
 # Variables: text, [color]
 TM_tooltip_template_default=$(cat <<'EOF'
-<style>
-html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;padding:1px 10px 14px}
-h1,h2,h3,h4,h5,h6{display:inline;margin:0;padding:0;}
-pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#000;font:small-caption;opacity:0;padding:2px 3px 3px;position:relative}
-@-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
-</style>
-<div class="tooltip">%%text%%</div>
+<style>html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;padding:1px 10px 14px}h1,h2,h3,h4,h5,h6{display:inline;margin:0;padding:0;}pre,code,tt{font-family:Menlo,Monaco,monospace;font-size:inherit;margin:0}
+.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(<%color%255,255,185>,.95);color:#000;font:small-caption;opacity:0;padding:2px 3px 3px;position:relative}
+@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}
+</style><div class="tooltip"><%text%></div>
 EOF)
 
 # Variables: glyph, text, [color]
 TM_tooltip_template_styled=$(cat <<'EOF'
-<style>
-html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;font-size:11px;line-height:13px;padding:1px 10px 14px}
-pre,code,tt{font-family:Menlo,monaco,monospace;font-size:inherit;margin:0}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:2px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;opacity:0;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.2)}
-.glyph{-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:-8px 0 8px -8px rgba(0,0,0,.3) inset;-webkit-box-sizing:border-box;-webkit-mask-image:-webkit-linear-gradient(top,rgba(0,0,0,1) 75%,rgba(0,0,0,.5));background-image:-webkit-linear-gradient(top,rgba(0,0,0,.2),rgba(0,0,0,.1));box-sizing:border-box;font-family:webdings,monospace,sans-serif,serif;height:100%;padding:2px 0 0;position:absolute;text-align:center;text-shadow:0 -1px 0 rgba(0,0,0,.2);width:18px}
-.text{margin-left:18px;padding:2px 3px 3px 4px}
-@-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
-</style>
-<div class="tooltip"><div class="glyph">%%glyph%%</div><div class="text">%%text%%</div></div>
+<style>html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;font-size:11px;line-height:13px;padding:1px 10px 14px}pre,code,tt{font-family:Menlo,Monaco,monospace;font-size:inherit;margin:0}
+.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:2px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px rgba(0,0,0,.4);background:rgba(<%color%255,255,185>,.95);color:#fff;opacity:0;overflow:hidden;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+.glyph{-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:-8px 0 8px -8px rgba(0,0,0,.3) inset;-webkit-box-sizing:border-box;-webkit-mask-image:-webkit-linear-gradient(top,rgba(0,0,0,1)75%,rgba(0,0,0,.5));background-image:-webkit-linear-gradient(top,rgba(0,0,0,.2),rgba(0,0,0,.1));box-sizing:border-box;font-family:webdings,freesans,freeserif,monospace,sans-serif,serif;height:100%;padding:2px 0 0;position:absolute;text-align:center;text-shadow:0 -1px 0 rgba(0,0,0,.2);width:19px}
+.glyph .bigger{font-size:13px;line-height:17px}
+.text{margin-left:19px;padding:2px 3px 3px 4px}
+@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}
+</style><div class="tooltip"><div class="glyph"><%glyph%></div><div class="text"><%text%></div></div>
 EOF)
 
 # Variables: glyph, [color]
 TM_tooltip_template_styled_notext=$(cat <<'EOF'
-<style>
-html,body{background:0;border:0;margin:0;padding:0}body{padding:1px 10px 14px}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:5px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(%%color%255,255,185%,.95);color:#fff;font:16px/25px webdings,monospace,sans-serif,serif;height:25px;opacity:0;padding:3px;position:relative;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.2);width:25px}
-@-webkit-keyframes fadeIn {	0% { opacity: 0 } 100% { opacity: .9999 } }
-</style>
-<div class="tooltip">%%glyph%%</div>
+<style>html,body{background:0;border:0;margin:0;padding:0}body{padding:1px 10px 14px}
+.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:5px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(<%color%255,255,185>,.95);color:#fff;font:16px/25px webdings,monospace,sans-serif,serif;height:25px;opacity:0;padding:3px;position:relative;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.2);width:25px}
+@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}
+</style><div class="tooltip"><%glyph%></div>
 EOF)
 
+export ${!TM_tooltip*}
+export -f exit_tooltip exit_tooltip_error exit_tooltip_success exit_tooltip_warning function_stdin html_encode html_encode_br html_error html_redirect regex_escape require temp_file textmate_goto textmate_open tooltip tooltip_error tooltip_html tooltip_success tooltip_template tooltip_warning
 
 #
 # Tests
