@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # rmmacres.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="rmmacres.sh"
-SCRIPT_VERSION="r3 2012-07-11"
+SCRIPT_VERSION="r4 2012-08-09"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -11,12 +11,13 @@ Usage: ${0##*/} [OPTION]... [PATH]...
 
 Options:
  -a, --all        Same as -fism
+ -s, --dsstore    Remove Finder settings files (.DS_Store)
  -f, --forks      Remove resource forks (._*)
  -i, --icons      Remove custom icons (Icon\r)
- -s, --dsstore    Remove Finder settings files (.DS_Store)
  -m, --misc       Remove other miscellaneous files (.localized)
  -d, --depth NUM  Maximum depth to search in subdirectories
- -n, --dry-run    Show what would be deleted and exit
+ -n, --dry-run    Show what would be deleted and exit (overrides -q)
+ -q, --quiet      Supress listing deleted files
  -h, --help       Show this help
 EOF
 }
@@ -35,6 +36,7 @@ while (($#)); do
 	case $1 in
 		-h|--help) usage; exit 0 ;;
 		-n|--dry-run) opt_dryrun=1 ;;
+		-q|--quiet) opt_quiet=1 ;;
 		-d*|--depth)
 			[[ $1 =~ ^\-[a-z].+$ ]] && opt_depth="${1:2}" || { opt_depth=$2; shift; }
 			[[ ! $opt_depth =~ ^[0-9]*$ ]] && ERROR "invalid depth" 1
@@ -56,7 +58,11 @@ done
 
 args=$(cat <<EOF
 $fopts
-( -name '.Trash' -o -name '.Trashes' -o -name 'lost+found' ) -prune -o
+(
+	-name .Trash -o
+	-name .Trashes -o
+	-name 'lost+found'
+) -prune -o
 (
 	-false
 	$fparams
@@ -66,5 +72,7 @@ $( [[ ! $opt_dryrun ]] && echo '-exec rm \{\} \;' )
 EOF)
 
 for path in "${@:-$PWD}"; do
-	echo "$args" | xargs find -s "$path"
+	[[ $opt_quiet ]] &&
+		echo "$args" | xargs find -s "$path" 1>/dev/null ||
+		echo "$args" | xargs find -s "$path"
 done
