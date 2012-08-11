@@ -1,5 +1,4 @@
 # datauri FILE
-
 datauri() {
 	[ -z "$1" ] && return
 	echo -n "data:$(file -b --mime-type "$1");base64," &&

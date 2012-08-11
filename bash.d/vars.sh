@@ -7,7 +7,7 @@ vars() {
 		local length=$(eval echo "\${#$var[@]}")
 
 		# Not an array
-		[[ $length < 2 ]] && { vars_output "$var"; continue; }
+		[[ $length -lt 2 ]] && { vars_output "$var"; continue; }
 		
 		# Variable is an array, display each element individually
 		for i in $(bash -c "echo {0..$(($length-1))}"); do vars_output "$var[$i]"; done

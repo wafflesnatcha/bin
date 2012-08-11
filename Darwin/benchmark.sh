@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # benchmark.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="benchmark.sh"
-SCRIPT_VERSION="r1 2012-07-11"
+SCRIPT_VERSION="r2 2012-08-10"
 
 opt_delay=0
-opt_iterations=2
+opt_iterations=1
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Benchmark a shell script.
 
-Usage: ${0##*/} [OPTION]... [COMMAND]
+Usage: ${0##*/} [OPTION]...[COMMAND]
 
 Options:
  -d, --delay SECONDS   Seconds to wait in between executions (default ${opt_delay})
@@ -41,7 +41,7 @@ make_cmd() {
 	chmod +x "$TMPCMD"
 }
 
-TIME_BIN=$(which time 2>/dev/null) || ERROR "\`time\` not found" 2
+TIME_BIN=$(which time 2>/dev/null) || ERROR '`time` not found' 2
 
 while (($#)); do
 	case $1 in
