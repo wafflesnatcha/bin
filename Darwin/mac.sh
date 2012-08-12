@@ -21,7 +21,7 @@ Commands:
  dock restart           Reload the dock
  dock size [PIXELS]     Set the tile size of dock items
 
- expose anim-duration [FLOAT|-]  Expose (Mission Control) animation duration
+ expose anim-duration [FLOAT]  Expose (Mission Control) animation duration
 
  finder showfile FILE...      Make a file visible in Finder
  finder hidefile FILE...      Hide a file in Finder
@@ -35,8 +35,10 @@ Commands:
  itunes status             Show current track and artist
  itunes storelinks [BOOL]  Toggle display of the store link arrows
 
- screencap location [PATH]  Change the default save location for screenshots
- screencap type [TYPE]      Format of screen captures (BMP, GIF, JPG, PDF, PNG, TIFF)
+ screencap disable-shadow [BOOL]  Disable window shadows when capturing windows
+ screencap location [PATH]        Default save location for screen captures
+ screencap type [TYPE]            File format of screen captures (BMP, GIF, JPG,
+                                  PDF, PNG, TIFF)
 
  wifi available   Show available wifi networks
  wifi disconnect  Disassociate from any network
@@ -50,41 +52,51 @@ Commands:
 EOF
 }
 
-ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 > -1 ]] && exit $2; }
+ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 -gt -1 ]] && exit $2; }
 
 # pref (TYPE) (DOMAIN&KEY) [VALUE]
 # Set/read a preference item
 pref() {
-	local vartype="$1"
+	local v vartype="$1"
 	shift
-	
-	if [[ ! $2 && ! $vartype = "bool" ]]; then
-		v=$(defaults read $1 2>&1) && { echo $v; return 3; } || { echo "not set"; return 4; }
+
+	# No value specified, output current value instead
+	if [[ ! $2 ]]; then
+		v=$(defaults read $1 2>/dev/null) || { echo "not set"; return 4; }
+		if [[ $vartype = "bool" ]]; then
+			[[ $v = 1 ]] && echo "true" || echo "false"
+		fi
+		return 3
 	fi
-	
+
 	case "$vartype" in
 		date|string)
 		defaults write $1 -$vartype "$2"
 		;;
 
 		float|int)
-		[[ $2 = "-" ]] && defaults delete $1 || defaults write $1 -$vartype $2
+		[[ $2 = "-delete" ]] && defaults delete $1 || defaults write $1 -$vartype $2
 		;;
-		
+
 		array|array-add|dict|dict-add)
 		local key=$1
 		shift
 		defaults write $key -array "$@"
 		;;
-		
+
 		bool)
-		case "$(echo $2 | tr '[:upper:]' '[:lower:]')" in
+		# if [[ ! $2 ]]; then
+		# 	[[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "true"; return 3; } || { echo "false"; return 4; }
+		# fi
+		
+		case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
 			y|yes|1|true|on) defaults write $1 -bool TRUE ;;
 			n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-			*) [[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "true"; return 3; } || { echo "false"; return 4; } ;;
+			-delete) defaults delete $1 ;;
+			*) ERROR "invalid value '$2'" 2 ;;
 		esac
 		;;
-		
+
 		*)
 		defaults write $1 $2
 		;;
@@ -96,7 +108,7 @@ pref() {
 # runForEach COMMAND FILE...
 # Runs COMMAND with FILE as it's argument for every FILE specified.
 runForEach() {
-	[[ ${#} < 2 ]] && return 1;
+	[[ ${#} -lt 2 ]] && return 1;
 	local cmd=$1
 	shift
 	local f
@@ -238,12 +250,15 @@ mac() {
 	screencap|s) shift
 	case $arg2 in
 
+		disable-shadow) pref bool "com.apple.screencapture disable-shadow" $2 && killall SystemUIServer
+		;;
+
 		location) pref string "com.apple.screencapture location" $2 && killall SystemUIServer
 		;;
 
 		type) pref string "com.apple.screencapture type" $2 && killall SystemUIServer
 		;;
-		
+
 		*) unknown_command "$1"; return
 		;;
 
@@ -289,6 +304,12 @@ mac() {
 	;;
 
 	esac
+	
+	retcode=$?
 }
 
 mac "$@"
+retcode=$?
+
+# Error codes 3 & 4 aren't actually errors, they're just used internally
+[[ ! $retcode || $retcode = 3 || $retcode = 4 ]] && exit 0 || exit $retcode
