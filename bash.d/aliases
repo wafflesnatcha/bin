@@ -1,15 +1,21 @@
 alias ..='cd ..'
 alias cd..='cd ..'
-alias finds='findstring.sh -i'
+
 alias geminfo='gem list -db'
 alias gemsearch='gem search -b'
+
 alias gitc='git clone --recursive'
+alias gitlog="git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
+alias gitinfo='[[ -n "$(git symbolic-ref HEAD 2> /dev/null)" ]] && { echo "BRANCHES:"; git remote show | xargs -n1 git remote show; echo -e "\nSTATUS:"; [[ -n "$(git status -s 2>/dev/null)" ]] && git status -s || echo "working directory is clean"; echo -e "\nLOG:"; git log -5 --oneline --color | cat; } || echo "Not a git repository" 1>&2'
 alias gitu='git pull --stat --recurse-submodules=yes'
 alias giturl='git config --get remote.origin.url'
-alias giti='[ -n "$(git symbolic-ref HEAD 2> /dev/null)" ] && { git remote show | xargs -n1 git remote show; echo -e "\nstatus:"; [ -n "$(git status -s 2>/dev/null)" ] && git status -s || "working directory is clean"; echo -e "\nlog:"; git log -5 --oneline --color | cat; } || echo "Not a git repository" 1>&2'
+
+alias l='ls -AhlqU -T4 --file-type --color=auto'
+
+alias cpath='/bin/echo -n "$PWD" | { xclip 2>/dev/null || pbcopy; }'
+alias finds='findstring.sh -i'
+alias getip="curl -qsL 'http://checkip.dyndns.com' | perl -pe 's/^.*Current IP Address: ([0-9\.]+)\<.*$/\$1/i'"
 alias h='history'
-alias l='ls -Ahlp --color=auto'
 alias phpstylist='php -f "$(type -p phpStylist.php 2>/dev/null)" --'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias rmxattr='xattr -cr'
-alias wan_ip="curl -qsL 'http://checkip.dyndns.com' | perl -pe 's/^.*Current IP Address: ([0-9\.]+)\<.*$/\$1/i'"
