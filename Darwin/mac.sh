@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r10 2012-07-24"
+SCRIPT_VERSION="r11 2012-08-16"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -35,6 +35,9 @@ Commands:
  itunes status             Show current track and artist
  itunes storelinks [BOOL]  Toggle display of the store link arrows
 
+ network flushdns  Flush system DNS cache
+ network ports     Show open ports
+
  screencap disable-shadow [BOOL]  Disable window shadows when capturing windows
  screencap location [PATH]        Default save location for screen captures
  screencap type [TYPE]            File format of screen captures (BMP, GIF, JPG,
@@ -45,7 +48,6 @@ Commands:
  wifi info        Print current wireless status
 
  battery       Display battery charge (if applicable)
- flushdns      Flush system DNS cache
  help          Show this help
  lock          Lock the desktop
  updatedb      Update locate database
@@ -55,7 +57,7 @@ EOF
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 -gt -1 ]] && exit $2; }
 
 # pref (TYPE) (DOMAIN&KEY) [VALUE]
-# Set/read a preference item
+# Set/get a preference item.
 pref() {
 	local v vartype="$1"
 	shift
@@ -88,7 +90,7 @@ pref() {
 		# if [[ ! $2 ]]; then
 		# 	[[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "true"; return 3; } || { echo "false"; return 4; }
 		# fi
-		
+
 		case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
 			y|yes|1|true|on) defaults write $1 -bool TRUE ;;
 			n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
@@ -104,7 +106,6 @@ pref() {
 	return
 }
 
-
 # runForEach COMMAND FILE...
 # Runs COMMAND with FILE as it's argument for every FILE specified.
 runForEach() {
@@ -117,6 +118,25 @@ runForEach() {
 		$cmd "$f"
 	done
 }
+
+# osxVersion
+# Return the system's OS X version as an array.
+osxVersion() {
+	[[ ! $__osx_version ]] && __osx_version=( $(sw_vers | grep 'ProductVersion:' | perl -pe 's/^.*?([0-9]+)\.([0-9]+)(?:\.([0-9]+))?.*$/$1 $2 $3/i') )
+	[[ ! $1 ]] && { echo "${__osx_version[@]}" | sed 's/ /./g'; return; }	
+}
+
+# osxVersionLessThan VERSION
+# Returns 0 if the system's OS X version is less than `VERSION`.
+osxVersionLessThan() {
+	osxVersion &>/dev/null || return 2
+	local x c=( $(echo "$1" | sed -E 's/([0-9]+)\./\1 /g') )
+	for (( x=0 ; x < ${#c[@]} && x < ${#__osx_version[@]} ; x++ )); do
+		[[ ${__osx_version[$x]} -lt ${c[$x]} ]] && return 0
+	done
+	return 1
+}
+
 
 mac() {
 	local ARGS="$@"
@@ -247,6 +267,21 @@ mac() {
 	esac
 	;;
 
+	network|n|net) shift
+	case $arg2 in
+
+		flushdns|f|flush) osxVersionLessThan 10.7 && dscacheutil -flushcache || sudo killall -HUP mDNSResponder
+		;;
+
+		ports|p) sudo lsof -i -P | grep -i "listen"
+		;;
+
+		*) unknown_command "$1"; return
+		;;
+
+	esac
+	;;
+
 	screencap|s) shift
 	case $arg2 in
 
@@ -288,9 +323,6 @@ mac() {
 	battery) ioreg -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}'
 	;;
 
-	flushdns) dscacheutil -flushcache
-	;;
-
 	lock) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend
 	;;
 
@@ -304,7 +336,7 @@ mac() {
 	;;
 
 	esac
-	
+
 	retcode=$?
 }
 
