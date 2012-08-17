@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# vim :set ft=sh
+
+set -u
+
+# Show the changes that need to be pushed to the remote the current branch is tracking.
+# If this script is in your $PATH it can be called like this:
+#
+#   git outgoing
+#
+# The script requires git and ruby to be installed on your system.
+#
+# Copied from: https://raw.github.com/juretta/bin/master/git-outgoing
+
+# Return the name of the current branch
+CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+
+function tracking_branch {
+  branch_name=$1
+  git for-each-ref --format='%(refname:short) %(upstream:short)' refs/heads | grep -e "${branch_name}\$" | awk '{print $2}'
+}
+
+
+# Are we tracking a remote branch?
+TRACKING=$(tracking_branch ${CURRENT_BRANCH})
+
+if [ -z "${TRACKING//[[:space:]]/}" ]; then
+    echo "The current branch '${CURRENT_BRANCH}' does not track an upstream branch"
+    exit -1
+fi
+
+# Log options
+OPTS="--pretty=oneline --abbrev-commit --decorate --color"
+
+# What's the name of the remote?
+REMOTE=$(git config branch.${CURRENT_BRANCH}.remote)
+
+# URL of the remote we are tracking
+REMOTE_URL=$(git config --get remote.${REMOTE}.url)
+
+# E.g. for 'master':
+#  git log master..origin/master
+CHANGES=$(env PAGER="" git log --exit-code $OPTS ${TRACKING}..${CURRENT_BRANCH})
+if [ $? -eq 0 ]; then
+    echo "No changes need to be pushed to ${REMOTE}"
+else
+    echo "Local changes that need to be pushed to ${REMOTE}:"
+    echo "${CHANGES}"
+fi
+
