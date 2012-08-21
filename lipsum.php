@@ -148,8 +148,8 @@ if (isset($args['list'])) {
 }
 if (isset($args['paragraphs']) || isset($args['sentences'])) {
 	echo Lipsum::paragraphs(isset($args['paragraphs']) ? $args['paragraphs'] : 1, isset($args['sentences']) ? $args['sentences'] : null) . "\n";
-} else if {
-	(isset($args['words'])) echo Lipsum::words((int)$args['words']);
+} else if (isset($args['words'])) {
+	echo Lipsum::words((int)$args['words']);
 } else {
 	echo Lipsum::$_default . "\n";
 }
