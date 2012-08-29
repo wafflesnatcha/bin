@@ -18,7 +18,7 @@ if [[ $? = 0 && -e "$app_path" ]]; then
 	echo "$app_path"
 	install_dir="$(dirname "$app_path")"
 	echo -n "getting installed revision... "
-	current_version=$(osascript -e "tell application \"System Events\" to tell property list file \"${app_path}/Contents/Info.plist\" to return |SVNRevision| of (value of contents as record)")
+	current_version=$(osascript -e "tell application \"System Events\" to tell property list file \"${app_path}/Contents/Info.plist\" to return |SCMRevision| of (value of contents as record)" 2>/dev/null)
 	[[ $? > 0 ]] && { echo "?"; current_version=0; } || echo "$current_version"
 else
 	echo "not found"
