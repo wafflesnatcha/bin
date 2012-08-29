@@ -25,7 +25,7 @@ else
 fi
 
 echo -n "finding latest revision... "
-latest_version=$(curl -qsSL --max-time 10 --connect-timeout 15 "$snapshots_url_latest")
+latest_version=$(curl -qsSL -m10 --connect-timeout 15 "$snapshots_url_latest")
 echo "$latest_version"
 
 [[ $current_version -ge $latest_version ]] && { echo "No update necessary"; exit 0; }

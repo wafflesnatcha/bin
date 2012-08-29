@@ -24,7 +24,7 @@ else
 fi
 
 echo -n "finding latest build... "
-URL="$(curl -qsSL --max-time 10 --connect-timeout 15 ${snapshots_url} | grep dmg | head -1 | perl -pe 's/.*(http.*dmg).*/$1/')"
+URL="$(curl -qsSL -m10 --connect-timeout 15 ${snapshots_url} | grep dmg | head -1 | perl -pe 's/.*(http.*dmg).*/$1/')"
 FILE="$(basename "$URL")"
 latest_version=$(echo "$FILE" | perl -pe 's/.*(r\d{6,})\.dmg.*/$1/')
 echo "$latest_version"
