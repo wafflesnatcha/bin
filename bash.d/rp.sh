@@ -11,11 +11,11 @@ rp() {
 }
 
 # cdrp FILE
-# Change directory using path from `rp` command
+# Change directory to the path of the result of `rp`.
 cdrp() {
-	local p="$(rp "$*")"
+	local p=$(rp "$*") || return
 	[[ "$p" && ! -d "$p" ]] && p="$(dirname "$p")"
-	[[ ! "$p" || ! -d "$p" ]] && return 1
+	[[ ! "$p" || ! -d "$p" ]] && return
 	echo "$p" 1>&2
 	cd "$p"
 }
