@@ -13,3 +13,6 @@ alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a
 alias phpstylist='php -f "$(type -p phpStylist.php 2>/dev/null)" --'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias rmxattr='xattr -cr'
+
+alias envf=env_functions
+alias envv=env_vars
