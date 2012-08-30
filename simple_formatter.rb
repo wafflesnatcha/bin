@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
-#
+# 
+# !modified 2012-08-30 Scott Buchanan http://wafflesnatcha.github.com
+# 
 # == Synopsis
-#
+# 
 # Simple Ruby Formatter
 #
 # Created by: Stephen Becker IV
@@ -118,7 +120,7 @@ end
 #its not a one liner
 #and it ends with end
 #or } out number {
-CHECK_ENDS_RX = /end$|end\s+while/
+CHECK_ENDS_RX = /end$|end\s+while|^\s*end\s*[\.\+\-]/
 def check_ends?(string)
 	#check for one liners end and }
 	#string = just_the_string_please(string)
@@ -247,7 +249,7 @@ array_loc.each {|file_loc|
 		#here docs have same type of logic for block comments
 		unless x.lstrip.scan(/<<-/).empty?
 			#swap and set
-			here_doc_ending = x.lstrip.split(/<<-/).last.strip
+			here_doc_ending = x.lstrip.split(/<<-/).last.strip.gsub(/^([\w]+).*/, '\1')
 			temp_depth = current_depth
 		end
 		#whats the first word?

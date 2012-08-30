@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
-set_error_handler(function ($num, $str, $file, $line) {
+set_error_handler(function ($num, $str, $file, $line)
+{
 	file_put_contents("php://stderr", "[" . $file . ":" . $line . "] " . $str . "\n");
 });
-
 require_once "PHP/Beautifier.php";
 
 /**
@@ -11,38 +11,23 @@ require_once "PHP/Beautifier.php";
  */
 class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 {
-	/**
-     * Description for protected
-     */
-	protected $aFilterTokenFunctions = array(
-		T_DOC_COMMENT => 't_doc_comment',
-		T_IF => 't_if',
-		T_ELSEIF => 't_elseif',
-	);
-
-	/**
-     * Filter settings
-     */
+	/** Filter settings */
 	protected $aSettings = array(
 		'newline_curly_class' => true,
 		'newline_curly_function' => true,
-		'newline_after_function' => false,
 		'switch_without_indent' => false,
 		'nested_array' => true,
 		'concat_else_if' => false,
 		'space_after_if' => true,
 		'keep_blank_lines' => true,
 	);
+	protected $aFilterTokenFunctions = array(
+		T_DOC_COMMENT => 't_doc_comment',
+		T_IF => 't_if',
+		T_ELSEIF => 't_elseif',
+	);
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return unknown Return description (if any) ...
-     * @access public 
-     */
+	/** @inherit */
 	function t_doc_comment($sTag)
 	{
 		if (!$this->oBeaut->isPreviousTokenConstant(T_OPEN_TAG) && !$this->oBeaut->isPreviousTokenConstant(T_COMMENT) && !$this->oBeaut->isPreviousTokenContent('{')) {
@@ -56,15 +41,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		}
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return void   
-     * @access public 
-     */
+	/** @inherit */
 	function t_if($sTag)
 	{
 		if ($this->oBeaut->isPreviousTokenConstant(T_ELSE)) {
@@ -75,15 +52,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return void   
-     * @access public 
-     */
+	/** @inherit */
 	function t_elseif($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -93,15 +62,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  string  $sTag Parameter description (if any) ...
-     * @return unknown Return description (if any) ...
-     * @access public 
-     */
+	/** @inherit */
 	function t_semi_colon($sTag)
 	{
 		// A break statement and the next statement are separated by an empty line
@@ -118,15 +79,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		} else return PHP_Beautifier_Filter::BYPASS;
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  string $sTag Parameter description (if any) ...
-     * @return void  
-     * @access public
-     */
+	/** @inherit */
 	function t_case($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -138,44 +91,20 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		$this->oBeaut->add($sTag . ' ');
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return void   
-     * @access public 
-     */
+	/** @inherit */
 	function t_default($sTag)
 	{
 		$this->t_case($sTag);
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return void   
-     * @access public 
-     */
+	/** @inherit */
 	function t_break($sTag)
 	{
 		$this->oBeaut->add($sTag);
 		if ($this->oBeaut->isNextTokenConstant(T_LNUMBER)) $this->oBeaut->add(' ');
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return unknown Return description (if any) ...
-     * @access public 
-     */
+	/** @inherit */
 	function t_open_brace($sTag)
 	{
 		if ($this->oBeaut->openBraceDontProcess()) {
@@ -184,31 +113,18 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->add($sTag);
 			$this->oBeaut->incIndent();
 		} else {
-			$bypass = true;
-			if ($this->oBeaut->getControlSeq() == T_CLASS && $this->getSetting('newline_curly_class')) {
-				$bypass = false;
-			}
-			if ($this->oBeaut->getControlSeq() == T_FUNCTION && $this->getSetting('newline_curly_function')) {
-				$bypass = false;
-			}
-			if ($bypass) return PHP_Beautifier_Filter::BYPASS;
-			$this->oBeaut->removeWhitespace();
-			$this->oBeaut->addNewLineIndent();
-			$this->oBeaut->add($sTag);
-			$this->oBeaut->incIndent();
-			$this->oBeaut->addNewLineIndent();
+			$c = $this->oBeaut->getControlSeq();
+			if (($c == T_CLASS && $this->getSetting('newline_curly_class')) || ($c == T_FUNCTION && $this->getSetting('newline_curly_function'))) {
+				$this->oBeaut->removeWhitespace();
+				$this->oBeaut->addNewLineIndent();
+				$this->oBeaut->add($sTag);
+				$this->oBeaut->incIndent();
+				$this->oBeaut->addNewLineIndent();
+			} else return PHP_Beautifier_Filter::BYPASS;
 		}
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  unknown $sTag Parameter description (if any) ...
-     * @return unknown Return description (if any) ...
-     * @access public 
-     */
+	/** @inherit */
 	function t_close_brace($sTag)
 	{
 		if ($this->oBeaut->getMode('string_index') || $this->oBeaut->getMode('double_quote')) {
@@ -224,13 +140,6 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->decIndent();
 			$this->oBeaut->addNewLineIndent();
 			$this->oBeaut->add($sTag);
-		} else if ($this->oBeaut->getControlSeq() == T_FUNCTION && $this->getSetting('newline_after_function')) {
-			$this->oBeaut->removeWhitespace();
-			$this->oBeaut->decIndent();
-			$this->oBeaut->addNewLineIndent();
-			$this->oBeaut->add($sTag);
-			$this->oBeaut->addNewLine();
-			$this->oBeaut->addNewLineIndent();
 		} else return PHP_Beautifier_Filter::BYPASS;
 	}
 
@@ -246,15 +155,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		}
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  string $sTag Parameter description (if any) ...
-     * @return void  
-     * @access public
-     */
+	/** @inherit */
 	function t_parenthesis_close($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -268,15 +169,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		} else $this->oBeaut->add($sTag . ' ');
 	}
 
-	/**
-     * Short description for function
-     * 
-     * Long description (if any) ...
-     * 
-     * @param  string $sTag Parameter description (if any) ...
-     * @return void  
-     * @access public
-     */
+	/** @inherit */
 	function t_comma($sTag)
 	{
 		// $this->oBeaut->add(token_name($this->oBeaut->getControlParenthesis()));
@@ -291,6 +184,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 $pb = new PHP_Beautifier();
 $pb->setInputString(file_get_contents('php://stdin'));
 $pb->setNewLine("\n");
+// TextMate indent settings (when run from inside TextMate)
 if (isset($_SERVER['TM_SOFT_TABS'], $_SERVER['TM_TAB_SIZE']) && $_SERVER['TM_SOFT_TABS'] == "YES") {
 	$pb->setIndentChar(" ");
 	$pb->setIndentNumber($_SERVER['TM_TAB_SIZE']);
@@ -298,15 +192,16 @@ if (isset($_SERVER['TM_SOFT_TABS'], $_SERVER['TM_TAB_SIZE']) && $_SERVER['TM_SOF
 	$pb->setIndentChar("\t");
 	$pb->setIndentNumber(1);
 }
+// PHP_Beautifier Fiters
 $filters = array(
 	// 'IndentStyles' => array('style' => 'k&r'), // k&r, allman, gnu, ws
 	'DocBlock',
 	// 'EqualsAlign',
 	'Lowercase', // lowercase all control structures
-	// 'NewLines' => array(
-	// 	'before' => "",
-	// 	'after' => ""
-	// ),
+	'NewLines' => array(
+		'before' => "",
+		'after' => "T_NAMESPACE:"
+	),
 	// 'ArrayNested',
 	// 'Pear' => array(
 	// 	'add_header' => false,

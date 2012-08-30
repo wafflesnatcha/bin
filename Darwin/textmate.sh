@@ -92,7 +92,7 @@ html_error() {
 	[[ $TM_FILEPATH ]] && url_param="$(regex_escape "url=file://${TM_FILEPATH}&")"
 	. "$TM_SUPPORT_PATH/lib/webpreview.sh"
 	html_header "${2:-Error}"
-	echo '<pre class="viewport theme-error" style="border:3px solid #f00;"><code>'
+	echo -n '<pre><code>'
 	# echo "$(html_encode "$@" | perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?'"${url_param}"'line=$3\&column=$4\">$2<\/a>$5/mi')"
 	echo "$(html_encode "$@")"
 	echo '</code></pre>'
