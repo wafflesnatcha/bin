@@ -1,16 +1,28 @@
 #!/usr/bin/env php
 <?php
-// php_beautifier->setBeautify(false)
-set_error_handler(function ($errno, $errstr, $errfile, $errline){file_put_contents("php://stderr", "[" . $errfile . ":" . $errline . "] " . $errstr . "\n");});
-// php_beautifier->setBeautify(true)
+set_error_handler(function ($num, $str, $file, $line) {
+	file_put_contents("php://stderr", "[" . $file . ":" . $line . "] " . $str . "\n");
+});
+
 require_once "PHP/Beautifier.php";
+
+/**
+ * My custom PHP_Beautifier_Filter
+ */
 class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 {
+	/**
+     * Description for protected
+     */
 	protected $aFilterTokenFunctions = array(
 		T_DOC_COMMENT => 't_doc_comment',
 		T_IF => 't_if',
 		T_ELSEIF => 't_elseif',
 	);
+
+	/**
+     * Filter settings
+     */
 	protected $aSettings = array(
 		'newline_curly_class' => true,
 		'newline_curly_function' => true,
@@ -21,6 +33,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		'space_after_if' => true,
 		'keep_blank_lines' => true,
 	);
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return unknown Return description (if any) ...
+     * @access public 
+     */
 	function t_doc_comment($sTag)
 	{
 		if (!$this->oBeaut->isPreviousTokenConstant(T_OPEN_TAG) && !$this->oBeaut->isPreviousTokenConstant(T_COMMENT) && !$this->oBeaut->isPreviousTokenContent('{')) {
@@ -33,6 +55,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			return PHP_Beautifier_Filter::BYPASS;
 		}
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return void   
+     * @access public 
+     */
 	function t_if($sTag)
 	{
 		if ($this->oBeaut->isPreviousTokenConstant(T_ELSE)) {
@@ -42,6 +74,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		$this->oBeaut->add($sTag);
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return void   
+     * @access public 
+     */
 	function t_elseif($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -50,6 +92,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		else $this->oBeaut->add($sTag);
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  string  $sTag Parameter description (if any) ...
+     * @return unknown Return description (if any) ...
+     * @access public 
+     */
 	function t_semi_colon($sTag)
 	{
 		// A break statement and the next statement are separated by an empty line
@@ -62,8 +114,19 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			// The three terms in the head of a for loop are separated by the string "; "
 			$this->oBeaut->removeWhitespace();
 			$this->oBeaut->add($sTag . " "); // Bug 8327
+			
 		} else return PHP_Beautifier_Filter::BYPASS;
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  string $sTag Parameter description (if any) ...
+     * @return void  
+     * @access public
+     */
 	function t_case($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -74,15 +137,45 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		$this->oBeaut->addNewLineIndent();
 		$this->oBeaut->add($sTag . ' ');
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return void   
+     * @access public 
+     */
 	function t_default($sTag)
 	{
 		$this->t_case($sTag);
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return void   
+     * @access public 
+     */
 	function t_break($sTag)
 	{
 		$this->oBeaut->add($sTag);
 		if ($this->oBeaut->isNextTokenConstant(T_LNUMBER)) $this->oBeaut->add(' ');
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return unknown Return description (if any) ...
+     * @access public 
+     */
 	function t_open_brace($sTag)
 	{
 		if ($this->oBeaut->openBraceDontProcess()) {
@@ -106,6 +199,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->addNewLineIndent();
 		}
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  unknown $sTag Parameter description (if any) ...
+     * @return unknown Return description (if any) ...
+     * @access public 
+     */
 	function t_close_brace($sTag)
 	{
 		if ($this->oBeaut->getMode('string_index') || $this->oBeaut->getMode('double_quote')) {
@@ -142,6 +245,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->addIndent();
 		}
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  string $sTag Parameter description (if any) ...
+     * @return void  
+     * @access public
+     */
 	function t_parenthesis_close($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -154,6 +267,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->add($sTag);
 		} else $this->oBeaut->add($sTag . ' ');
 	}
+
+	/**
+     * Short description for function
+     * 
+     * Long description (if any) ...
+     * 
+     * @param  string $sTag Parameter description (if any) ...
+     * @return void  
+     * @access public
+     */
 	function t_comma($sTag)
 	{
 		// $this->oBeaut->add(token_name($this->oBeaut->getControlParenthesis()));
