@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 # crush.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="r3 2012-07-11"
+SCRIPT_VERSION="r4 2012-08-30"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-A quick interface to simplify the processing of images with pngcrush, optipng,
-and/or jpgcrush.
+A quick interface to simplify the processing of images with any of:
+  optipng, pngcrush, jpgcrush
 
 Usage: ${0##*/} [OPTION]... FILE...
 
 Options:
-     --optipng     Use optipng for png files (default)
-     --pngcrush    Use pngcrush for png files
  -p, --percentage  Prefix output lines with overall percent completed (useful
                    when piping to CocoaDialog progressbar)
  -h, --help        Show this help
@@ -30,12 +28,12 @@ temp_file() {
 	trap "rm -f $temp_file__files" EXIT
 }
 
-opt_pngbin="optipng"
+type optipng &>/dev/null && opt_optipng="optipng"
+type pngcrush &>/dev/null && opt_pngcrush="pngcrush"
+type jpgcrush &>/dev/null && opt_jpgcrush="jpgcrush"
 
 while (($#)); do
 	case $1 in
-		--optipng) opt_pngbin="optipng" ;;
-		--pngcrush) opt_pngbin="pngcrush" ;;
 		-h|--help) usage; exit 0 ;;
 		-p|--percentage) opt_percentage=1 ;;
 		--) shift; break ;;
@@ -47,34 +45,36 @@ done
 
 [[ ! $1 ]] && { usage; exit 0; }
 
-count=0
+process() {
+	fext=$(echo "${1##*.}" | tr '[:upper:]' '[:lower:]')
+	case "$fext" in
+		png)
+		if [[ $opt_optipng ]]; then
+			"$opt_optipng" -quiet -preserve "$1"
+		elif [[ $opt_pngcrush ]]; then
+			temp_file tmpfile &&
+				chmod $(stat -f%p "$1") "$tmpfile" &&
+				"$opt_pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$1" "$tmpfile" 2>/dev/null &&
+				mv "$tmpfile" "$1"
+		else
+			return 1
+		fi
+		;;
 
+		jpg|jpeg)
+		[[ ! $opt_jpgcrush ]] && return 1
+		"$opt_jpgcrush" "$1" 1>/dev/null
+		;;
+
+		*) return 1 ;;
+	esac
+}
+
+count=0
 for f in "$@"; do
 	(( count++ ))
 	percent=$(echo "$count/$#*100" | bc -l | xargs printf "%1.0f%%";)
+	process "$f" || continue
 	[[ $opt_percentage ]] && echo -n "$percent [$percent] "
 	echo "$(basename "$f")"
-
-	case "${f##*.}" in
-		png)
-			[[ ! $pngbin ]] && { pngbin=$(which "$opt_pngbin" 2>/dev/null) || ERROR "$opt_pngbin not found" 2; }
-			
-			case "$opt_pngbin" in
-				pngcrush)
-				temp_file tmpfile
-				chmod $(stat -f%p "$f") "$tmpfile"
-				"$pngbin" -rem gAMA -rem alla -rem text -oldtimestamp "$f" "$tmpfile" 2>/dev/null &&
-					mv "$tmpfile" "$f"
-				;;
-				
-				optipng)
-				"$pngbin" -quiet -preserve "$f"
-				;;
-			esac
-		;;
-		jpg|jpeg)
-			[[ ! $jpgcrush ]] && { jpgcrush=$(which jpgcrush 2>/dev/null) || ERROR "jpgcrush not found" 2; }
-			"$jpgcrush" "$f"
-		;;
-	esac
 done
