@@ -9,6 +9,7 @@ alias cpath='/bin/echo -n "$PWD" | { xclip 2>/dev/null || pbcopy; }'
 alias finds='findstring.sh -i'
 alias getip="curl -qsL 'http://checkip.dyndns.com' | perl -pe 's/^.*Current IP Address: ([0-9\.]+)\<.*$/\$1/i'"
 alias h='history'
+alias lipsum='lipsum.php'
 alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
 alias phpstylist='php -f "$(type -p phpStylist.php 2>/dev/null)" --'
 alias rmmr='rmmacres.sh --dsstore --forks'
