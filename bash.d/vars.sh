@@ -1,5 +1,10 @@
-# vars VARIABLE_NAME...
+# vars [NAME]...
+#
 # Pretty print variables, useful for debugging.
+#
+# Example:
+# $ some_variable=value
+# $ vars some_variable
 vars() {
 	vars_output() { echo "$1='${!1}'" 1>&2; }
 	local var i
@@ -8,7 +13,7 @@ vars() {
 
 		# Not an array
 		[[ $length -lt 2 ]] && { vars_output "$var"; continue; }
-		
+
 		# Variable is an array, display each element individually
 		for i in $(bash -c "echo {0..$(($length-1))}"); do vars_output "$var[$i]"; done
 	done

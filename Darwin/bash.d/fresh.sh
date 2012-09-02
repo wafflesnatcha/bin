@@ -1,4 +1,5 @@
 # fresh
+# 
 # Save the command history and open a new tab at the current directory
 fresh() {
 	history -w
@@ -18,7 +19,3 @@ fresh() {
 	return
 	EOF
 }
-
-# freshe
-# Run `fresh` and exit
-# freshe() { fresh && exit; }

@@ -1,4 +1,5 @@
 # mrp FILE
+# 
 # Run `mate` using result of `rp` as the first parameter.
 mrp() {
 	local p=$(rp "$*") || return

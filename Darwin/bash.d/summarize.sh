@@ -1,4 +1,5 @@
 # summarize SENTENCES
+# 
 # Use OS X summary service (via AppleScript) to summarize stdin.
 summarize() {
 	osascript \
