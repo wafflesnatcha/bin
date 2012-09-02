@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # crush.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="r4 2012-08-30"
+SCRIPT_VERSION="r5 2012-09-02"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
-A quick interface to simplify the processing of images with any of:
-  optipng, pngcrush, jpgcrush
+Optimize images with either optipng, pngcrush, or jpgcrush.
 
 Usage: ${0##*/} [OPTION]... FILE...
 
@@ -49,23 +48,14 @@ process() {
 	fext=$(echo "${1##*.}" | tr '[:upper:]' '[:lower:]')
 	case "$fext" in
 		png)
-		if [[ $opt_optipng ]]; then
-			"$opt_optipng" -quiet -preserve "$1"
-		elif [[ $opt_pngcrush ]]; then
-			temp_file tmpfile &&
-				chmod $(stat -f%p "$1") "$tmpfile" &&
-				"$opt_pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp "$1" "$tmpfile" 2>/dev/null &&
-				mv "$tmpfile" "$1"
-		else
-			return 1
-		fi
+		[[ ! $opt_pngcrush && ! $opt_optipng ]] && return 1
+		[[ $opt_pngcrush ]] && "$opt_pngcrush" -rem gAMA -rem alla -rem text -oldtimestamp -ow "$1" 2>/dev/null
+		[[ $opt_optipng ]] && "$opt_optipng" -quiet -preserve "$1"
 		;;
-
 		jpg|jpeg)
 		[[ ! $opt_jpgcrush ]] && return 1
 		"$opt_jpgcrush" "$1" 1>/dev/null
 		;;
-
 		*) return 1 ;;
 	esac
 }
@@ -74,7 +64,7 @@ count=0
 for f in "$@"; do
 	(( count++ ))
 	percent=$(echo "$count/$#*100" | bc -l | xargs printf "%1.0f%%";)
-	process "$f" || continue
 	[[ $opt_percentage ]] && echo -n "$percent [$percent] "
 	echo "$(basename "$f")"
+	process "$f"
 done
