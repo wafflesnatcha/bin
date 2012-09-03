@@ -52,7 +52,7 @@ export -f require
 # function_stdin
 #
 # Allows you to pipe STDIN to a function call.
-#
+# 
 # Example:
 #
 #     fn() { echo "${@:-$(function_stdin)}"; }
@@ -232,7 +232,11 @@ export -f tooltip_html
 # Red tooltip with a ✘, used for a command has failed.
 tooltip_error() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" --color 170,14,14 --glyph '&#x2718;'
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
+		--background 170,14,14 \
+		--color 255,255,255 \
+		--glyph '&#x2718;' \
+		--text "$input"
 }
 export -f tooltip_error
 
@@ -241,7 +245,11 @@ export -f tooltip_error
 # Green tooltip with a ✔, used for a command has successfully completed.
 tooltip_success() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" --color 57,154,21 --glyph '&#x2714;'
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
+		--background 57,154,21 \
+		--color 255,255,255 \
+		--glyph '&#x2714;' \
+		--text "$input"
 }
 export -f tooltip_success
 
@@ -290,16 +298,72 @@ tooltip_template() {
 		[[ ! "$1" =~ ^-- ]] && break
 		lookup="${1:2}"
 		# replacement=$(regex_escape "$2")
-		html=$(echo "$html" | perl -pe "s/<%${lookup}%([^>]*)>/$(regex_escape "$2")/g")
+		html=$(echo "$html" | perl -pe "s/<%[ ]*${lookup}[ ]*%(?:((?!%>).*?)%)?>/$(regex_escape "$2")/g")
 		shift 2
 	done
 
 	# Replace <%words%> that weren't specified (with their default values if possible)
-	html=$(echo "$html" | perl -pe "s/<%([a-z0-9\-\_]+)%([^>]*)>/\$2/gi")
-
-	"${DIALOG}" tooltip --transparent --html "$html" &>/dev/null &
+	html=$(echo "$html" | perl -pe "s/<%[a-zA-Z0-9_\- \t]+%(?:((?!%>).*?)%)?>/\$1/gi")
+	"${DIALOG}" tooltip --transparent --html "$html" #&>/dev/null &
 }
 export -f tooltip_template
+
+#
+# Tooltip Templates
+#
+
+# TM_tooltip_template_default
+# --text TEXT [--background 255,255,185] [--color 0,0,0]
+export TM_tooltip_template_default=$(cat <<'HTML'
+<style>
+	html,body { background: 0; border: 0; margin: 0; padding: 0; }
+	body { font: small-caption; font-size: 11px; line-height: 13px; padding: 1px 10px 14px; }
+	h1, h2, h3, h4, h5, h6 { display: inline; margin: 0; padding: 0; }
+	pre, code, tt { font-family: Menlo, Monaco, monospace; font-size: inherit; margin: 0; }
+	.tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; padding: 2px 3px 3px; position: relative; }
+	@-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: .9999; } }
+</style>
+<div class="tooltip">
+	<%text%>
+</div>
+HTML)
+
+# TM_tooltip_template_styled
+# --glyph CHARACTER --text TEXT [--background 255,255,185] [--color 0,0,0]
+export TM_tooltip_template_styled=$(cat <<'HTML'
+<style>
+	html,body { background: 0; border: 0; margin: 0; padding: 0; }
+	body { font: small-caption; font-size: 11px; line-height: 13px; padding: 1px 10px 14px; }
+	pre, code, tt { font-family: Menlo, Monaco, monospace; font-size: inherit; margin: 0; }
+	.tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-border-radius: 2px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; overflow: hidden; position: relative; text-shadow: 0 1px 0 rgba(0,0,0,.2); }
+	.glyph { -webkit-border-radius: 2px 0 0 2px; -webkit-box-shadow: -8px 0 8px -8px rgba(0,0,0,.3) inset; -webkit-box-sizing: border-box; -webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,1)75%, rgba(0,0,0,.5)); background-image: -webkit-linear-gradient(top, rgba(0,0,0,.2), rgba(0,0,0,.1)); box-sizing: border-box; font-family: webdings, freesans, freeserif, monospace, sans-serif, serif; height: 100%; padding: 2px 0 0; position: absolute; text-align: center; text-shadow: 0 -1px 0 rgba(0,0,0,.2); width: 19px; }
+	.text { margin-left: 19px; padding: 2px 3px 3px 4px; }
+	@-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: .9999; } }
+</style>
+<div class="tooltip">
+	<div class="glyph">
+		<%glyph%>
+	</div>
+	<div class="text">
+		<%text%>
+	</div>
+</div>
+HTML)
+
+# TM_tooltip_template_styled_notext
+# --glyph CHARACTER [--background 255,255,185] [--color 0,0,0]
+
+export TM_tooltip_template_styled_notext=$(cat <<'HTML'
+<style>
+	html, body { background: 0; border: 0; margin: 0; padding: 0; }
+	body { padding: 1px 10px 14px; }
+	.tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-border-radius: 5px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>, .95); color: rgb(<%color%0,0,0%>); font: 16px/25px webdings, monospace, sans-serif, serif; height: 25px; opacity: 0; padding: 3px; position: relative; text-align: center; text-shadow: 0 1px 0 rgba(0,0,0,.2); width: 25px; }
+	@-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: .9999; } }
+</style>
+<div class="tooltip">
+	<%glyph%>
+</div>
+HTML)
 
 #
 # Extra exit functions
@@ -313,38 +377,6 @@ exit_tooltip_success() { tooltip_success "$@" && exit_discard; }
 export -f exit_tooltip_success
 exit_tooltip_warning() { tooltip_warning "$@" && exit_discard; }
 export -f exit_tooltip_warning
-
-#
-# Tooltip Templates
-#
-
-# Variables: text, [color]
-export TM_tooltip_template_default=$(cat <<'HTML'
-<style>html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;padding:1px 10px 14px}h1,h2,h3,h4,h5,h6{display:inline;margin:0;padding:0;}pre,code,tt{font-family:Menlo,Monaco,monospace;font-size:inherit;margin:0}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(<%color%255,255,185>,.95);color:#000;font:small-caption;opacity:0;padding:2px 3px 3px;position:relative}
-@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}
-</style><div class="tooltip"><%text%></div>
-HTML)
-
-# Variables: glyph, text, [color]
-export TM_tooltip_template_styled=$(cat <<'HTML'
-<style>html,body{background:0;border:0;margin:0;padding:0}body{font:small-caption;font-size:11px;line-height:13px;padding:1px 10px 14px}pre,code,tt{font-family:Menlo,Monaco,monospace;font-size:inherit;margin:0}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:2px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px rgba(0,0,0,.4);background:rgba(<%color%255,255,185>,.95);color:#fff;opacity:0;overflow:hidden;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.2)}
-.glyph{-webkit-border-radius:2px 0 0 2px;-webkit-box-shadow:-8px 0 8px -8px rgba(0,0,0,.3) inset;-webkit-box-sizing:border-box;-webkit-mask-image:-webkit-linear-gradient(top,rgba(0,0,0,1)75%,rgba(0,0,0,.5));background-image:-webkit-linear-gradient(top,rgba(0,0,0,.2),rgba(0,0,0,.1));box-sizing:border-box;font-family:webdings,freesans,freeserif,monospace,sans-serif,serif;height:100%;padding:2px 0 0;position:absolute;text-align:center;text-shadow:0 -1px 0 rgba(0,0,0,.2);width:19px}
-.glyph .bigger{font-size:13px;line-height:17px}
-.text{margin-left:19px;padding:2px 3px 3px 4px}
-@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}
-</style><div class="tooltip"><div class="glyph"><%glyph%></div><div class="text"><%text%></div></div>
-HTML)
-
-# Variables: glyph, [color]
-export TM_tooltip_template_styled_notext=$(cat <<'HTML'
-<style>html,body{background:0;border:0;margin:0;padding:0}body{padding:1px 10px 14px}
-.tooltip{-webkit-animation:fadeIn .2s ease 0s;-webkit-animation-fill-mode:forwards;-webkit-border-radius:5px;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 5px 9px 0 rgba(0,0,0,.4);background:rgba(<%color%255,255,185>,.95);color:#fff;font:16px/25px webdings,monospace,sans-serif,serif;height:25px;opacity:0;padding:3px;position:relative;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.2);width:25px}
-@-webkit-keyframes fadeIn{0%{opacity:0}100%{opacity:.9999}}
-</style><div class="tooltip"><%glyph%></div>
-HTML)
-
 
 #
 # Tests
