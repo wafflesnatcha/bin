@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# extract.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `extract.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="extract.sh"
 SCRIPT_VERSION="r1 2012-07-11"
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# geticons.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `geticons.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="geticons.sh"
 SCRIPT_VERSION="1.1.3 2012-05-11"
 

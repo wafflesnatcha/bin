@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Bash color output
+# `colors.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# Bash color output.
 #
 # Basic Usage:
 # $ . colors.sh
-# $ echo -e "${COLOR_BLUE}Here is some blue text!${COLOR_RESET}"
+# $ echo -e "${COLOR_BLUE}Here is some blue text.${COLOR_RESET}"
 #
 # Display available colors:
 # $ for c in ${!COLOR_*}; do echo -e "${!c}$c$COLOR_RESET"; done

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# runclipboard.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `runclipboard.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="runclipboard.sh"
 SCRIPT_VERSION="r1 2012-07-11"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Run the contents of the clipboard as a script.
-$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;31m\033[7m')
+$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;5;7;31m')
 WARNING: This script will run ANYTHING on the clipboard!
 $([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[m')
-Usage: ${0##*/} [OPTION]... [-- [ARGUMENT]...]
+Usage: ${0##*/} [OPTION]... [--] [ARGUMENT]...
 
 Options:
  -i, --interpreter UTILITY  Specify an interpreter (bash, ruby, /bin/sh, ...)

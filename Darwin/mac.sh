@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mac.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
 SCRIPT_VERSION="r11 2012-08-16"
 

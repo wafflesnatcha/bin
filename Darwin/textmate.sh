@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# textmate.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
-# Handy functions to include in your TextMate commands
+# `textmate.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# Handy functions to include in your TextMate commands.
 
 # regex_escape STRING
+#
 # Escape a string for use in perl regex
 regex_escape() {
 	echo "$@" | perl -pe 's/(.*)/\Q\1\E/'
@@ -32,11 +33,13 @@ export -f temp_file
 
 # require COMMAND
 #
-# Returns the path to COMMAND, if COMMAND is in the current $PATH and executable.
-# Otherwise, shows an error tooltip and returns 1.
+# Returns the path to COMMAND, if COMMAND is in the current $PATH and
+# executable. Otherwise, shows an error tooltip and returns 1.
 #
 # Example:
-# $ bin=$(require uglifyjs) || exit_discard
+#
+#     bin=$(require uglifyjs) || exit_discard
+#
 require() {
 	type -p "$@" && return
 	tooltip_error "Required command not found: $@"
@@ -45,10 +48,15 @@ require() {
 export -f require
 
 # function_stdin
-# Allows you to accept STDIN to a function call
+#
+# Allows you to pipe STDIN to a function call.
 #
 # Example:
-# $ fn() { echo "${@:-$(function_stdin)}"; }; fn "testing"; echo "testing" | fn
+#
+#     fn() { echo "${@:-$(function_stdin)}"; }
+#     fn "testing"
+#     echo "testing" | fn
+#
 function_stdin() {
 	local oldIFS=$IFS
 	IFS="$(printf "\n")"
@@ -83,11 +91,14 @@ export -f textmate_goto
 
 # html_encode [TEXT]
 #
-# HTML encode text <, >, &
+# HTML encode characters: <, >, &
 #
 # Examples:
-# $ html_encode "<some text> you want to encode & stuff"
-# $ cat "/some/file.html" | html_encode
+#
+#     html_encode "<some text> you want to encode & stuff"
+# 
+#     cat "/some/file.html" | html_encode
+#
 html_encode() {
 	echo -en "${@:-$(function_stdin)}" | perl -pe '$|=1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
@@ -95,7 +106,7 @@ export -f html_encode
 
 # html_encode_br [TEXT]
 #
-# Same as `html_encode`, but also changes `\n` to `<br>`
+# Same as `html_encode`, but also changes `\n` to `<br>`.
 html_encode_br() {
 	html_encode "${@:-$(function_stdin)}" | perl -pe 's/\n/<br>/g;'
 }
@@ -178,11 +189,8 @@ var TM = (function () {
 HTML)
 
 # html_error [TEXT]
-# Open a nicely formatted HTML error message
 #
-# Examples:
-# $ html_error "text"
-# $ cat some/file.txt | html_error
+# Open a nicely formatted HTML error message.
 html_error() {
 	# [[ $TM_FILEPATH ]] && url_param="url=file:\/\/${TM_FILEPATH//\//\\/}\&"
 	[[ $TM_FILEPATH ]] && url_param="$(regex_escape "url=file://${TM_FILEPATH}&")"
@@ -240,22 +248,34 @@ export -f tooltip_success
 # Orange tooltip with a ⚠, used for warnings and such.
 tooltip_warning() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") --text "$input" --color 175,82,0 --glyph '<b class="bigger" style="color:yellow">&#x26A0;</b>'
+	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
+		--background 175,82,0 \
+		--color 255,255,255 \
+		--glyph '<b style="color:yellow;font-size:13px;line-height:17px;">&#x26A0;</b>' \
+		--text "$input"
 }
 export -f tooltip_warning
 
 # tooltip_template TEMPLATE [--VAR REPLACEMENT]...
 #
-# Show a custom tooltip using $TM_tooltip_template
+# Show a custom tooltip using a template.
 #
-# If your custom template has any <%words%> in it, simply pass them to this
-# function as long arguments (i.e. tooltip_template --color 12,139,245).
-# See the included templates for more information.
+# All templates are variable prefixed with `TM_tooltip_template_`. So if you
+# were to run `tooltip_template my_template`, it would look for a template in
+# the variable `TM_tooltip_template_my_template`.
 #
-# Example:
-# $ tooltip_template default --text "This is the tooltip text."
-# $ tooltip_template default --color "12,139,245" --text "This is the tooltip text."
-# $ tooltip_template default --color "12,139,245" --text "This is the tooltip text."
+# Template variables come in the form of:
+# 
+#     `<% name %>` for required variables, or
+#     `<% name % default value %>` for optional ones.
+# 
+# If your template has any variables, simply pass them to this function as long
+# arguments. For instance:
+#
+#     TM_tooltip_template_mytemplate='<p style="background:<% background % #fff %>;color:<% color % #000 %>;"><% text %></p>'
+#     tooltip_template mytemplate --background "#06f" --text "Some text...<br>and more text"
+#
+# Check out the included templates below this function for more ideas.
 tooltip_template() {
 	local template="TM_tooltip_template_$1"
 	local replacement=

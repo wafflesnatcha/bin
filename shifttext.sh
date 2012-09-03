@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shifttext.sh by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `shifttext.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="shifttext.sh"
 SCRIPT_VERSION="1.1.0 2012-05-25"
 

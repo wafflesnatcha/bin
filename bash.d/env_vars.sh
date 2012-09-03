@@ -1,4 +1,5 @@
-# env_vars
+# env_vars [PATTERN]
+# 
 # Pretty print all variables in the current shell environment (even those not
 # exported).
 env_vars() {
