@@ -12,6 +12,7 @@ alias h='history'
 alias lipsum='lipsum.php'
 alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
 alias phpstylist='php -f "$(type -p phpStylist.php 2>/dev/null)" --'
+alias random_file='find "$PWD" -type f | gsort -R | head -n1'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias rmxattr='xattr -cr'
 
