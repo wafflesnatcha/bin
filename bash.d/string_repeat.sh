@@ -1,7 +1,17 @@
-# string_repeat STRING [MULTIPLIER]
-# Output a string multiple times.
+# string_repeat MULTIPLIER [STRING]
 #
-# Example (courtesy of Dave Grohl):
-# $ string_repeat "THE BEST " 7
-# THE BEST THE BEST THE BEST THE BEST THE BEST THE BEST THE BEST
-string_repeat() { local c; for (( c=1; c<=${2:-1}; c++)); do printf "$1"; done; }
+# Repeat a string MULTIPLIER times.
+#
+# Example (courtesy of Dave Grohl): `string_repeat 7 "THE BEST "`
+string_repeat() {
+	[[ ! $1 || $1 = "-h" || $1 = "--help" || ! $1 =~ ^[0-9]+$ || $1 -lt 1 ]] && cat <<-EOF 1>&2 && return 2
+		Usage: string_repeat MULTIPLIER [STRING]
+
+		Repeat a string multiple times.
+		EOF
+
+	local c=$1
+	shift
+	local input=${@:-$(cat -)}
+	while ((c--)); do echo -n "$input"; done
+}
