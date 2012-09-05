@@ -49,27 +49,6 @@ require() {
 }
 export -f require
 
-# function_stdin
-#
-# Allows you to pipe STDIN to a function call.
-# 
-# Example:
-#
-#     fn() { echo "${@:-$(function_stdin)}"; }
-#     fn "testing"
-#     echo "testing" | fn
-#
-function_stdin() {
-	local oldIFS=$IFS
-	IFS="$(printf "\n")"
-	local line
-	while read -r line; do
-		echo -e "$line"
-	done
-	IFS=$oldIFS
-}
-export -f function_stdin
-
 # textmate_goto [FILE]
 # textmate_goto [FILE] [LINE]
 # textmate_goto [FILE] [LINE] [COLUMN]
@@ -102,7 +81,7 @@ export -f textmate_goto
 #     cat "/some/file.html" | html_encode
 #
 html_encode() {
-	echo -en "${@:-$(function_stdin)}" | perl -pe '$|=1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
+	echo -en "${@:-$(cat)}" | perl -pe '$|=1; s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'
 }
 export -f html_encode
 
@@ -110,7 +89,7 @@ export -f html_encode
 #
 # Same as `html_encode`, but also changes `\n` to `<br>`.
 html_encode_br() {
-	html_encode "${@:-$(function_stdin)}" | perl -pe 's/\n/<br>/g;'
+	html_encode "${@:-$(cat)}" | perl -pe 's/\n/<br>/g;'
 }
 export -f html_encode_br
 
@@ -223,7 +202,7 @@ export -f tooltip
 #
 # Show a standard tooltip with HTML content.
 tooltip_html() {
-	tooltip_template default --text "${@:-$(function_stdin)}"
+	tooltip_template default --text "${@:-$(cat)}"
 }
 export -f tooltip_html
 
@@ -314,27 +293,31 @@ export -f tooltip_template
 
 # TM_tooltip_template_default
 # --text TEXT [--background 255,255,185] [--color 0,0,0]
-export TM_tooltip_template_default=$(cat <<'HTML'
+export TM_tooltip_template_default='
 <style>
-	html,body { background: 0; border: 0; margin: 0; padding: 0; }
+	span, div, table, thead, tbody, tr, td { border: 0; margin: 0; padding: 0; }
+	html, body { background: 0; border: 0; margin: 0; padding: 0; }
 	body { font: small-caption; font-size: 11px; line-height: 13px; padding: 1px 10px 14px; }
 	h1, h2, h3, h4, h5, h6 { display: inline; margin: 0; padding: 0; }
-	pre, code, tt { font-family: Menlo, Monaco, monospace; font-size: inherit; margin: 0; }
+	pre, code, tt, kbd, samp { font-family: Menlo, Monaco, monospace; font-size: inherit; margin: 0; }
+	b, strong { font-weight: 700; }
+	i, em { font-style: italic; }
+	table { border-collapse: collapse; }
 	.tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; padding: 2px 3px 3px; position: relative; }
 	@-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: .9999; } }
 </style>
 <div class="tooltip">
 	<%text%>
 </div>
-HTML)
+'
 
 # TM_tooltip_template_styled
 # --glyph CHARACTER --text TEXT [--background 255,255,185] [--color 0,0,0]
-export TM_tooltip_template_styled=$(cat <<'HTML'
+export TM_tooltip_template_styled='
 <style>
 	html,body { background: 0; border: 0; margin: 0; padding: 0; }
 	body { font: small-caption; font-size: 11px; line-height: 13px; padding: 1px 10px 14px; }
-	pre, code, tt { font-family: Menlo, Monaco, monospace; font-size: inherit; margin: 0; }
+	pre, code, tt, kbd, samp { font-family: Menlo, Monaco, monospace; font-size: inherit; margin: 0; }
 	.tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-border-radius: 2px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; overflow: hidden; position: relative; text-shadow: 0 1px 0 rgba(0,0,0,.2); }
 	.glyph { -webkit-border-radius: 2px 0 0 2px; -webkit-box-shadow: -8px 0 8px -8px rgba(0,0,0,.3) inset; -webkit-box-sizing: border-box; -webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,1)75%, rgba(0,0,0,.5)); background-image: -webkit-linear-gradient(top, rgba(0,0,0,.2), rgba(0,0,0,.1)); box-sizing: border-box; font-family: webdings, freesans, freeserif, monospace, sans-serif, serif; height: 100%; padding: 2px 0 0; position: absolute; text-align: center; text-shadow: 0 -1px 0 rgba(0,0,0,.2); width: 19px; }
 	.text { margin-left: 19px; padding: 2px 3px 3px 4px; }
@@ -348,12 +331,12 @@ export TM_tooltip_template_styled=$(cat <<'HTML'
 		<%text%>
 	</div>
 </div>
-HTML)
+'
 
 # TM_tooltip_template_styled_notext
 # --glyph CHARACTER [--background 255,255,185] [--color 0,0,0]
 
-export TM_tooltip_template_styled_notext=$(cat <<'HTML'
+export TM_tooltip_template_styled_notext='
 <style>
 	html, body { background: 0; border: 0; margin: 0; padding: 0; }
 	body { padding: 1px 10px 14px; }
@@ -363,7 +346,7 @@ export TM_tooltip_template_styled_notext=$(cat <<'HTML'
 <div class="tooltip">
 	<%glyph%>
 </div>
-HTML)
+'
 
 #
 # Extra exit functions
