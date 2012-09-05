@@ -25,9 +25,29 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		T_DOC_COMMENT => 't_doc_comment',
 		T_IF => 't_if',
 		T_ELSEIF => 't_elseif',
+		T_ARRAY_CAST => 't_cast',
+		T_BOOL_CAST => 't_cast',
+		T_DOUBLE_CAST => 't_cast',
+		T_INT_CAST => 't_cast',
+		T_OBJECT_CAST => 't_cast',
+		T_STRING_CAST => 't_cast',
+		T_UNSET_CAST => 't_cast',
 	);
-
-	/** @inherit */
+	function t_cast($sTag)
+	{
+		$this->oBeaut->add($sTag . " ");
+	}
+	function t_comment($sTag)
+	{
+		return PHP_Beautifier_Filter::BYPASS;
+		$this->oBeaut->removeWhitespace();
+		$this->oBeaut->add($sTag);
+		if ($this->oBeaut->getNextTokenContent() == '}') {
+			$this->oBeaut->removeWhitespace();
+		} else {
+			$this->oBeaut->addNewLineIndent();
+		}
+	}
 	function t_doc_comment($sTag)
 	{
 		if (!$this->oBeaut->isPreviousTokenConstant(T_OPEN_TAG) && !$this->oBeaut->isPreviousTokenConstant(T_COMMENT) && !$this->oBeaut->isPreviousTokenContent('{')) {
@@ -40,8 +60,6 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			return PHP_Beautifier_Filter::BYPASS;
 		}
 	}
-
-	/** @inherit */
 	function t_if($sTag)
 	{
 		if ($this->oBeaut->isPreviousTokenConstant(T_ELSE)) {
@@ -51,18 +69,16 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		$this->oBeaut->add($sTag);
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
-
-	/** @inherit */
 	function t_elseif($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
-		if ($this->oBeaut->getPreviousTokenContent() == '}') $this->oBeaut->add(' ');
+		if ($this->oBeaut->getPreviousTokenContent() == '}') {
+			$this->oBeaut->add(' ');
+		}
 		if (!$this->getSetting('concat_else_if')) $this->oBeaut->add(substr($sTag, 0, 4) . ' ' . substr($sTag, 4));
 		else $this->oBeaut->add($sTag);
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
-
-	/** @inherit */
 	function t_semi_colon($sTag)
 	{
 		// A break statement and the next statement are separated by an empty line
@@ -74,12 +90,11 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		} else if ($this->oBeaut->getControlParenthesis() == T_FOR) {
 			// The three terms in the head of a for loop are separated by the string "; "
 			$this->oBeaut->removeWhitespace();
-			$this->oBeaut->add($sTag . " "); // Bug 8327
+			$this->oBeaut->add($sTag . " ");
+			// Bug 8327
 			
 		} else return PHP_Beautifier_Filter::BYPASS;
 	}
-
-	/** @inherit */
 	function t_case($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -90,21 +105,15 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		$this->oBeaut->addNewLineIndent();
 		$this->oBeaut->add($sTag . ' ');
 	}
-
-	/** @inherit */
 	function t_default($sTag)
 	{
 		$this->t_case($sTag);
 	}
-
-	/** @inherit */
 	function t_break($sTag)
 	{
 		$this->oBeaut->add($sTag);
 		if ($this->oBeaut->isNextTokenConstant(T_LNUMBER)) $this->oBeaut->add(' ');
 	}
-
-	/** @inherit */
 	function t_open_brace($sTag)
 	{
 		if ($this->oBeaut->openBraceDontProcess()) {
@@ -123,27 +132,20 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			} else return PHP_Beautifier_Filter::BYPASS;
 		}
 	}
-
-	/** @inherit */
 	function t_close_brace($sTag)
 	{
 		if ($this->oBeaut->getMode('string_index') || $this->oBeaut->getMode('double_quote')) {
 			$this->oBeaut->add($sTag);
-		} else if ($this->oBeaut->getControlSeq() == T_SWITCH && $this->getSetting('switch_without_indent')) {
+		} else {
 			$this->oBeaut->removeWhitespace();
 			$this->oBeaut->decIndent();
 			$this->oBeaut->addNewLineIndent();
 			$this->oBeaut->add($sTag);
-			$this->oBeaut->addNewLineIndent();
-		} else if ($this->oBeaut->getNextTokenConstant() == ",") {
-			$this->oBeaut->removeWhitespace();
-			$this->oBeaut->decIndent();
-			$this->oBeaut->addNewLineIndent();
-			$this->oBeaut->add($sTag);
-		} else return PHP_Beautifier_Filter::BYPASS;
+			if ($this->oBeaut->getNextTokenContent() != ",") {
+				$this->oBeaut->addNewLineIndent();
+			}
+		}
 	}
-
-	/** Nested Array stuff */
 	function t_parenthesis_open($sTag)
 	{
 		if (!$this->getSetting('nested_array')) return PHP_Beautifier_Filter::BYPASS;
@@ -154,8 +156,6 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->addIndent();
 		}
 	}
-
-	/** @inherit */
 	function t_parenthesis_close($sTag)
 	{
 		$this->oBeaut->removeWhitespace();
@@ -168,8 +168,6 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			$this->oBeaut->add($sTag);
 		} else $this->oBeaut->add($sTag . ' ');
 	}
-
-	/** @inherit */
 	function t_comma($sTag)
 	{
 		// $this->oBeaut->add(token_name($this->oBeaut->getControlParenthesis()));
@@ -181,6 +179,7 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		}
 	}
 }
+
 $pb = new PHP_Beautifier();
 $pb->setInputString(file_get_contents('php://stdin'));
 $pb->setNewLine("\n");
@@ -197,7 +196,8 @@ $filters = array(
 	// 'IndentStyles' => array('style' => 'k&r'), // k&r, allman, gnu, ws
 	'DocBlock',
 	// 'EqualsAlign',
-	'Lowercase', // lowercase all control structures
+	'Lowercase',
+	// lowercase all control structures
 	'NewLines' => array(
 		'before' => "",
 		'after' => "T_NAMESPACE:"
@@ -210,7 +210,15 @@ $filters = array(
 	// 	'switch_without_indent' => true,
 	// ),
 	// 'phpBB',
-	new PHP_Beautifier_Filter_Custom($pb)
+	new PHP_Beautifier_Filter_Custom($pb, array(
+		'newline_curly_class' => true,
+		'newline_curly_function' => true,
+		'switch_without_indent' => false,
+		'nested_array' => true,
+		'concat_else_if' => false,
+		'space_after_if' => true,
+		'keep_blank_lines' => true,
+	))
 );
 foreach ($filters as $k => $v) {
 	if ($k && is_array($v)) $pb->addFilter($k, $v);

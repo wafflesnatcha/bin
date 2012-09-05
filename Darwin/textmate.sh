@@ -173,11 +173,9 @@ HTML)
 #
 # Open a nicely formatted HTML error message.
 html_error() {
-	# [[ $TM_FILEPATH ]] && url_param="url=file:\/\/${TM_FILEPATH//\//\\/}\&"
-	[[ $TM_FILEPATH ]] && url_param="$(regex_escape "url=file://${TM_FILEPATH}&")"
-	# . "$TM_SUPPORT_PATH/lib/webpreview.sh"
 	html_header "${2:-Error}"
-	echo -n '<pre><code>'
+	echo -n '<pre class="notice error"><code>'
+	# [[ $TM_FILEPATH ]] && url_param="$(regex_escape "url=file://${TM_FILEPATH}&")"
 	# echo "$(html_encode "$@" | perl -pe 's/(^.*?)((?:line )?(\d+)(?: column |\:)?(\d+))(.*$)/$1<a href=\"txmt:\/\/open\/\?'"${url_param}"'line=$3\&column=$4\">$2<\/a>$5/mi')"
 	echo "$(html_encode "$@")"
 	echo '</code></pre>'
