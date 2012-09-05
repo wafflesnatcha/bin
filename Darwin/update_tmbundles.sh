@@ -6,15 +6,14 @@ clear_line() { [[ ! $COLOR_SUPPORTED ]] && return 1; [[ ! $cols ]] && cols=${COL
 git_update() {
 	for d in "$@"; do
 		[[ ! -d "$d/.git" ]] && continue
-		local name=$(basename "$d")
+		local code res name=$(basename "$d")
 		echo -en "${COLOR_RESET}  $name...${COLOR_RESET} "
-		local res="$({ cd "$d" 1>/dev/null && git pull; } 2>&1)"
-		local code=$?
+		res=$(cd "$d" 1>/dev/null && git pull 2>&1)
+		code=$?
 		
 		if [[ $code -gt 0 ]]; then
 			clear_line "${COLOR_RED}✘ $name...${COLOR_RESET}\n" || echo "ERROR"
-			echo "$res" >&2
-			return $code
+			echo "$res" | sed 's/^/  /' >&2
 		elif [[ "$res" = "Already up-to-date." ]]; then
 			clear_line "${COLOR_WHITE}✔ $name...${COLOR_RESET}\n" || echo "$res"
 		else
