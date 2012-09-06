@@ -36,13 +36,12 @@ class CLIScript
 	function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
 	{
 		error_log(basename($errfile) . ": " . trim($errstr));
-		exit(2);
+		exit($errno);
 	}
 
 	function usage()
 	{
 		echo $this->name . " " . $this->version . "\n" . ($this->description ? wordwrap($this->description, $this->wrap) . "\n" : "") . ($this->usage? "\nUsage: " . $this->usage . "\n": "");
-
 		if ($this->options) {
 			$lines = array();
 			$longest = 0;

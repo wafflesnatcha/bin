@@ -1,14 +1,49 @@
 #!/usr/bin/env php
 <?php
-$file = "php://stdin";
+/**
+ * Display PHP tokens of a file
+ *
+ * @author    Scott Buchanan <buchanan.sc@gmail.com>
+ * @copyright 2012 Scott Buchanan
+ * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
+ * @version   r1 2012-09-05
+ * @link      http://wafflesnatcha.github.com
+ */
+require_once ('CLIScript.php');
 
-if (array_intersect(array("--html", "-h"), $_SERVER['argv'])) {
+$script = new CLIScript(array(
+	'name' => 'php_tokens.php',
+	'description' => 'Visualize source code as PHP tokens.',
+	'usage' => basename($_SERVER['argv'][0]) . ' [OPTION]... [FILE]',
+	'options' => array(
+		'html' => array(
+			'long' => 'html',
+			'usage' => '    --html',
+			'description' => 'Output HTML'
+		),
+		'ansi' => array(
+			'short' => 'a',
+			'long' => 'ansi',
+			'usage' => '-a, --ansi',
+			'description' => 'Show ansi colors (console only)'
+		),
+
+	)
+));
+
+$args = $script->parseArgs();
+$file = array_pop($_SERVER['argv']);
+
+if(in_array($file, array("-a", "--ansi", "--html", "-h", "--help")) || $_SERVER['argc'] <= 1)
+	$file = "php://stdin";
+
+if (isset($args['html'])) {
 	output_html($file);
 } else {
-	output_console($file);
+	output_console($file, isset($args['ansi']));
 }
 
-function output_console($file)
+function output_console($file, $color = false)
 {
 	$colors = array(
 		'line_number' => "\033[32m",
@@ -16,7 +51,7 @@ function output_console($file)
 		'token_bracket' => "\033[33m",
 		'reset' => "\033[0m",
 	);
-	if (!array_intersect(array("--color", "-c"), $_SERVER['argv']) || !isset($_SERVER['TERM']) || !($_SERVER['TERM'] == "xterm-color" || $_SERVER['TERM'] == "xterm-256color" || (isset($_SERVER['CLICOLOR']) && $_SERVER['CLICOLOR'] != 0))) {
+	if (!$color || !isset($_SERVER['TERM']) || !($_SERVER['TERM'] == "xterm-color" || $_SERVER['TERM'] == "xterm-256color" || (isset($_SERVER['CLICOLOR']) && $_SERVER['CLICOLOR'] != 0))) {
 		foreach ($colors as &$c) {
 			$c = "";
 		}
