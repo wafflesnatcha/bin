@@ -3,12 +3,12 @@
 /**
  * Generate "dummy" text.
  *
- * Based on {@link http://pastebin.com/eA3nsJ83}
+ * Based on {@link http://pastebin.com/eA3nsJ83}.
  *
  * @author    Scott Buchanan <buchanan.sc@gmail.com>
  * @copyright 2012 Scott Buchanan
  * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
- * @version   r3 2012-08-29
+ * @version   r4 2012-09-05
  * @link      http://wafflesnatcha.github.com
  */
 error_reporting(E_ALL & ~E_NOTICE);
@@ -137,7 +137,6 @@ $script = new CLIScript(array(
 ));
 
 $args = $script->parseArgs();
-$args['list'] = $args['list']? : ($_SERVER['LIPSUM_LIST']? : null);
 
 if ($args['list']) {
 	if (!Lipsum::wordList($args['list'])) {
