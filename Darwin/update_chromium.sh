@@ -37,9 +37,12 @@ curl -qSL# --connect-timeout 15 "$snapshots_url/$latest_version/chrome-mac.zip" 
 echo "unzipping... "
 unzip -qq "$download_dir/chrome-mac.zip" -d "$download_dir"
 
+
+echo "moving old copy to trash... "
+[[ -e "$install_dir/Chromium.app" ]] && { mv "$install_dir/Chromium.app" ~/.Trash/Chromium-$(date +%Y-%m-%d_%H-%M-%s).app/ || exit 2; }
+
 echo "installing into [${install_dir}]... "
-[[ -e $install_dir/Chromium.app ]] && mv "$install_dir/Chromium.app" ~/.Trash/Chromium-$(date +%Y-%m-%d_%H-%M-%s).app/
-cp -R "$download_dir/chrome-mac/Chromium.app" "$install_dir"
+cp -R "$download_dir/chrome-mac/Chromium.app" "$install_dir" || exit 2
 
 echo "cleaning up... "
 [[ -e "$download_dir" ]] && rm -rf "$download_dir";
