@@ -1,0 +1,11 @@
+{
+  "name": "bin",
+  "version": "0.0.0",
+  "dependencies": {
+    "cssbeautify": "~0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wafflesnatcha/bin.git"
+  }
+}
