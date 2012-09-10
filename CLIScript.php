@@ -5,35 +5,43 @@
  * @author    Scott Buchanan <buchanan.sc@gmail.com>
  * @copyright 2012 Scott Buchanan
  * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
- * @version   r2 2012-08-19
+ * @version   r3 2012-09-09
  * @link      http://wafflesnatcha.github.com
  */
 class CLIScript
 {
 	var $wrap = 80;
-
+	
+	var $options = array();
+	
+	var $name;
+	
+	var $description;
+	
 	function __construct($config)
 	{
-		set_error_handler(array($this, "error_handler"), E_USER_NOTICE);
-		foreach ($config as $k => $v) {
-			$this->$k = $v;
-		}
+		set_error_handler(array($this, "errorHandler"), E_USER_NOTICE);
+		
 		// Attempt to decipher version info from this file's `@version` tag
 		if (!isset($config['version'])) {
 			$this->version = preg_filter('/.*?\/\*\*.*?[\n\r]+\s*\*\s*@version\s*([^\n\r]+).*/is', '$1', file_get_contents($_SERVER['PHP_SELF']));
 		}
 
+		foreach ($config as $k => $v) {
+			$this->$k = $v;
+		}
+		
 		// Add -h|--help flag
-		if (is_array($this->options) && !array_key_exists("help", $this->options))
+		if (is_array($this->options) && !array_key_exists("help", $this->options)) {
 			$this->options['help'] = array(
 				'short' => 'h',
 				'long' => 'help',
-				'usage' => '-h, --help',
 				'description' => 'Show this help',
 			);
+		}
 	}
 
-	function error_handler($errno, $errstr, $errfile, $errline, $errcontext)
+	function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
 	{
 		error_log(basename($errfile) . ": " . trim($errstr));
 		exit($errno);
@@ -41,19 +49,20 @@ class CLIScript
 
 	function usage()
 	{
-		echo $this->name . " " . $this->version . "\n" . ($this->description ? wordwrap($this->description, $this->wrap) . "\n" : "") . ($this->usage? "\nUsage: " . $this->usage . "\n": "");
+		echo $this->name . " " . $this->version . "\n";
+		echo $this->description ? wordwrap($this->description, $this->wrap) . "\n" : "";
+		echo $this->usage? "\nUsage: " . basename($_SERVER['argv'][0]) . " " . $this->usage . "\n": "";
+		
 		if ($this->options) {
 			$lines = array();
 			$longest = 0;
-			foreach ($this->options as $def_name => $def_arr) {
-				$lines[] = array(
-					$def_arr['usage'],
-					$def_arr['description'],
-				);
-				if (strlen($def_arr['usage']) > $longest)
-					$longest = strlen($def_arr['usage']);
+			foreach ($this->options as $k => $v) {
+				$u = ($v['short'] ? "-" . rtrim($v['short'], ":") . ($v['long'] ? "," : " ") . " " : "    ") . ($v['long'] ? "--" . rtrim($v['long'], ":") . " " : "") . $v['usage'];
+				$longest = (strlen($u) > $longest) ? strlen($u) : $longest;
+				$lines[] = array($u, $v['description']);
 			}
 			$longest = ($longest > 0) ? $longest + 2 : 0;
+
 			echo "\nOptions:\n";
 			foreach ($lines as $line) {
 				printf(" %-{$longest}s%s\n", $line[0], wordwrap($line[1], $this->wrap - 1 - $longest, "\n" . str_repeat(" ", $longest + 1)));
