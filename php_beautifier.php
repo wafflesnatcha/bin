@@ -1,30 +1,41 @@
 #!/usr/bin/env php
 <?php
-set_error_handler(function ($num, $str, $file, $line)
-{
-	file_put_contents("php://stderr", "[" . $file . ":" . $line . "] " . $str . "\n");
-});
+/**
+ * Run PHP_Beautifier with my own custom filters and configuration.
+ *
+ * @author    Scott Buchanan <buchanan.sc@gmail.com>
+ * @copyright 2012 Scott Buchanan
+ * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
+ * @version   r1 2012-09-09
+ * @link      http://wafflesnatcha.github.com
+ */
+
 require_once "PHP/Beautifier.php";
 
-/**
- * My custom PHP_Beautifier_Filter
- */
 class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 {
-	/** Filter settings */
+	protected $sDescription = "Scott's custom PHP_Beautifier_Filter";
+	protected $aSettingsDefinition = array(
+		'newline_curly_class' => array('type' => 'bool', 'description' => 'newline before braces on classes'),
+		'newline_curly_function' => array('type' => 'bool', 'description' => 'newline before braces on functions'),
+		'concat_else_if' => array('type' => 'bool', 'description' => ''),
+		'space_after_if' => array('type' => 'bool', 'description' => ''),
+		'collapse_empty_curlys' => array('type' => 'bool', 'description' => '')
+	);
 	protected $aSettings = array(
-		'newline_curly_class' => true,
-		'newline_curly_function' => true,
-		'switch_without_indent' => false,
-		'nested_array' => true,
+		'newline_curly_class' => false,
+		'newline_curly_function' => false,
 		'concat_else_if' => false,
-		'space_after_if' => true,
-		'keep_blank_lines' => true,
+		'space_after_if' => false,
+		'collapse_empty_curlys' => true,
 	);
 	protected $aFilterTokenFunctions = array(
+		T_CASE => 't_case',
+		T_DEFAULT => 't_case',
 		T_DOC_COMMENT => 't_doc_comment',
-		T_IF => 't_if',
 		T_ELSEIF => 't_elseif',
+		T_IF => 't_if',
+		
 		T_ARRAY_CAST => 't_cast',
 		T_BOOL_CAST => 't_cast',
 		T_DOUBLE_CAST => 't_cast',
@@ -33,10 +44,17 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		T_STRING_CAST => 't_cast',
 		T_UNSET_CAST => 't_cast',
 	);
-	function t_cast($sTag)
+
+	/**
+	 * Add spaces after variable cast.
+	 * 
+	 *     $value = (object) array( "key" => "value" );
+	 */
+	public function t_cast($sTag)
 	{
 		$this->oBeaut->add($sTag . " ");
 	}
+
 	function t_comment($sTag)
 	{
 		return PHP_Beautifier_Filter::BYPASS;
@@ -79,48 +97,10 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 		else $this->oBeaut->add($sTag);
 		if ($this->getSetting('space_after_if')) $this->oBeaut->add(' ');
 	}
-	function t_semi_colon($sTag)
-	{
-		// A break statement and the next statement are separated by an empty line
-		if ($this->oBeaut->isPreviousTokenConstant(T_BREAK)) {
-			$this->oBeaut->removeWhitespace();
-			$this->oBeaut->add($sTag); // add the semicolon
-			$this->oBeaut->addNewLine(); // empty line
-			$this->oBeaut->addNewLineIndent();
-		} else if ($this->oBeaut->getControlParenthesis() == T_FOR) {
-			// The three terms in the head of a for loop are separated by the string "; "
-			$this->oBeaut->removeWhitespace();
-			$this->oBeaut->add($sTag . " ");
-			// Bug 8327
-			
-		} else return PHP_Beautifier_Filter::BYPASS;
-	}
-	function t_case($sTag)
-	{
-		$this->oBeaut->removeWhitespace();
-		$this->oBeaut->decIndent();
-		if ($this->oBeaut->isPreviousTokenConstant(T_BREAK, 2)) {
-			$this->oBeaut->addNewLine();
-		}
-		$this->oBeaut->addNewLineIndent();
-		$this->oBeaut->add($sTag . ' ');
-	}
-	function t_default($sTag)
-	{
-		$this->t_case($sTag);
-	}
-	function t_break($sTag)
-	{
-		$this->oBeaut->add($sTag);
-		if ($this->oBeaut->isNextTokenConstant(T_LNUMBER)) $this->oBeaut->add(' ');
-	}
 	function t_open_brace($sTag)
 	{
 		if ($this->oBeaut->openBraceDontProcess()) {
 			$this->oBeaut->add($sTag);
-		} else if ($this->oBeaut->getControlSeq() == T_SWITCH && $this->getSetting('switch_without_indent')) {
-			$this->oBeaut->add($sTag);
-			$this->oBeaut->incIndent();
 		} else {
 			$c = $this->oBeaut->getControlSeq();
 			if (($c == T_CLASS && $this->getSetting('newline_curly_class')) || ($c == T_FUNCTION && $this->getSetting('newline_curly_function'))) {
@@ -148,8 +128,8 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 	}
 	function t_parenthesis_open($sTag)
 	{
-		if (!$this->getSetting('nested_array')) return PHP_Beautifier_Filter::BYPASS;
 		$this->oBeaut->add($sTag);
+		return true;
 		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
 			$this->oBeaut->addNewLine();
 			$this->oBeaut->incIndent();
@@ -158,31 +138,32 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 	}
 	function t_parenthesis_close($sTag)
 	{
-		$this->oBeaut->removeWhitespace();
-		if ($this->getSetting('nested_array') && $this->oBeaut->getControlParenthesis() == T_ARRAY) {
+		if(in_array($this->oBeaut->getPreviousTokenContent(), array(",", ")", "}"))) {
+			// $this->oBeaut->removeWhitespace();
+		}
+		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
+			$this->oBeaut->decIndent();
+		}
+		$this->oBeaut->add($sTag);
+		return;
+		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
 			$this->oBeaut->decIndent();
 			if ($this->oBeaut->getPreviousTokenContent() != '(') {
-				$this->oBeaut->addNewLine();
-				$this->oBeaut->addIndent();
+				$this->oBeaut->addNewLineIndent();
 			}
 			$this->oBeaut->add($sTag);
 		} else $this->oBeaut->add($sTag . ' ');
 	}
 	function t_comma($sTag)
 	{
-		// $this->oBeaut->add(token_name($this->oBeaut->getControlParenthesis()));
-		if (!$this->getSetting('nested_array') || $this->oBeaut->getControlParenthesis() != T_ARRAY) $this->oBeaut->add($sTag . ' ');
-		else {
-			$this->oBeaut->add($sTag);
-			$this->oBeaut->addNewLine();
-			$this->oBeaut->addIndent();
-		}
+		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
+			$this->oBeaut->add($sTag . $this->oBeaut->getPreviousWhitespace());
+		} else return PHP_Beautifier_Filter::BYPASS;
 	}
 }
 
 $pb = new PHP_Beautifier();
-$pb->setInputString(file_get_contents('php://stdin'));
-$pb->setNewLine("\n");
+
 // TextMate indent settings (when run from inside TextMate)
 if (isset($_SERVER['TM_SOFT_TABS'], $_SERVER['TM_TAB_SIZE']) && $_SERVER['TM_SOFT_TABS'] == "YES") {
 	$pb->setIndentChar(" ");
@@ -191,38 +172,47 @@ if (isset($_SERVER['TM_SOFT_TABS'], $_SERVER['TM_TAB_SIZE']) && $_SERVER['TM_SOF
 	$pb->setIndentChar("\t");
 	$pb->setIndentNumber(1);
 }
+
 // PHP_Beautifier Fiters
 $filters = array(
 	// 'IndentStyles' => array('style' => 'k&r'), // k&r, allman, gnu, ws
 	'DocBlock',
 	// 'EqualsAlign',
-	'Lowercase',
-	// lowercase all control structures
-	'NewLines' => array(
-		'before' => "",
-		'after' => "T_NAMESPACE:"
-	),
+	'Lowercase', // lowercase all control structures
 	// 'ArrayNested',
-	// 'Pear' => array(
-	// 	'add_header' => false,
-	// 	'newline_class' => false,
-	// 	'newline_function' => false,
-	// 	'switch_without_indent' => true,
-	// ),
+	// 'NewLines' => array('before' => "", 'after' => "T_NAMESPACE:"),
 	// 'phpBB',
+	// 'Pear' => array('add_header' => false, 'newline_class' => false, 'newline_function' => false, 'switch_without_indent' => true),
 	new PHP_Beautifier_Filter_Custom($pb, array(
 		'newline_curly_class' => true,
 		'newline_curly_function' => true,
-		'switch_without_indent' => false,
-		'nested_array' => true,
+		'nested_array' => false,
 		'concat_else_if' => false,
 		'space_after_if' => true,
-		'keep_blank_lines' => true,
+		'collapse_empty_curlys' => true,
 	))
 );
 foreach ($filters as $k => $v) {
 	if ($k && is_array($v)) $pb->addFilter($k, $v);
 	else $pb->addFilter($v);
 }
+
+$text = file_get_contents('php://stdin');
+// Convert leading tabs to 4 spaces before filtering
+// DocBlockGenerator can't handle leading tabs
+$text = preg_replace_callback("/^[\t ]+/m", function ($m) {
+	return preg_replace("/([ ]{0,3}\t|[ ]{4})/", str_repeat(" ", 4), $m[0]);
+}, $text);
+
+$pb->setInputString($text);
+$pb->setNewLine(PHP_EOL);
 $pb->process();
-$pb->show();
+$text = $pb->get();
+
+// Change leading spaces back to tabs or vice versa
+$text = preg_replace_callback("/^[\t ]+/m", function ($m) {
+	global $pb;
+	return preg_replace("/([ ]{0,3}\t|[ ]{4})/", str_repeat($pb->getIndentChar(), $pb->getIndentNumber()), $m[0]);
+}, $text);
+
+echo $text;
