@@ -7,7 +7,6 @@ $config = array(
 		'long' => "<%round(current_observation.temp_f)%> degrees. <%current_observation.weather%>. Wind <%current_observation.wind_string%>. Humidity <%current_observation.relative_humidity%>.",
 		'full' => "Temperature: <%round(current_observation.temp_f)%> degrees.\nConditions: <%current_observation.weather%>.\nWind: <%current_observation.wind_string%>.\nHumidity: <%current_observation.relative_humidity%>.",
 	),
-	// 'template' => 'full',
 	'template' => count($_SERVER['argv']) > 1? $_SERVER['argv'][1] : 'brief',
 	'say' => '/usr/bin/say', // path to `say` command, false
 	'url' => 'http://api.wunderground.com/api/<%api.key%>/<%api.features%>/<%api.settings%>/q/<%api.query%>.<%api.output_format%>',
