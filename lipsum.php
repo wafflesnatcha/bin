@@ -100,13 +100,13 @@ abstract class Lipsum
 $script = new CLIScript(array(
 	'name' => 'lipsum.php',
 	'description' => 'Generate "dummy" text.',
-	'usage' => basename($_SERVER['argv'][0]) . ' [OPTION]...',
+	'usage' => '[OPTION]...',
 	'help' => 'Without any options, output will be the common lorem ipsum paragraph ("Lorem ipsum dolor sit amet...").',
 	'options' => array(
 		'paragraphs' => array(
 			'short' => 'p:',
 			'long' => 'paragraphs:',
-			'usage' => '-p, --paragraphs NUM',
+			'usage' => 'NUM',
 			'description' => 'Output text in paragraphs',
 			'filter' => FILTER_VALIDATE_INT,
 			'filter_options' => array('options' => array('min_range' => 1)),
@@ -114,7 +114,7 @@ $script = new CLIScript(array(
 		'sentences' => array(
 			'short' => 's:',
 			'long' => 'sentences:',
-			'usage' => '-s, --sentences NUM',
+			'usage' => 'NUM',
 			'description' => 'Output text in sentences, or when used in conjunction with -p, will define sentences per paragraph.',
 			'filter' => FILTER_VALIDATE_INT,
 			'filter_options' => array('options' => array('min_range' => 1)),
@@ -122,7 +122,7 @@ $script = new CLIScript(array(
 		'words' => array(
 			'short' => 'w:',
 			'long' => 'words:',
-			'usage' => '-w, --words NUM',
+			'usage' => 'NUM',
 			'description' => 'Output NUM words separated by a single space',
 			'filter' => FILTER_VALIDATE_INT,
 			'filter_options' => array('options' => array('min_range' => 1)),
@@ -130,7 +130,7 @@ $script = new CLIScript(array(
 		'list' => array(
 			'short' => 'l:',
 			'long' => 'list:',
-			'usage' => '-l, --list WORDLIST',
+			'usage' => 'WORDLIST',
 			'description' => 'Available words lists: ' . str_replace(Lipsum::$_list, Lipsum::$_list . " (default)", implode(', ', array_keys(Lipsum::$_lists))),
 		)
 	)
