@@ -2,6 +2,7 @@ alias coords="CoreLocationCLI -once | perl -pe '"'s/^<\+?(\-?[\d\.]+),\s*(\-?[\d
 alias freshe='fresh && history -c && exit'
 alias gl='gls -AGhlqU -T4 --file-type --color=auto'
 alias l='ls -Abhlpf'
+alias lh='ls -Ablpf'
 alias l@='l -@'
 alias mac='mac.sh'
 
