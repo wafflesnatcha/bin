@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `extract.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="extract.sh"
-SCRIPT_VERSION="r1 2012-07-11"
+SCRIPT_VERSION="r2 2012-09-10"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -49,6 +49,14 @@ for f in "$@"; do
 
 		*.bz2|*.bzip2|*.bz)
 		bzip2 -dkv "$f"
+		;;
+
+		*.cpio)
+		ditto -x "$f" "${f%%.cpio}" 
+		;;
+
+		*.cpgz)
+		ditto -Vxz "$f" "${f%%.cpgz}" 
 		;;
 
 		*.gz|*.gzip)
