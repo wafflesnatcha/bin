@@ -1,20 +1,17 @@
 alias ..='cd ..'
 alias cd..='cd ..'
 
-alias gemsearch='gem search -db'
-
-alias l='ls -AhlqU -T4 --file-type --color=auto'
-
 alias cpath='/bin/echo -n "$PWD" | { xclip 2>/dev/null || pbcopy; }'
+alias envf=env_functions
+alias envv=env_vars
 alias finds='findstring.sh -i'
+alias gemsearch='gem search -db'
 alias getip="curl -qsL 'http://checkip.dyndns.com' | perl -pe 's/^.*Current IP Address: ([0-9\.]+)\<.*$/\$1/i'"
 alias h='history'
+alias l='ls -AhlqU -T4 --file-type --color=auto'
 alias lipsum='lipsum.php'
 alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
 alias phpstylist='php -f "$(type -p phpStylist.php 2>/dev/null)" --'
 alias random_file='find "$PWD" -type f | gsort -R | head -n1'
 alias rmmr='rmmacres.sh --dsstore --forks'
 alias rmxattr='xattr -cr'
-
-alias envf=env_functions
-alias envv=env_vars

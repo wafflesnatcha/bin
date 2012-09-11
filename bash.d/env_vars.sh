@@ -4,9 +4,7 @@
 # exported).
 env_vars() {
     local c output=$(set | perl -ne 'print if m/^[a-z0-9_]+=/i')
-
 	[[ $1 =~ ^[a-zA-Z0-9\_]*$ ]] && output=$(echo "$output" | perl -ne 'print if m/^'"$1"'[^=]*?=/i')
-	
     [[ ! -p /dev/stdout && "$TERM" =~ xterm-(256)?color ]] && c=("\033[m" "\033[34m" "\033[31m" "\033[93m")
     echo "$output" |
         perl -pe 's/:/'${c[3]}':'${c[0]}'\n     /gi if m/^PATH\=/' | # Pretty print the PATH

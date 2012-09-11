@@ -1,4 +1,5 @@
 # hr
+# 
 # Display a pretty horizontal rule.
 hr() {
 	local i x r c=${COLUMNS:-`tput cols`}

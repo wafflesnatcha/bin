@@ -15,8 +15,7 @@ $config = array(
 		'key' => '6fc47e002d63dd18',
 		'features' => 'conditions/forecast',
 		'settings' => 'pws:1/lang:EN',
-		// 'query' => 'autoip',
-		'query' => trim(shell_exec('CoreLocationCLI -once | perl -pe \'s/^<([\+\-0-9\.]+)\s*,\s*([\+\-0-9\.]+).*$/$1,$2/gi;s/\+|//gi\'')),
+		'query' => trim(shell_exec('type CoreLocationCLI &>/dev/null && CoreLocationCLI -once | perl -pe \'s/^<([+\-0-9\.]+)\s*,\s*([+\-0-9\.]+).*$/$1,$2/gi;s/\+|//gi\' || echo "autoip"')),
 		'output_format' => 'xml', // json, xml
 	),
 );
@@ -52,7 +51,10 @@ $url = preg_replace_callback('/<%([^%]+)%>/i', function ($m) {
 	global $config;
 	return array_value($config, $m[1]);
 }, $config['url']);
-if (!$res = file_get_contents($url)) exit(2);
+
+if (!$res = file_get_contents($url)) {
+	exit(2);
+}
 
 $xml = simplexml_load_string($res, "SimpleXMLElement", LIBXML_NOCDATA | LIBXML_NOENT);
 
@@ -62,4 +64,6 @@ $output = preg_replace_callback('/<%([^%]+)%>/i', function ($m) {
 }, $config['templates'][$config['template']]);
 
 echo "$output\n";
-if (isset($config['say']) && $config['say'] != false) shell_exec($config['say'] . ' ' . escapeshellarg($output));
+if (isset($config['say']) && $config['say'] != false) {
+	shell_exec($config['say'] . ' ' . escapeshellarg($output));
+}

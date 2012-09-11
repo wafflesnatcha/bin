@@ -6,7 +6,10 @@
 # $ some_variable=value
 # $ vars some_variable
 vars() {
-	vars_output() { echo "$1='${!1}'" 1>&2; }
+	vars_output() {
+		echo "$1='${!1}'" 1>&2
+	}
+
 	local var i
 	for var in "$@"; do
 		local length=$(eval echo "\${#$var[@]}")

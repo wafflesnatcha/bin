@@ -1,7 +1,8 @@
 # unicode2hex CHARACTER
+# 
 # Convert a character to its unicode hexadecimal value.
 #
-# Basic Example:
+# Example:
 # $ unicode2hex ã
 # \xC3\xA3
 #

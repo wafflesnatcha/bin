@@ -1,7 +1,8 @@
 # unicode2oct CHARACTER
+# 
 # Convert a character to its unicode octal value.
 #
-# Basic Example:
+# Example:
 # $ unicode2oct ã
 # \303\243
 #

@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 # `geticons.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="geticons.sh"
-SCRIPT_VERSION="1.1.3 2012-05-11"
+SCRIPT_VERSION="r1 2012-09-10"
 
 opt_output="./icons"
 
-usage() {
-cat <<EOF
+usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Save file icons recursively.
 
-Usage: ${0##*/} [OPTION]... [PATH]
+Usage: ${0##*/} [OPTION]... [PATH]...
 
 Options:
  -e, --extension FILEEXT  Only extract icons from files with this extension
@@ -64,15 +63,13 @@ while (($#)); do
 	shift
 done
 
-# src="${1:-$PWD}"
-# [[ ! -d "$src" ]] && ERROR "invalid path '$src'" 1
-
 [[ ${opt_output} && ! -e "${opt_output}" ]] && mkdir -p "${opt_output}"
 [[ ${opt_output} && ! -d "${opt_output}" ]] && ERROR "output is not a directory '${opt_output}'" 1
 [[ ${opt_output} && ! -w "${opt_output}" ]] && ERROR "permission denied to output directory '${opt_output}'" 1
 
 [[ $opt_depth ]] && fopts="$fopts -maxdepth $opt_depth"
 [[ $opt_extension ]] && fopts="$fopts -name '*.$opt_extension'" 
+
 args=$(cat <<EOF
 $fopts
 -not -path '*/.Trash/*'
@@ -85,12 +82,11 @@ EOF)
 
 for src in "${@:-$PWD}"; do
 	echo "$args" | xargs find -sd "$src" | while read f; do
-	 		[[ "$f" == "$src" || ! -r "$f" || "${f##*.}" == "icns" ]] && continue
-	 		out="${opt_output}${f##$src}.icns"
-	 		d="$(dirname "$out")"
-	 		[[ ! -d "$d" ]] && mkdir -p "$d"
-	 		# echo "${f##$src} => ${out##$opt_output/}"
-	 		echo "$out"
-	 		"$geticon" -t "icns" -o "$out" "$f" || ERROR "geticon failed" $?
-	 	done
+ 		[[ "$f" == "$src" || ! -r "$f" || "${f##*.}" == "icns" ]] && continue
+ 		out="${opt_output}${f##$src}.icns"
+ 		d="$(dirname "$out")"
+ 		[[ ! -d "$d" ]] && mkdir -p "$d"
+ 		echo "$out"
+ 		"$geticon" -t "icns" -o "$out" "$f" || ERROR "geticon failed" $?
+ 	done
 done

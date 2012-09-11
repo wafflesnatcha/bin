@@ -1,4 +1,5 @@
 # goo.gl URL
+# 
 # Shorten a URL using the Google URL Shortener service (http://goo.gl).
 goo.gl() {
 	curl -qsSL -m10 --connect-timeout 10 \
