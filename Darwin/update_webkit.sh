@@ -23,7 +23,7 @@ else
 	echo "not found"
 fi
 
-echo -n "finding latest build... "
+echo -n "finding latest revision... "
 URL="$(curl -qsSL -m10 --connect-timeout 15 ${snapshots_url} | grep dmg | head -1 | perl -pe 's/.*(http.*dmg).*/$1/')"
 FILE="$(basename "$URL")"
 latest_version=$(echo "$FILE" | perl -pe 's/.*(r\d{6,})\.dmg.*/$1/')
