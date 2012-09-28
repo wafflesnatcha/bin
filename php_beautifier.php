@@ -6,7 +6,7 @@
  * @author    Scott Buchanan <buchanan.sc@gmail.com>
  * @copyright 2012 Scott Buchanan
  * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
- * @version   r1 2012-09-09
+ * @version   r2 2012-09-09
  * @link      http://wafflesnatcha.github.com
  */
 
@@ -126,40 +126,6 @@ class PHP_Beautifier_Filter_Custom extends PHP_Beautifier_Filter
 			}
 		}
 	}
-	function t_parenthesis_open($sTag)
-	{
-		$this->oBeaut->add($sTag);
-		return true;
-		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
-			$this->oBeaut->addNewLine();
-			$this->oBeaut->incIndent();
-			$this->oBeaut->addIndent();
-		}
-	}
-	function t_parenthesis_close($sTag)
-	{
-		if(in_array($this->oBeaut->getPreviousTokenContent(), array(",", ")", "}"))) {
-			// $this->oBeaut->removeWhitespace();
-		}
-		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
-			$this->oBeaut->decIndent();
-		}
-		$this->oBeaut->add($sTag);
-		return;
-		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
-			$this->oBeaut->decIndent();
-			if ($this->oBeaut->getPreviousTokenContent() != '(') {
-				$this->oBeaut->addNewLineIndent();
-			}
-			$this->oBeaut->add($sTag);
-		} else $this->oBeaut->add($sTag . ' ');
-	}
-	function t_comma($sTag)
-	{
-		if ($this->oBeaut->getControlParenthesis() == T_ARRAY) {
-			$this->oBeaut->add($sTag . $this->oBeaut->getPreviousWhitespace());
-		} else return PHP_Beautifier_Filter::BYPASS;
-	}
 }
 
 $pb = new PHP_Beautifier();
@@ -179,14 +145,13 @@ $filters = array(
 	'DocBlock',
 	// 'EqualsAlign',
 	'Lowercase', // lowercase all control structures
-	// 'ArrayNested',
+	'ArrayNested',
 	// 'NewLines' => array('before' => "", 'after' => "T_NAMESPACE:"),
 	// 'phpBB',
 	// 'Pear' => array('add_header' => false, 'newline_class' => false, 'newline_function' => false, 'switch_without_indent' => true),
 	new PHP_Beautifier_Filter_Custom($pb, array(
 		'newline_curly_class' => true,
-		'newline_curly_function' => true,
-		'nested_array' => false,
+		'newline_curly_function' => false,
 		'concat_else_if' => false,
 		'space_after_if' => true,
 		'collapse_empty_curlys' => true,
