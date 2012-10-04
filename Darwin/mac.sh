@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r11 2012-08-16"
+SCRIPT_VERSION="r12 2012-10-04"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -42,6 +42,8 @@ Commands:
  screencap location [PATH]        Default save location for screen captures
  screencap type [TYPE]            File format of screen captures (BMP, GIF, JPG,
                                   PDF, PNG, TIFF)
+
+ services rebuild  Rebuild the Services list
 
  wifi available   Show available wifi networks
  wifi disconnect  Disassociate from any network
@@ -297,6 +299,21 @@ mac() {
 		*) unknown_command "$1"; return
 		;;
 
+	esac
+	;;
+
+	services) shift
+	case $arg2 in
+		
+		rebuild)
+		local bin="/System/Library/CoreServices/pbs"
+		[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
+		"$bin"
+		;;
+		
+		*) unknown_command "$1"; return
+		;;
+	
 	esac
 	;;
 
