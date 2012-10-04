@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r12 2012-10-04"
+SCRIPT_VERSION="r13 2012-10-04"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -142,10 +142,16 @@ osxVersionLessThan() {
 
 mac() {
 	local ARGS="$@"
-	unknown_command() { [[ -n $1 ]] && ERROR "unknown command '$ARGS'" 1; mac help; return 1; }
+	unknown_command() {
+		[[ -n "$1" ]] && ERROR "unknown command '$ARGS'" 1
+		mac help
+		return 1
+	}
 
 	# Create a lowercase version of every argument
-	for (( i = 0 ; i <= $# ; i++ )); do eval local arg${i}='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'; done
+	for (( i = 0 ; i <= $# ; i++ )); do
+		eval local arg${i}='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'
+	done
 
 	case $arg1 in
 
@@ -269,7 +275,7 @@ mac() {
 	esac
 	;;
 
-	network|n|net) shift
+	network|n|ne|net) shift
 	case $arg2 in
 
 		flushdns|f|flush) osxVersionLessThan 10.7 && dscacheutil -flushcache || sudo killall -HUP mDNSResponder
@@ -284,7 +290,7 @@ mac() {
 	esac
 	;;
 
-	screencap|s) shift
+	screencap|sc) shift
 	case $arg2 in
 
 		disable-shadow) pref bool "com.apple.screencapture disable-shadow" $2 && killall SystemUIServer
@@ -301,7 +307,7 @@ mac() {
 
 	esac
 	;;
-
+	
 	services) shift
 	case $arg2 in
 		
@@ -318,17 +324,17 @@ mac() {
 	;;
 
 	wifi|w) shift
-	local airport_path="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-	[[ ! -e "$airport_path" ]] && ERROR "\`airport\` not found in '$(dirname "$airport_path")'" 1
+	local bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+	[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
 	case $arg2 in
 
-		available) "$airport_path" -s
+		available) "$bin" -s
 		;;
 
-		disconnect) sudo "$airport_path" -z
+		disconnect) sudo "$bin" -z
 		;;
 
-		info) "$airport_path" -I
+		info) "$bin" -I
 		;;
 
 		*) unknown_command "$1"; return
@@ -353,12 +359,10 @@ mac() {
 	;;
 
 	esac
-
-	retcode=$?
 }
 
 mac "$@"
 retcode=$?
 
-# Error codes 3 & 4 aren't actually errors, they're just used internally
+# Return codes 3 & 4 aren't actually errors, they're just used internally
 [[ ! $retcode || $retcode = 3 || $retcode = 4 ]] && exit 0 || exit $retcode
