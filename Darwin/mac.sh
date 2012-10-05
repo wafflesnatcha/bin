@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="1.1.0 2012-10-04"
+SCRIPT_VERSION="1.1.1 2012-10-04"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -267,11 +267,11 @@ mac() {
 
 		status)
 			osascript <<-'EOF'
-			tell application "iTunes"
+			tell application "iTunes" to try
 				set s to (round (duration of current track as integer) mod 60)
 				if s < 10 then set s to "0" & s
 				return "[" & (player state as string) & "] \"" & name of current track & "\" by " & artist of current track & " (" & (round ((duration of current track as integer) / 60) rounding down) & ":" & s & ")"
-			end tell
+			end try
 			EOF
 			;;
 
