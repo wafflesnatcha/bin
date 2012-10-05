@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="r13 2012-10-04"
+SCRIPT_VERSION="1.1.0 2012-10-04"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -66,44 +66,44 @@ pref() {
 
 	# No value specified, output current value instead
 	if [[ ! $2 ]]; then
-		v=$(defaults read $1 2>/dev/null) || { echo "not set"; return 4; }
+		v=$(defaults read $1 2>/dev/null) || { echo "not set"; return 1; }
 		if [[ $vartype = "bool" ]]; then
-			[[ $v = 1 ]] && echo "true" || echo "false"
+			[[ $v = 1 ]] && echo "true" || { echo "false"; return 1; }
+		else
+			echo "$v"
 		fi
-		return 3
+		return 100
 	fi
 
 	case "$vartype" in
-		date|string)
+
+	date|string)
 		defaults write $1 -$vartype "$2"
 		;;
 
-		float|int)
+	float|int)
 		[[ $2 = "-delete" ]] && defaults delete $1 || defaults write $1 -$vartype $2
 		;;
 
-		array|array-add|dict|dict-add)
+	array|array-add|dict|dict-add)
 		local key=$1
 		shift
 		defaults write $key -array "$@"
 		;;
 
-		bool)
-		# if [[ ! $2 ]]; then
-		# 	[[ $(defaults read $1 2>/dev/null) = 1 ]] && { echo "true"; return 3; } || { echo "false"; return 4; }
-		# fi
-
+	bool)
 		case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
-			y|yes|1|true|on) defaults write $1 -bool TRUE ;;
-			n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-			-delete) defaults delete $1 ;;
-			*) ERROR "invalid value '$2'" 2 ;;
+		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
+		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
+		-delete) defaults delete $1 ;;
+		*) ERROR "invalid value '$2'" 2 ;;
 		esac
 		;;
 
-		*)
+	*)
 		defaults write $1 $2
 		;;
+
 	esac
 	return
 }
@@ -112,33 +112,31 @@ pref() {
 # Runs COMMAND with FILE as it's argument for every FILE specified.
 runForEach() {
 	[[ ${#} -lt 2 ]] && return 1;
-	local cmd=$1
+	local f cmd=$1
 	shift
-	local f
 	for f in "$@"; do
 		[[ ! -e "$f" ]] && { ERROR "$f: No such file or directory"; continue; }
 		$cmd "$f"
 	done
 }
 
-# osxVersion
+# systemVersion
 # Return the system's OS X version as an array.
-osxVersion() {
-	[[ ! $__osx_version ]] && __osx_version=( $(sw_vers | grep 'ProductVersion:' | perl -pe 's/^.*?([0-9]+)\.([0-9]+)(?:\.([0-9]+))?.*$/$1 $2 $3/i') )
-	[[ ! $1 ]] && { echo "${__osx_version[@]}" | sed 's/ /./g'; return; }	
+systemVersion() {
+	[[ ! $__osx_version ]] && __osx_version=( $(sw_vers | grep 'ProductVersion:' | perl -pe 's/^.*?([0-9]+)\.([0-9]+)(?:\.([0-9]+))?.*$/$1.$2.$3/i') )
+	echo "${__osx_version[@]}"
 }
 
-# osxVersionLessThan VERSION
+# systemVersionLessThan VERSION
 # Returns 0 if the system's OS X version is less than `VERSION`.
-osxVersionLessThan() {
-	osxVersion &>/dev/null || return 2
+systemVersionLessThan() {
+	systemVersion &>/dev/null || return 2
 	local x c=( $(echo "$1" | sed -E 's/([0-9]+)\./\1 /g') )
 	for (( x=0 ; x < ${#c[@]} && x < ${#__osx_version[@]} ; x++ )); do
 		[[ ${__osx_version[$x]} -lt ${c[$x]} ]] && return 0
 	done
 	return 1
 }
-
 
 mac() {
 	local ARGS="$@"
@@ -155,208 +153,211 @@ mac() {
 
 	case $arg1 in
 
-	directory|di|dir) shift
-	case $arg2 in
+	directory|di|dir)
+		shift
+		case $arg2 in
 
-		groups) dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
-		;;
+		groups)
+			dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
+			;;
 
-		members) [[ ! $2 ]] && return 1; dscl . -list /Users | while read u; do [[ $(dsmemberutil checkmembership -U "$u" -G "$2" 2>/dev/null) =~ is\ a\ member ]] && echo $u; done; return
-		;;
+		members)
+			[[ ! $2 ]] && return 1; dscl . -list /Users | while read u; do [[ $(dsmemberutil checkmembership -U "$u" -G "$2" 2>/dev/null) =~ is\ a\ member ]] && echo $u; done; return
+			;;
 
-		users) result="$(dscacheutil -q user $([[ "$2" ]] && echo "-a name $2"))"; [[ $result ]] && echo "$result" || return 1
-		;;
+		users)
+			result="$(dscacheutil -q user $([[ "$2" ]] && echo "-a name $2"))"
+			[[ $result ]] && echo "$result" || return 1
+			;;
 
-		*) unknown_command "$1"; return
-		;;
+		*) unknown_command "$1"; return ;; esac ;;
 
-	esac
-	;;
+	dock|d|do|doc)
+		shift
+		case $arg2 in
 
-	dock|d|do|doc) shift
-	case $arg2 in
+		addspace)
+			defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart
+			;;
 
-		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart
-		;;
+		dimhidden)
+			pref bool "com.apple.dock showhidden" $2 && mac dock restart
+			;;
 
-		dimhidden) pref bool "com.apple.dock showhidden" $2 && mac dock restart
-		;;
+		lock-size)
+			pref bool "com.apple.dock size-immutable" $2 && mac dock restart
+			;;
 
-		lock-size) pref bool "com.apple.Dock size-immutable" $2 && mac dock restart
-		;;
+		noglass)
+			pref bool "com.apple.dock no-glass" $2 && mac dock restart
+			;;
 
-		noglass) pref bool "com.apple.dock no-glass" $2 && mac dock restart
-		;;
+		restart|r)
+			killall Dock
+			;;
 
-		restart|r) killall Dock
-		;;
+		size)
+			pref int "com.apple.dock ama" $2 && mac dock restart
+			;;
 
-		size) pref int "com.apple.dock tilesize" $2 && mac dock restart
-		;;
+		*) unknown_command "$1"; return ;; esac ;;
 
-		*) unknown_command "$1"; return
-		;;
+	expose|e|ex|exp)
+		shift
+		case $arg2 in
 
-	esac
-	;;
+		anim-duration)
+			pref float "com.apple.dock expose-animation-duration" $2 && killall Dock
+			;;
 
-	expose|e|ex|exp) shift
-	case $arg2 in
+		*) unknown_command "$1"; return ;; esac ;;
 
-		anim-duration) pref float "com.apple.dock expose-animation-duration" $2 && killall Dock
-		;;
+	finder|f|fi|fin)
+		shift
+		case $arg2 in
 
-		*) unknown_command "$1"; return
-		;;
+		hidefile|hf)
+			shift
+			which chflags &>/dev/null && runForEach "chflags -h hidden" "$@" || runForEach "setfile -P -a V" "$@"
+			;;
 
-	esac
-	;;
+		showfile|sf)
+			shift
+			which chflags &>/dev/null && runForEach "chflags -h nohidden" "$@" || runForEach "setfile -P -a v" "$@"
+			;;
 
-	finder|f|fi|fin) shift
-	case $arg2 in
+		fullpathview)
+			pref bool "com.apple.finder _FXShowPosixPathInTitle" $2
+			;;
 
-		hidefile|hf) shift; which chflags &>/dev/null && runForEach "chflags -h hidden" "$@" || runForEach "setfile -P -a V" "$@"
-		;;
-
-		showfile|sf) shift; which chflags &>/dev/null && runForEach "chflags -h nohidden" "$@" || runForEach "setfile -P -a v" "$@"
-		;;
-
-		fullpathview) pref bool "com.apple.finder _FXShowPosixPathInTitle" $2
-		;;
-
-		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
-		;;
+		restart|r)
+			osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
+			;;
 
 		seticon|si)
-		shift; local icns="$1"; shift
-		cat <<-EOF | python - "$icns" "$@"
-		import sys
-		from AppKit import *
-		i=NSImage.alloc().initWithContentsOfFile_(sys.argv[1])
-		for p in sys.argv[2:]:
-		    NSWorkspace.sharedWorkspace().setIcon_forFile_options_(i, p, 0)
-		EOF
-		;;
+			shift
+			local icns="$1"
+			shift
+			cat <<-EOF | python - "$icns" "$@"
+			import sys
+			from AppKit import *
+			i=NSImage.alloc().initWithContentsOfFile_(sys.argv[1])
+			for p in sys.argv[2:]:
+			    NSWorkspace.sharedWorkspace().setIcon_forFile_options_(i, p, 0)
+			EOF
+			;;
 
-		showhidden|sh) pref bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
-		;;
+		showhidden|sh)
+			pref bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
+			;;
 
-		*) unknown_command "$1"; return
-		;;
+		*) unknown_command "$1"; return ;; esac ;;
 
-	esac
-	;;
+	itunes)
+		shift
+		case $arg2 in
 
-	itunes|i|it) shift
-	case $arg2 in
+		halfstars)
+			pref bool "com.apple.iTunes allow-half-stars" $2
+			;;
 
-		halfstars) pref bool "com.apple.iTunes allow-half-stars" $2
-		;;
-
-		hideping) pref bool "com.apple.iTunes hide-ping-dropdown" $2
-		;;
+		hideping)
+			pref bool "com.apple.iTunes hide-ping-dropdown" $2
+			;;
 
 		status)
-		osascript <<-'EOF'
-		tell application "iTunes"
-			set s to (round (duration of current track as integer) mod 60)
-			if s < 10 then set s to "0" & s
-			return "[" & (player state as string) & "] \"" & name of current track & "\" by " & artist of current track & " (" & (round ((duration of current track as integer) / 60) rounding down) & ":" & s & ")"
-		end tell
-		EOF
-		;;
+			osascript <<-'EOF'
+			tell application "iTunes"
+				set s to (round (duration of current track as integer) mod 60)
+				if s < 10 then set s to "0" & s
+				return "[" & (player state as string) & "] \"" & name of current track & "\" by " & artist of current track & " (" & (round ((duration of current track as integer) / 60) rounding down) & ":" & s & ")"
+			end tell
+			EOF
+			;;
 
-		storelinks) pref bool "com.apple.iTunes show-store-link-arrows" $2
-		;;
+		storelinks)
+			pref bool "com.apple.iTunes show-store-link-arrows" $2
+			;;
 
-		*) unknown_command "$1"; return
-		;;
+		*) unknown_command "$1"; return ;; esac ;;
 
-	esac
-	;;
+	network|net)
+		shift
+		case $arg2 in
 
-	network|n|ne|net) shift
-	case $arg2 in
+		flushdns)
+			systemVersionLessThan 10.7 && dscacheutil -flushcache || sudo killall -HUP mDNSResponder
+			;;
 
-		flushdns|f|flush) osxVersionLessThan 10.7 && dscacheutil -flushcache || sudo killall -HUP mDNSResponder
-		;;
+		ports)
+			sudo lsof -i -P | grep -i "listen"
+			;;
 
-		ports|p) sudo lsof -i -P | grep -i "listen"
-		;;
+		*) unknown_command "$1"; return ;; esac ;;
 
-		*) unknown_command "$1"; return
-		;;
+	screencap|sc)
+		shift
+		case $arg2 in
 
-	esac
-	;;
+		disable-shadow)
+			pref bool "com.apple.screencapture disable-shadow" $2 && killall SystemUIServer
+			;;
 
-	screencap|sc) shift
-	case $arg2 in
+		location)
+			pref string "com.apple.screencapture location" $2 && killall SystemUIServer
+			;;
 
-		disable-shadow) pref bool "com.apple.screencapture disable-shadow" $2 && killall SystemUIServer
-		;;
+		type)
+			pref string "com.apple.screencapture type" $2 && killall SystemUIServer
+			;;
 
-		location) pref string "com.apple.screencapture location" $2 && killall SystemUIServer
-		;;
+		*) unknown_command "$1"; return ;; esac ;;
 
-		type) pref string "com.apple.screencapture type" $2 && killall SystemUIServer
-		;;
+	services)
+		shift
+		case $arg2 in
 
-		*) unknown_command "$1"; return
-		;;
-
-	esac
-	;;
-	
-	services) shift
-	case $arg2 in
-		
 		rebuild)
-		local bin="/System/Library/CoreServices/pbs"
+			local bin="/System/Library/CoreServices/pbs"
+			[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
+			"$bin"
+			;;
+
+		*) unknown_command "$1"; return ;; esac ;;
+
+	wifi|w)
+		shift
+		local bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
 		[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
-		"$bin"
-		;;
-		
-		*) unknown_command "$1"; return
-		;;
-	
-	esac
-	;;
+		case $arg2 in
 
-	wifi|w) shift
-	local bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-	[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
-	case $arg2 in
+		available)
+			"$bin" -s
+			;;
 
-		available) "$bin" -s
-		;;
+		disconnect)
+			sudo "$bin" -z
+			;;
 
-		disconnect) sudo "$bin" -z
-		;;
+		info)
+			"$bin" -I
+			;;
 
-		info) "$bin" -I
+		*) unknown_command "$1"; return ;; esac ;;
+
+	battery)
+		ioreg -S -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}'
 		;;
 
-		*) unknown_command "$1"; return
+	lock)
+		"/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend
 		;;
 
-	esac
-	;;
+	help|--help|-h|"")
+		usage
+		;;
 
-	battery) ioreg -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}'
-	;;
-
-	lock) /System/Library/CoreServices/"Menu Extras"/User.menu/Contents/Resources/CGSession -suspend
-	;;
-
-	updatedb) [ -e "/usr/libexec/locate.updatedb" ] && cd / && sudo /usr/libexec/locate.updatedb
-	;;
-
-	help|--help|-h) usage
-	;;
-
-	*) unknown_command "$1"; return
-	;;
+	*) unknown_command "$1"; return ;;
 
 	esac
 }
@@ -364,5 +365,5 @@ mac() {
 mac "$@"
 retcode=$?
 
-# Return codes 3 & 4 aren't actually errors, they're just used internally
-[[ ! $retcode || $retcode = 3 || $retcode = 4 ]] && exit 0 || exit $retcode
+# Code 100 is for settings where no value was specified
+[[ ! $retcode || $retcode = 100 ]] && exit 0 || exit $retcode
