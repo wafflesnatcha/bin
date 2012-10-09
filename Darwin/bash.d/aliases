@@ -1,7 +1,8 @@
-# Change any existing `l` alias to `gl` if GNU ls is installed on this system (OS X ls is not GNU)
+# Change any existing `l` alias to `gl` substituting `ls` with `gls` (GNU ls)
+# only if `gls` is installed on this system (OS X `ls` is not GNU)
 alias l &>/dev/null && type gls &>/dev/null && eval $(alias l | sed "s/^alias l='ls/alias gl='gls/")
 
-alias coords="CoreLocationCLI -once | perl -pe '"'s/^<\+?(\-?[\d\.]+),\s*(\-?[\d\.]+).*$/$1, $2/i'"'"
+alias coords="CoreLocationCLI -once | perl -pe 's/^<\+?(\-?[\d\.]+),\s*(\-?[\d\.]+).*$/\$1, \$2/i'"
 alias freshe='fresh && history -c && exit'
 alias l='ls -Abhlp'
 alias lh='ls -Ablp'
