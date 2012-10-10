@@ -8,10 +8,12 @@ alias l='ls -Abhlp'
 alias lh='ls -Ablp'
 alias l@='l -@'
 alias mac='mac.sh'
+alias npmo='npm outdated -gq | grep -v "$(npm config get prefix)/lib/node_modules/npm"'
+
 
 # TextMate integration
-type mate &>/dev/null && {
-	alias mate='mate -r'
+type mate1 &>/dev/null && {
+	alias mate='mate1 -r'
 	alias m='mate'
 }
 
