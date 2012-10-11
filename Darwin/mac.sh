@@ -1,60 +1,9 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="1.1.1 2012-10-04"
-
-usage() { cat <<EOF
-$SCRIPT_NAME $SCRIPT_VERSION
-Do stuff with OS X like changing settings and shit.
-
-Usage: ${0##*/} COMMAND
-
-Commands:
- directory groups [NAME]  List groups of this machine
- directory members GROUP  List users belonging to GROUP
- directory users [NAME]   List users of this machine
-
- dock addspace          Add a spacer to the dock
- dock dimhidden [BOOL]  Hidden applications appear dimmer on the dock
- dock lock-size [BOOL]  Disallow changes to the dock size
- dock noglass [BOOL]    Toggle the 3d display of the dock
- dock restart           Reload the dock
- dock size [PIXELS]     Set the tile size of dock items
-
- expose anim-duration [FLOAT]  Expose (Mission Control) animation duration
-
- finder showfile FILE...      Make a file visible in Finder
- finder hidefile FILE...      Hide a file in Finder
- finder restart               Restart Finder
- finder fullpathview [BOOL]   Show the full path in the title of Finder windows
- finder seticon ICNS FILE...  Change the icon for a file using a .icns file
- finder showhidden [BOOL]     Toggle visibility of hidden files and folders
-
- itunes halfstars [BOOL]   Enable ratings with half stars
- itunes hideping [BOOL]    Hide the "Ping" arrows
- itunes status             Show current track and artist
- itunes storelinks [BOOL]  Toggle display of the store link arrows
-
- network flushdns  Flush system DNS cache
- network ports     Show open ports
-
- screencap disable-shadow [BOOL]  Disable window shadows when capturing windows
- screencap location [PATH]        Default save location for screen captures
- screencap type [TYPE]            File format of screen captures (BMP, GIF, JPG,
-                                  PDF, PNG, TIFF)
-
- services rebuild  Rebuild the Services list
-
- wifi available   Show available wifi networks
- wifi disconnect  Disassociate from any network
- wifi info        Print current wireless status
-
- battery       Display battery charge (if applicable)
- help          Show this help
- lock          Lock the desktop
- updatedb      Update locate database
-EOF
-}
+SCRIPT_VERSION="1.1.2 2012-10-11"
+SCRIPT_DESC="Do stuff with OS X, like changing settings and junk."
+SCRIPT_COMMANDS=( directory dock expose finder help itunes network services system wifi )
 
 ERROR() { [[ $1 ]] && echo "$SCRIPT_NAME: $1" 1>&2; [[ $2 -gt -1 ]] && exit $2; }
 
@@ -76,21 +25,17 @@ pref() {
 	fi
 
 	case "$vartype" in
-
 	date|string)
 		defaults write $1 -$vartype "$2"
 		;;
-
 	float|int)
 		[[ $2 = "-delete" ]] && defaults delete $1 || defaults write $1 -$vartype $2
 		;;
-
 	array|array-add|dict|dict-add)
 		local key=$1
 		shift
 		defaults write $key -array "$@"
 		;;
-
 	bool)
 		case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
 		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
@@ -99,11 +44,9 @@ pref() {
 		*) ERROR "invalid value '$2'" 2 ;;
 		esac
 		;;
-
 	*)
 		defaults write $1 $2
 		;;
-
 	esac
 	return
 }
@@ -111,7 +54,7 @@ pref() {
 # runForEach COMMAND FILE...
 # Runs COMMAND with FILE as it's argument for every FILE specified.
 runForEach() {
-	[[ ${#} -lt 2 ]] && return 1;
+	[[ $# -lt 2 ]] && return 1;
 	local f cmd=$1
 	shift
 	for f in "$@"; do
@@ -120,202 +63,283 @@ runForEach() {
 	done
 }
 
-# systemVersion
-# Return the system's OS X version as an array.
-systemVersion() {
-	[[ ! $__osx_version ]] && __osx_version=( $(sw_vers | grep 'ProductVersion:' | perl -pe 's/^.*?([0-9]+)\.([0-9]+)(?:\.([0-9]+))?.*$/$1.$2.$3/i') )
-	echo "${__osx_version[@]}"
-}
-
-# systemVersionLessThan VERSION
-# Returns 0 if the system's OS X version is less than `VERSION`.
-systemVersionLessThan() {
-	systemVersion &>/dev/null || return 2
-	local x c=( $(echo "$1" | sed -E 's/([0-9]+)\./\1 /g') )
-	for (( x=0 ; x < ${#c[@]} && x < ${#__osx_version[@]} ; x++ )); do
-		[[ ${__osx_version[$x]} -lt ${c[$x]} ]] && return 0
-	done
-	return 1
+# OSVersion [-lt|-gt VERSION]
+# Compare the system's OS version to an arbitrary version string.
+OSVersion() {
+	[[ ! $_OSVersion ]] && _OSVersion=( $(sw_vers | grep 'ProductVersion:' | perl -pe 's/^.*?([0-9]+)\.([0-9]+)(?:\.([0-9]+))?.*$/$1 $2 $3/i') )
+	if [[ $1 =~ -(lt|gt) && $2 ]]; then
+		local i vers=( $(echo "$2" | sed -E 's/([0-9]+)\./\1 /g') )
+		for (( i=0 ; i < ${#_OSVersion[@]} ; i++ )); do
+			case $1 in
+				-lt) [[ ${_OSVersion[$i]} -lt ${vers[$i]:-0} ]] && return 0 ;;
+				-gt) [[ ${_OSVersion[$i]} -gt ${vers[$i]:-0} ]] && return 0 ;;
+			esac
+		done
+		return 1
+	else
+		echo "${_OSVersion[@]}" | sed -E 's/ /./g'
+	fi
 }
 
 mac() {
 	local ARGS="$@"
+
+	# Create a copy and lowercase version of every argument
+	for (( i = 0 ; i <= $# ; i++ )); do
+		eval local arg${i}="${!i}"
+		eval local arg${i}_lower='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'
+	done
+	shift 2
+
+	usage() {
+		local i="  "
+		while (($#)); do
+			echo "$i$1"
+			echo "$2" | fold -sw72 | sed -E 's/^/'"$i$i"'/'
+			shift 2
+			[[ $1 ]] && echo
+		done
+		return 0
+	}
+
 	unknown_command() {
-		[[ -n "$1" ]] && ERROR "unknown command '$ARGS'" 1
+		[[ -n "$arg1" ]] && ERROR "unknown command '$ARGS'" 1
 		mac help
 		return 1
 	}
 
-	# Create a lowercase version of every argument
-	for (( i = 0 ; i <= $# ; i++ )); do
-		eval local arg${i}='$(echo "${!i}" | tr "[:upper:]" "[:lower:]")'
-	done
+	case $arg1_lower in
 
-	case $arg1 in
+	directory|dir)
+		case $arg2_lower in
 
-	directory|di|dir)
-		shift
-		case $arg2 in
-
-		groups)
-			dscacheutil -q group $([[ "$2" ]] && echo "-a name $2")
+		-h|"") usage \
+			'directory groups [NAME]' \
+				"List groups of this machine" \
+			'directory members GROUP' \
+				"List users belonging to GROUP" \
+			'directory users [NAME]' \
+				"List users of this machine"
 			;;
 
+		groups) dscacheutil -q group $([[ "$1" ]] && echo "-a name $2") ;;
+
 		members)
-			[[ ! $2 ]] && return 1; dscl . -list /Users | while read u; do [[ $(dsmemberutil checkmembership -U "$u" -G "$2" 2>/dev/null) =~ is\ a\ member ]] && echo $u; done; return
+			[[ ! $1 ]] && return 1
+			dscl . -list /Users | while read u; do
+				[[ $(dsmemberutil checkmembership -U "$u" -G "$1" 2>/dev/null) =~ is\ a\ member ]] && echo $u
+			done
 			;;
 
 		users)
-			result="$(dscacheutil -q user $([[ "$2" ]] && echo "-a name $2"))"
+			result="$(dscacheutil -q user $([[ $1 ]] && echo "-a name $1"))"
 			[[ $result ]] && echo "$result" || return 1
 			;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		*) unknown_command; return ;;
 
-	dock|d|do|doc)
-		shift
-		case $arg2 in
+		esac
+		;;
 
-		addspace)
-			defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart
+	dock)
+		case $arg2_lower in
+
+		-h|"") usage \
+			'dock addspace' \
+				"Add a spacer to the dock" \
+			'dock dimhidden [BOOL]' \
+				"Hidden applications appear dimmer on the dock" \
+			'dock lock-size [BOOL]' \
+				"Disallow changes to the dock size" \
+			'dock noglass [BOOL]' \
+				"Toggle the 3d display of the dock" \
+			'dock restart' \
+				"Reload the dock" \
+			'dock size [PIXELS]' \
+				"Set the tile size of dock items"
 			;;
 
-		dimhidden)
-			pref bool "com.apple.dock showhidden" $2 && mac dock restart
+		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart ;;
+
+		dimhidden) pref bool "com.apple.dock showhidden" $1 && mac dock restart ;;
+
+		lock-size) pref bool "com.apple.dock size-immutable" $1 && mac dock restart ;;
+
+		noglass) pref bool "com.apple.dock no-glass" $1 && mac dock restart ;;
+
+		restart|r) killall Dock ;;
+
+		size) pref int "com.apple.dock ama" $1 && mac dock restart ;;
+
+		*) unknown_command; return ;;
+
+		esac
+		;;
+
+	expose)
+		case $arg2_lower in
+
+		-h|"") usage \
+			'expose anim-duration [FLOAT]' \
+				"Expose (Mission Control) animation duration"
 			;;
 
-		lock-size)
-			pref bool "com.apple.dock size-immutable" $2 && mac dock restart
+		anim-duration) pref float "com.apple.dock expose-animation-duration" $1 && mac dock restart ;;
+
+		*) unknown_command; return ;;
+
+		esac
+		;;
+
+	finder|f)
+		case $arg2_lower in
+
+		-h|"") usage \
+			'finder showfile FILE...' \
+				"Make a file visible in Finder" \
+			'finder hidefile FILE...' \
+				"Hide a file in Finder" \
+			'finder fullpathview [BOOL]' \
+				"Show the full path in the title of Finder windows" \
+			'finder restart' \
+				"Restart Finder" \
+			'finder seticon ICNS FILE...' \
+				"Change the icon for a file using a .icns file" \
+			'finder show-hidden [BOOL]' \
+				"Toggle visibility of hidden files and folders"
 			;;
 
-		noglass)
-			pref bool "com.apple.dock no-glass" $2 && mac dock restart
-			;;
+		hidefile|hf|hide) type chflags &>/dev/null && chflags -h hidden "$@" || setfile -P -a V "$@" ;;
 
-		restart|r)
-			killall Dock
-			;;
+		showfile|sf|show) type chflags &>/dev/null && chflags -h nohidden "$@" || setfile -P -a v "$@" ;;
 
-		size)
-			pref int "com.apple.dock ama" $2 && mac dock restart
-			;;
+		fullpathview) pref bool "com.apple.finder _FXShowPosixPathInTitle" $1 ;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try' ;;
 
-	expose|e|ex|exp)
-		shift
-		case $arg2 in
-
-		anim-duration)
-			pref float "com.apple.dock expose-animation-duration" $2 && killall Dock
-			;;
-
-		*) unknown_command "$1"; return ;; esac ;;
-
-	finder|f|fi|fin)
-		shift
-		case $arg2 in
-
-		hidefile|hf)
-			shift
-			which chflags &>/dev/null && runForEach "chflags -h hidden" "$@" || runForEach "setfile -P -a V" "$@"
-			;;
-
-		showfile|sf)
-			shift
-			which chflags &>/dev/null && runForEach "chflags -h nohidden" "$@" || runForEach "setfile -P -a v" "$@"
-			;;
-
-		fullpathview)
-			pref bool "com.apple.finder _FXShowPosixPathInTitle" $2
-			;;
-
-		restart|r)
-			osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try'
-			;;
-
-		seticon|si)
-			shift
-			local icns="$1"
-			shift
-			cat <<-EOF | python - "$icns" "$@"
+		seticon)
+			cat <<-EOF | python - "$1" "${@:2}"
 			import sys
 			from AppKit import *
 			i=NSImage.alloc().initWithContentsOfFile_(sys.argv[1])
 			for p in sys.argv[2:]:
-			    NSWorkspace.sharedWorkspace().setIcon_forFile_options_(i, p, 0)
+				NSWorkspace.sharedWorkspace().setIcon_forFile_options_(i, p, 0)
 			EOF
 			;;
 
-		showhidden|sh)
-			pref bool "com.apple.finder AppleShowAllFiles" $2 && mac finder restart
-			;;
+		show-hidden) pref bool "com.apple.finder AppleShowAllFiles" $1 && mac finder restart ;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		*) unknown_command; return ;;
+
+		esac
+		;;
 
 	itunes)
-		shift
-		case $arg2 in
+		# itunes_running
+		# Exit with error if iTunes isn't running
+		itunes_running() { osascript -e 'if application id "com.apple.itunes" is not running then error' &>/dev/null || ERROR "iTunes is not running" 11; }
 
-		halfstars)
-			pref bool "com.apple.iTunes allow-half-stars" $2
+		case $arg2_lower in
+
+		-h|"") usage \
+			'itunes current' \
+				"List all information about the current track" \
+			'itunes half-stars [BOOL]' \
+				"Enable ratings with half stars" \
+			'itunes hideping [BOOL]' \
+				"Hide the 'Ping' arrows" \
+			'itunes lyrics' \
+				"Show lyrics saved with the current track" \
+			'itunes status' \
+				"Show player state and current track" \
+			'itunes storelinks [BOOL]' \
+				"Toggle display of the store link arrows"
 			;;
 
-		hideping)
-			pref bool "com.apple.iTunes hide-ping-dropdown" $2
+		half-stars) pref bool "com.apple.iTunes allow-half-stars" $1 ;;
+
+		hideping) pref bool "com.apple.iTunes hide-ping-dropdown" $1 ;;
+
+		storelinks) pref bool "com.apple.iTunes show-store-link-arrows" $1 ;;
+
+		current)
+			itunes_running
+			osascript -ss \
+				-e 'tell application id "com.apple.itunes" to tell current track to {album:album,album artist:album artist,album rating:album rating,album rating kind:album rating kind,artist:artist,bit rate:bit rate,bookmark:bookmark,bookmarkable:bookmarkable,bpm:bpm,category:category,comment:comment,compilation:compilation,composer:composer,database ID:database ID,date added:date added,description:description,disc count:disc count,disc number:disc number,duration:duration,enabled:enabled,episode ID:episode ID,episode number:episode number,EQ:EQ,finish:finish,gapless:gapless,genre:genre,grouping:grouping,kind:kind,long description:long description,modification date:modification date,played count:played count,played date:played date,podcast:podcast,rating:rating,rating kind:rating kind,release date:release date,sample rate:sample rate,season number:season number,shufflable:shufflable,skipped count:skipped count,skipped date:skipped date,show:show,sort album:sort album,sort artist:sort artist,sort album artist:sort album artist,sort name:sort name,sort composer:sort composer,sort show:sort show,size:size,start:start,time:time,track count:track count,track number:track number,unplayed:unplayed,video kind:video kind,volume adjustment:volume adjustment,year:year,container:container,id:id,index:index,name:name,persistent ID:persistent ID}' 2>/dev/null |
+				perl -pe 's/^{|}$//g; s/\, ([a-z ]+\:)/\n$1/gi; s/^([a-z ]+)\:/$1 = /gmi'
+			;;
+			
+		lyrics)
+			itunes_running
+			osascript -e 'tell application id "com.apple.itunes" to tell current track to lyrics' | tr '\r' '\n'
 			;;
 
 		status)
-			osascript <<-'EOF'
-			tell application "iTunes" to try
-				set s to (round (duration of current track as integer) mod 60)
+			itunes_running
+			echo -n "[$(osascript -e 'tell application id "com.apple.itunes" to player state as string')] "
+			osascript <<-'EOF' 2>/dev/null || echo
+			tell application id "com.apple.itunes" to tell current track
+				set s to (round (duration as integer) mod 60)
 				if s < 10 then set s to "0" & s
-				return "[" & (player state as string) & "] \"" & name of current track & "\" by " & artist of current track & " (" & (round ((duration of current track as integer) / 60) rounding down) & ":" & s & ")"
-			end try
+				return "\"" & name & "\" by " & artist & " (" & (round ((duration as integer) / 60) rounding down) & ":" & s & ")"
+			end tell
 			EOF
 			;;
 
-		storelinks)
-			pref bool "com.apple.iTunes show-store-link-arrows" $2
-			;;
+		*) unknown_command; return ;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		esac
+		;;
 
 	network|net)
-		shift
-		case $arg2 in
+		case $arg2_lower in
 
-		flushdns)
-			systemVersionLessThan 10.7 && dscacheutil -flushcache || sudo killall -HUP mDNSResponder
+		-h|"") usage \
+			'network flushdns' \
+				"Flush system DNS cache" \
+			'network ports' \
+				"Show open ports"
 			;;
 
-		ports)
-			sudo lsof -i -P | grep -i "listen"
-			;;
+		flushdns) OSVersion -lt 10.7 && dscacheutil -flushcache || sudo killall -HUP mDNSResponder ;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		ports) sudo lsof -iTCP -sTCP:LISTEN ;;
+
+		*) unknown_command; return ;;
+
+		esac
+		;;
 
 	screencap|sc)
-		shift
-		case $arg2 in
+		case $arg2_lower in
 
-		disable-shadow)
-			pref bool "com.apple.screencapture disable-shadow" $2 && killall SystemUIServer
+		-h|"") usage \
+			'screencap disable-shadow [BOOL]' \
+				"Disable window shadows when capturing windows" \
+			'screencap location [PATH]' \
+				"Default save location for screen captures" \
+			'screencap type [TYPE]' \
+				"File format of screen captures (BMP, GIF, JPG, PDF, PNG, TIFF)"
 			;;
 
-		location)
-			pref string "com.apple.screencapture location" $2 && killall SystemUIServer
-			;;
+		disable-shadow) pref bool "com.apple.screencapture disable-shadow" $1 && killall SystemUIServer ;;
 
-		type)
-			pref string "com.apple.screencapture type" $2 && killall SystemUIServer
-			;;
+		location) pref string "com.apple.screencapture location" $1 && killall SystemUIServer ;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		type) pref string "com.apple.screencapture type" $1 && killall SystemUIServer ;;
+
+		*) unknown_command; return ;;
+
+		esac
+		;;
 
 	services)
-		shift
-		case $arg2 in
+		case $arg2_lower in
+
+		-h|"") usage \
+			'services rebuild' \
+				"Rebuild the Services list"
+			;;
 
 		rebuild)
 			local bin="/System/Library/CoreServices/pbs"
@@ -323,41 +347,74 @@ mac() {
 			"$bin"
 			;;
 
-		*) unknown_command "$1"; return ;; esac ;;
+		*) unknown_command; return ;;
 
-	wifi|w)
-		shift
-		local bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-		[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
-		case $arg2 in
-
-		available)
-			"$bin" -s
-			;;
-
-		disconnect)
-			sudo "$bin" -z
-			;;
-
-		info)
-			"$bin" -I
-			;;
-
-		*) unknown_command "$1"; return ;; esac ;;
-
-	battery)
-		ioreg -S -w0 -c AppleSmartBattery | grep -E '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n", ($2 / $1 * 100)}'
+		esac
 		;;
 
-	lock)
-		"/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend
+	system)
+		case $arg2_lower in
+
+		-h|"") usage \
+			'system battery' \
+				"Display battery charge (if available)" \
+			'system lock' \
+				"Lock the desktop"
+			;;
+
+		battery) ioreg -S -w0 -c AppleSmartBattery -r AppleSmartBattery | grep -Ei '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n",($2/$1*100)}' ;;
+
+		lock) "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend ;;
+
+		*) unknown_command; return ;;
+
+		esac
+		;;
+
+	wifi|w)
+		local bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+		[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
+
+		case $arg2 in
+
+		-h|"") usage \
+			'wifi available' \
+				"Show available wifi networks" \
+			'wifi disconnect' \
+				"Disassociate from any network" \
+			'wifi info' \
+				"Print current wireless status"
+			;;
+
+		available) "$bin" -s ;;
+
+		disconnect) sudo "$bin" -z ;;
+
+		info) "$bin" -I ;;
+
+		*) unknown_command; return ;;
+
+		esac
 		;;
 
 	help|--help|-h|"")
-		usage
+		[[ $arg2 && $arg2_lower != $arg1_lower && $arg2_lower != -a ]] && { mac $arg2 -h; return; }
+		mac --version
+		cat <<-EOF
+		$SCRIPT_DESC
+
+		Usage: ${0##*/} COMMAND
+
+		Commands:
+		$(for v in ${SCRIPT_COMMANDS[@]}; do echo "  $v"; done)
+
+		Try '${0##*/} help COMMAND' for information on a specific command.
+		EOF
 		;;
 
-	*) unknown_command "$1"; return ;;
+	-v|--version) echo "$SCRIPT_NAME $SCRIPT_VERSION" ;;
+
+	*) unknown_command; return ;;
 
 	esac
 }
