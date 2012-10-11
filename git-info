@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 . colors.sh
-[[ -n "$(git symbolic-ref HEAD 2> /dev/null)" ]] && {
-	echo -e "${COLOR_BLUE}${COLOR_BOLD}BRANCHES:${COLOR_RESET}"
-	git remote show | xargs -n1 git remote show
-	echo -e "\n${COLOR_BLUE}${COLOR_BOLD}STATUS:${COLOR_RESET}"
-	[[ -n "$(git status -s 2>/dev/null)" ]] &&
-		git status -s || 
-		echo "working directory is clean"
-	echo -e "\n${COLOR_BLUE}${COLOR_BOLD}LOG:${COLOR_RESET}"
-	git log -5 --oneline --color | cat
-} || echo "Not a git repository" 1>&2
+if [[ -n "$(git symbolic-ref HEAD 2> /dev/null)" ]]; then
+	echo -e "${COLOR_BOLD}BRANCHES:${COLOR_RESET}"
+	git remote show | xargs -n1 git remote show | perl -pe 's/(^\* remote.*$)/'$(git config --get-color color.branch.remote)'$1'$(git config --get-color "" "reset")'/'
+	
+	echo -ne "\n${COLOR_BOLD}STATUS:${COLOR_RESET} "
+	[[ -n "$(git status -s --no-branch)" ]] &&
+		echo -e "${COLOR_RED}✘${COLOR_RESET}" && git status -s --no-branch ||
+		echo -e "${COLOR_GREEN}✔${COLOR_RESET}"
+		
+	echo -e "\n${COLOR_BOLD}LOG:${COLOR_RESET} "
+	git log --graph --pretty=format:'%Cred%h%Creset %C(bold)%an%Creset: %s -%Creset%C(yellow)%d%Creset %Cgreen%cr%Creset' --abbrev-commit --date=relative -5 --color | cat
+	echo
+else
+	echo "Not a git repository" 1>&2
+	exit 2
+fi
