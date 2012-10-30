@@ -9,7 +9,7 @@ Color of the screen pixel at a given point.
 
 Usage: ${0##*/} X Y
 
-Point (0,0) corresponds to the top left of the first monitor.
+Point (x0, y0) corresponds to the top left of the first monitor.
 EOF
 }
 
