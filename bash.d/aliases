@@ -1,17 +1,28 @@
+# Copy current working directory path to clipboard
+alias cpath='/bin/echo -n "$PWD" | { xclip 2>/dev/null || pbcopy; }'
+
+# Retrieves the current WAN ipv4 address via checkip.dyn.com
+alias getip='curl -qsL http://checkip.dyn.com | sed -E "s/^.*Address: ([0-9\.]+).*$/\1/"'
+
+# `ls` shortcut (for GNU ls only!)
+alias l='ls -AhlqU -T4 --file-type --color=auto'
+
+# PHP's natsort is super duper
+alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
+
+# Select a file at random from the current directory and its subdirectories
+alias random_file='find "$PWD" -type f | gsort -R | head -n1'
+
+# Recursively remove all extended attributes
+alias rmxa='xattr -cr'
+
 alias ..='cd ..'
 alias cd..='cd ..'
-
-alias cpath='/bin/echo -n "$PWD" | { xclip 2>/dev/null || pbcopy; }'
 alias envf=env_functions
 alias envv=env_vars
 alias finds='findstring.sh -i'
 alias gemsearch='gem search -db'
-alias getip="curl -qsL 'http://checkip.dyndns.com' | perl -pe 's/^.*Current IP Address: ([0-9\.]+)\<.*$/\$1/i'"
 alias h='history'
-alias l='ls -AhlqU -T4 --file-type --color=auto'
+alias igrep='grep -i --color=auto'
 alias lipsum='lipsum.php'
-alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
-alias phpstylist='php -f "$(type -p phpStylist.php 2>/dev/null)" --'
-alias random_file='find "$PWD" -type f | gsort -R | head -n1'
 alias rmmr='rmmacres.sh --dsstore --forks'
-alias rmxa='xattr -cr'
