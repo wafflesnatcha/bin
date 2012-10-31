@@ -3,16 +3,14 @@
 $config = array(
 	'templates' => array(
 		'brief' => "<%round(current_observation.temp_f)%> degrees. <%current_observation.weather%>.",
-		'short' => "Temperature: <%round(current_observation.temp_f)%> degrees.\nConditions: <%current_observation.weather%>.",
 		'long' => "<%round(current_observation.temp_f)%> degrees. <%current_observation.weather%>. Wind <%current_observation.wind_string%>. Humidity <%current_observation.relative_humidity%>.",
 		'full' => "Temperature: <%round(current_observation.temp_f)%> degrees.\nConditions: <%current_observation.weather%>.\nWind: <%current_observation.wind_string%>.\nHumidity: <%current_observation.relative_humidity%>.",
 	),
 	'template' => count($_SERVER['argv']) > 1? $_SERVER['argv'][1] : 'brief',
-	'say' => '/usr/bin/say', // path to `say` command, false
 	'url' => 'http://api.wunderground.com/api/<%api.key%>/<%api.features%>/<%api.settings%>/q/<%api.query%>.<%api.output_format%>',
 	'api' => array(
 		// http://www.wunderground.com/weather/api/d/docs?d=data/index
-		'key' => '6fc47e002d63dd18',
+		'key' => 'e948b447d0c4ecc6',
 		'features' => 'conditions/forecast',
 		'settings' => 'pws:1/lang:EN',
 		'query' => trim(shell_exec('type CoreLocationCLI &>/dev/null && CoreLocationCLI -once | perl -pe \'s/^<([+\-0-9\.]+)\s*,\s*([+\-0-9\.]+).*$/$1,$2/gi;s/\+|//gi\' || echo "autoip"')),
@@ -64,6 +62,3 @@ $output = preg_replace_callback('/<%([^%]+)%>/i', function ($m) {
 }, $config['templates'][$config['template']]);
 
 echo "$output\n";
-if (isset($config['say']) && $config['say'] != false) {
-	shell_exec($config['say'] . ' ' . escapeshellarg($output));
-}
