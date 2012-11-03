@@ -10,7 +10,7 @@ usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Benchmark a shell script.
 
-Usage: ${0##*/} [OPTION]...[COMMAND]
+Usage: ${0##*/} [OPTION]... [COMMAND]
 
 Options:
  -d, --delay SECONDS   Seconds to wait in between executions (default ${opt_delay})
