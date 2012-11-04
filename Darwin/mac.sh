@@ -50,9 +50,9 @@ pref() {
 		;;
 	bool)
 		case "$(echo "$2" | tr '[:upper:]' '[:lower:]')" in
-		y|yes|1|true|on) defaults write $1 -bool TRUE ;;
+		y|yes|1|true|on|yay) defaults write $1 -bool TRUE ;;
 		n|no|0|false|off|nay) defaults write $1 -bool FALSE ;;
-		-delete) defaults delete $1 ;;
+		--delete) defaults delete $1 ;;
 		*) ERROR "invalid value '$2'" 2 ;;
 		esac
 		;;
