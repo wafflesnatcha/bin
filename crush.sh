@@ -4,7 +4,7 @@ SCRIPT_NAME="crush.sh"
 SCRIPT_VERSION="r7 2012-10-02"
 
 type optipng &>/dev/null && P_optipng="optipng -quiet -preserve"
-type pngcrush &>/dev/null && P_pngcrush="pngcrush -q -rem alla -rem gAMA -rem text -oldtimestamp -ow "
+type pngcrush &>/dev/null && P_pngcrush="pngcrush -q -rem alla -rem gAMA -rem text -oldtimestamp -ow"
 type jpgcrush &>/dev/null && P_jpgcrush="jpgcrush"
 
 usage() { cat <<EOF
