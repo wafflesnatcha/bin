@@ -23,6 +23,7 @@ alias envv=env_vars
 alias finds='findstring.sh -i'
 alias gemsearch='gem search -db'
 alias h='history'
+alias hs='history-search'
 alias igrep='grep -i --color=auto'
 alias lipsum='lipsum.php'
 alias rmmr='rmmacres.sh --dsstore --forks'
