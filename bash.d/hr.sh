@@ -22,5 +22,5 @@ hr() {
 			echo -en "${i}#\033[0m"
 		done
 	done
-	printf "${i}%$(($c%${#r[@]}))s\033[0m" "" | tr " " "#"
+	printf "${i}%$(($c%${#r[@]}))s\033[0m\n" "" | tr " " "#"
 }
