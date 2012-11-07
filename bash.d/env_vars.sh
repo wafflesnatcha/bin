@@ -11,4 +11,3 @@ env_vars() {
         perl -pe 'if(m/^[a-z0-9_]+\=\(\[0/i) { s/\[(\d+)\](=)(\".*?\")/\n  '${c[3]}'[$1]'${c[0]}${c[2]}'$2'${c[0]}'$3/g; s/\)$/\n\)/; }' | # Pretty print Arrays
         perl -pe 's/^([^\s\=]+)(\=)/'${c[1]}'$1'${c[0]}${c[2]}'$2'${c[0]}'/gi' # Add color
 }
-export -f env_vars

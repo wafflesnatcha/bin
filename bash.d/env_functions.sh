@@ -23,4 +23,3 @@ env_functions() {
 		done
 	} | sed '$d'
 }
-export -f env_functions
