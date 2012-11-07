@@ -354,7 +354,7 @@ mac() {
 		esac
 		;;
 
-	system)
+	system|sys)
 		case $arg2_lower in
 
 		-h|"") usage "system" \
