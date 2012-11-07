@@ -2,14 +2,18 @@
 # 
 # A little output console for debugging stuff.
 _D() {
-	. colors.sh
-	echo -en "${COLOR_RED}≫${COLOR_BRIGHT_YELLOW} " 1>&2
-	[[ $# -lt 1 ]] && { cat 1>&2; echo -en "${COLOR_RESET}" 1>&2; return; }
-	while [[ $# -gt 0 ]]; do
-		echo -n "$1" 1>&2
-		shift
-		[[ $# -gt 0 ]] && echo -en "${COLOR_RED},${COLOR_BRIGHT_YELLOW} " 1>&2
-	done
-	echo -e "${COLOR_RESET}" 1>&2
+	[[ ! $1 && ! -p /dev/stdin ]] && return
+	{
+		. colors.sh
+		local c0="$COLOR_RESET" c1="$COLOR_RED" c2="$COLOR_BRIGHT_YELLOW"
+		echo -en "${c1}≫$c2 "
+		[[ ! $1 ]] && echo -n "$(cat)" 
+		while (($#)); do
+			echo -n "$1"
+			shift
+			[[ $1 ]] && echo -en "$c1,$c2 "
+		done
+		echo -e "$c0"
+	} 1>&2
 }
 export -f _D
