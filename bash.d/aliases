@@ -17,6 +17,7 @@ alias random_file='find "$PWD" -type f | gsort -R | head -n1'
 alias rmxa='xattr -cr'
 
 alias ..='cd ..'
+alias b='browser.sh'
 alias cd..='cd ..'
 alias envf=env_functions
 alias envv=env_vars
