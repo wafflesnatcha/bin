@@ -12,7 +12,7 @@ Usage: ${0##*/} [OPTION]... PATTERN
 Options:
  -b, --binary       Include binary files in the search
  -d, --depth NUM    Maximum depth to search subdirectories
- -f, --filenames    just print out a list of the files that match, no context
+ -f, --filenames    List matching files only
  -i, --ignore-case  Case-insensitive search
  -p, --path PATH    Search for files in this path (current working directory)
  -h, --help         Show this help
