@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="1.1.3 2012-10-25"
+SCRIPT_VERSION="1.1.4 2012-11-23"
 SCRIPT_DESC="Do stuff with OS X, like changing settings and junk."
 SCRIPT_COMMANDS=(
 	directory
@@ -181,18 +181,21 @@ mac() {
 		case $arg2_lower in
 
 		-h|"") usage "dock" \
-			'addspace' "Add a spacer to the dock" \
-			'fadehidden [BOOL]' "Hidden applications appear dimmer on the dock" \
-			'locksize [BOOL]' "Disallow changes to the dock size" \
-			'noglass [BOOL]' "Toggle the 3d display of the dock" \
-			'restart' "Reload the dock" \
-			'size [PIXELS]' "Set the tile size of dock items"
+			'addspace' "Add a spacer to the Dock" \
+			'fadehidden [BOOL]' "Hidden applications appear dimmer on the Dock" \
+			'lockcontent [BOOL]' "Disallow changing the icons in the Dock" \
+			'locksize [BOOL]' "Disallow resizing the Dock" \
+			'noglass [BOOL]' "Toggle the 3d display of the Dock" \
+			'restart' "Reload the Dock" \
+			'size [PIXELS]' "Set the tile size of Dock items"
 			;;
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart ;;
 
 		fadehidden) pref bool "com.apple.dock showhidden" $1 && mac dock restart ;;
 
+		lockcontent) pref bool "com.apple.dock contents-immutable" $1 && mac dock restart ;;
+		
 		locksize) pref bool "com.apple.dock size-immutable" $1 && mac dock restart ;;
 
 		noglass) pref bool "com.apple.dock no-glass" $1 && mac dock restart ;;
@@ -347,7 +350,7 @@ mac() {
 		rebuild)
 			local bin="/System/Library/CoreServices/pbs"
 			[[ ! -e "$bin" ]] && ERROR "\`$(basename "$bin")\` not found in '$(dirname "$bin")'" 10
-			"$bin"
+			"$bin" -flush
 			;;
 
 		*) unknown; return ;;
