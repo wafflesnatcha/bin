@@ -8,7 +8,7 @@ alias getip='curl -qsL http://checkip.dyn.com | sed -E "s/^.*Address: ([0-9\.]+)
 alias l='ls -AhlqU -T4 --file-type --color=auto'
 
 # PHP's natsort is super duper
-alias natsort='php -r '\''$a=$_SERVER["argv"];$l=file(count($a)>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
+alias natsort='php -r '\''$l=file(count($a=$_SERVER["argv"])>1&&$a[1]!="-"?$a[1]:"php://stdin");natcasesort($l);echo implode("",$l);'\'
 
 # Select a file at random from the current directory and its subdirectories
 alias random_file='find "$PWD" -type f | gsort -R | head -n1'
