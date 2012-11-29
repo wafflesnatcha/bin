@@ -6,11 +6,14 @@
 # $ some_variable=value
 # $ vars some_variable
 vars() {
-	o() { echo "$1='${!1}'" 1>&2; }
-	local v i l
-	for v in "$@"; do
-		l=$(eval echo "\${#$v[@]}")
-		[[ $l -lt 2 ]] && o "$v" || for i in $(eval echo {0..$(($l-1))}); do o "$v[$i]"; done
+	local __i __l
+	[[ ! -p /dev/stdout && "$TERM" =~ ^xterm-.*color ]] &&
+		o() { echo -ne "\033[34m$1\033[32m=\033[m"; echo "'${!1}'"; } ||
+		o() { echo "$1='${!1}'"; }
+	while (($#)); do
+		__l=$(eval echo "\${#$1[@]}")
+		[[ $__l -lt 2 ]] && o "$1" || for __i in $(eval echo {0..$(($__l-1))}); do o "$1[$__i]"; done
+		shift
 	done
 }
 export -f vars
