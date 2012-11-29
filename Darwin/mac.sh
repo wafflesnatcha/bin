@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="1.1.4 2012-11-23"
+SCRIPT_VERSION="1.1.5 2012-11-29"
 SCRIPT_DESC="Do stuff with OS X, like changing settings and junk."
 SCRIPT_COMMANDS=(
 	directory
@@ -187,7 +187,8 @@ mac() {
 			'locksize [BOOL]' "Disallow resizing the Dock" \
 			'noglass [BOOL]' "Toggle the 3d display of the Dock" \
 			'restart' "Reload the Dock" \
-			'size [PIXELS]' "Set the tile size of Dock items"
+			'size [FLOAT]' "Set the tile size of Dock items (pixels)" \
+			'size-magnified [FLOAT]' "Set the maximum tile size of magnified Dock items (pixels)"
 			;;
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart ;;
@@ -195,14 +196,16 @@ mac() {
 		fadehidden) pref bool "com.apple.dock showhidden" $1 && mac dock restart ;;
 
 		lockcontent) pref bool "com.apple.dock contents-immutable" $1 && mac dock restart ;;
-		
+
 		locksize) pref bool "com.apple.dock size-immutable" $1 && mac dock restart ;;
 
 		noglass) pref bool "com.apple.dock no-glass" $1 && mac dock restart ;;
 
 		restart|r) killall Dock ;;
 
-		size) pref int "com.apple.dock ama" $1 && mac dock restart ;;
+		size) pref float "com.apple.dock tilesize" $1 && mac dock restart ;;
+
+		size-magnified) pref float "com.apple.dock largesize" $1 && mac dock restart ;;
 
 		*) unknown; return ;;
 		esac
