@@ -25,6 +25,5 @@ alias npmu='sudo npm -g update'
 # Show current longitude, latitude (requires CoreLocationCLI - http://code.google.com/p/corelocationcli)
 alias coords="CoreLocationCLI -once | perl -pe 's/^<\+?(\-?[\d\.]+),\s*(\-?[\d\.]+).*$/\$1, \$2/i'"
 
-alias freshe='fresh && history -c && exit'
 alias mac='mac.sh'
 alias webserver='p=8000;while lsof -i :$p &>/dev/null;do ((++p));done;{ sleep .5&&open "http://localhost:$p";}&>/dev/null&python -m SimpleHTTPServer $p'
