@@ -319,7 +319,7 @@ export TM_tooltip_template_styled='
 	.tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-border-radius: 2px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; overflow: hidden; position: relative; text-shadow: 0 1px 0 rgba(0,0,0,.2); }
 	.glyph { -webkit-border-radius: 2px 0 0 2px; -webkit-box-shadow: -8px 0 8px -8px rgba(0,0,0,.3) inset; -webkit-box-sizing: border-box; -webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,1)75%, rgba(0,0,0,.5)); background-image: -webkit-linear-gradient(top, rgba(0,0,0,.2), rgba(0,0,0,.1)); box-sizing: border-box; font-family: webdings, freesans, freeserif, monospace, sans-serif, serif; height: 100%; padding: 2px 0 0; position: absolute; text-align: center; text-shadow: 0 -1px 0 rgba(0,0,0,.2); width: 19px; }
 	.text { margin-left: 19px; padding: 2px 3px 3px 4px; }
-	@-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: .9999; } }
+	@-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 </style>
 <div class="tooltip">
 	<div class="glyph">
