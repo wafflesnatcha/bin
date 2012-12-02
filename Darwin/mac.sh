@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `mac.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
 SCRIPT_NAME="mac.sh"
-SCRIPT_VERSION="1.1.5 2012-11-29"
+SCRIPT_VERSION="1.1.6 2012-11-29"
 SCRIPT_DESC="Do stuff with OS X, like changing settings and junk."
 SCRIPT_COMMANDS=(
 	directory
@@ -41,7 +41,7 @@ pref() {
 		defaults write $1 -$vartype "$2"
 		;;
 	float|int)
-		[[ $2 = "-delete" ]] && defaults delete $1 || defaults write $1 -$vartype $2
+		[[ $2 = "--delete" ]] && defaults delete $1 || defaults write $1 -$vartype $2
 		;;
 	array|array-add|dict|dict-add)
 		local key=$1
@@ -61,18 +61,6 @@ pref() {
 		;;
 	esac
 	return
-}
-
-# runForEach COMMAND FILE...
-# Runs COMMAND with FILE as it's argument for every FILE specified.
-runForEach() {
-	[[ $# -lt 2 ]] && return 1;
-	local f cmd=$1
-	shift
-	for f in "$@"; do
-		[[ ! -e "$f" ]] && { ERROR "$f: No such file or directory"; continue; }
-		$cmd "$f"
-	done
 }
 
 # OSVersion [-lt|-gt VERSION]
@@ -228,8 +216,8 @@ mac() {
 		case $arg2_lower in
 
 		-h|"") usage "finder" \
-			'showfile FILE...' "Make a file visible in Finder" \
 			'hidefile FILE...' "Hide a file in Finder" \
+			'showfile FILE...' "Make a file visible in Finder" \
 			'fullpathview [BOOL]' "Show the full path in the title of Finder windows" \
 			'restart' "Restart Finder" \
 			'seticon ICNS FILE...' "Change the icon for a file using a .icns file" \
