@@ -6,13 +6,10 @@ download_dir="$TMPDIR/chromedownload"
 install_dir="/Applications"
 bundle_identifier="org.chromium.Chromium"
 
+[[ -e "$download_dir" ]] && rm -rf "$download_dir";
+
 echo -n "checking for existing installation... "
-if [[ $(type -p find_app) ]]; then
-	app_path=$(find_app "${bundle_identifier}")
-else
-	app_path=$(osascript -e 'tell application "Finder" to return POSIX path of (path to application id "'${bundle_identifier}'")')
-	osascript -e 'if application id "'${bundle_identifier}'" is running then tell application id "'${bundle_identifier}'" to quit'
-fi
+app_path=$(/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump | grep -A 4 "^bundle" | grep -B 4 "$bundle_identifier" | grep -o "/.*\.app" | head -n1)
 
 if [[ $? = 0 && -e "$app_path" ]]; then
 	echo "$app_path"
@@ -28,7 +25,7 @@ echo -n "finding latest revision... "
 latest_version=$(curl -qsSL -m10 --connect-timeout 15 "$snapshots_url_latest")
 echo "$latest_version"
 
-[[ $current_version -ge $latest_version ]] && { echo "No update necessary"; exit 0; }
+[[ $current_version -ge $latest_version ]] && { echo "no update necessary"; exit 0; }
 
 echo "downloading... "
 mkdir "$download_dir"
