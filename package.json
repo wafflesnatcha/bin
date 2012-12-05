@@ -1,11 +1,13 @@
 {
   "name": "bin",
-  "version": "0.0.0",
+  "description": "Shell scripts  (╯°□°)╯︵ uıq/~",
+  "version": "0.0.1",
   "dependencies": {
-    "cssbeautify": "~0.1.0"
+    "cssbeautify": "0.3.0"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/wafflesnatcha/bin.git"
-  }
+  },
+  "homepage": "https://github.com/wafflesnatcha/bin"
 }
