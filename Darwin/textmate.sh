@@ -77,7 +77,7 @@ export -f textmate_goto
 # Examples:
 #
 #     html_encode "<some text> you want to encode & stuff"
-# 
+#
 #     cat "/some/file.html" | html_encode
 #
 html_encode() {
@@ -206,7 +206,7 @@ export -f tooltip_html
 
 # tooltip_error [TEXT]
 #
-# Red tooltip with a ✘, used for a command has failed.
+# Red tooltip with a ✘, useful for when a command has failed.
 tooltip_error() {
 	local input="$(html_encode_br "$@")"
 	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
@@ -238,7 +238,7 @@ tooltip_warning() {
 	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
 		--background 175,82,0 \
 		--color 255,255,255 \
-		--icon '<b style="color:yellow;font-size:120%">&#x26A0;</b>' \
+		--icon '<span style="color:yellow">&#x26A0;</span>' \
 		--text "$input"
 }
 export -f tooltip_warning
@@ -252,10 +252,10 @@ export -f tooltip_warning
 # the variable `TM_tooltip_template_my_template`.
 #
 # Template variables come in the form of:
-# 
+#
 #     `<% name %>` for required variables, or
 #     `<% name % default value %>` for optional ones.
-# 
+#
 # If your template has any variables, simply pass them to this function as long
 # arguments. For instance:
 #
@@ -301,7 +301,7 @@ hr { background: -webkit-linear-gradient(bottom, rgba(<%background%255,255,185%>
 table { border-collapse: collapse; }
 th, td { padding: 0 2px; text-align: left; }
 .tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; padding: .2em .3em .3em; position: relative; }
-.icon { font-family: webdings, freesans, freeserif, monospace, sans-serif, serif, monospace; font-size: 115%; text-align: center; }
+.icon { font-family: monospace, sans-serif, serif, monospace; font-size: 115%; text-align: center; text-shadow: 0 -1px 1px rgba(0,0,0,.4); }
 @-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 '
 
@@ -327,7 +327,7 @@ export TM_tooltip_template_styled='
 <head>
 <style>'"$__css"'
 .tooltip { -webkit-border-radius: 2px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); padding: 0; }
-.icon { -webkit-border-radius: 2px 0 0 2px; -webkit-box-shadow: -8px 0 8px -8px rgba(0,0,0,.3) inset; -webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,1) 75%, rgba(0,0,0,.5)); background-image: -webkit-linear-gradient(top, rgba(0,0,0,.2), rgba(0,0,0,.1)); line-height: 1.4em; padding: .2em; position: absolute; width: 1.6em; left: 0; top: 0; bottom: 0; }
+.icon { -webkit-border-radius: 2px 0 0 2px; -webkit-box-shadow: -8px 0 8px -8px rgba(0,0,0,.3) inset; -webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,1) 75%, rgba(0,0,0,.5)); background-image: -webkit-linear-gradient(top, rgba(0,0,0,.2), rgba(0,0,0,.1)); line-height: 1.6em; position: absolute; min-width: 1.6em; left: 0; top: 0; bottom: 0; }
 .text { margin-left: 1.8em; padding: .3em .4em .4em; }
 </style>
 </head>
@@ -348,7 +348,7 @@ export TM_tooltip_template_styled_notext='
 <head>
 <style>'"$__css"'
 .tooltip { -webkit-border-radius: 5px; background: rgba(<%background%255,255,185%>,.95) -webkit-linear-gradient(rgba(<%background%255,255,185%>,0), rgba(0,0,0,.2)); padding: 0; }
-.icon { box-sizing: border-box; font-size: 20px; line-height: 42px; min-width: 48px; min-height: 42px; padding: 4px 8px 2px; }
+.icon { font-size: 2.4em; line-height: 2em; min-width: 2em; padding: 0; }
 </style>
 </head>
 <body>
@@ -358,6 +358,7 @@ export TM_tooltip_template_styled_notext='
 </body>
 </html>
 '
+unset __css
 
 #
 # Extra exit functions
@@ -377,18 +378,18 @@ export -f exit_tooltip_warning
 #
 # tooltip "This is a tooltip! :D ┌( ◔‿◔)┘ ʘ‿ʘ\nWow! Amazing! Zing!" &>/dev/null&
 # /usr/bin/php -v | tooltip &>/dev/null&
-# 
+#
 # tooltip_warning "This is a warning tooltip." &>/dev/null&
 # tooltip_warning &>/dev/null&
-# 
+#
 # tooltip_success "This is a successful tooltip! :D ┌( ◔‿◔)┘ ʘ‿ʘ" &>/dev/null&
 # tooltip_success &>/dev/null&
-# 
+#
 # tooltip_error "This is a BAD tooltip! :(" &>/dev/null&
 # tooltip_error &>/dev/null&
-# 
+#
 # tooltip_template default --font-size 11px --text "$(ruby -v)" &>/dev/null&
 # tooltip_success "$(php -v | fold -sw40)" &>/dev/null&
 # tooltip_template styled --text "$(html_encode_br "$(php -v | fold -sw40)")" --font-size 15px --background 57,154,21 --color 255,255,255 --icon "&#x2714;" &>/dev/null&
-# tooltip_template styled_notext --background 170,14,14 --color 255,255,255 --icon "FAILED" &>/dev/null&
+# tooltip_template styled_notext --background 170,14,14 --color 255,255,255 --icon '˟' &>/dev/null&
 
