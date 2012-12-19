@@ -297,7 +297,7 @@ h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; }
 pre, code, tt, kbd, samp { font-family: Menlo, Monaco, monospace; font-size: inherit; }
 b, strong { font-weight: 700; }
 i, em { font-style: italic; }
-hr { background: -webkit-linear-gradient(bottom, rgba(<%background%255,255,185%>,0), rgba(0,0,0,.25)); border-top: 1px solid rgba(0,0,0,.3); height: 4px; margin: 3px -3px 0px; }
+hr { background: -webkit-linear-gradient(bottom, rgba(<%background%255,255,185%>,0), rgba(0,0,0,.2)); border-top: 1px solid rgba(0,0,0,.3); height: 4px; margin: 3px -3px -1px; }
 table { border-collapse: collapse; }
 th, td { padding: 0 2px; text-align: left; }
 .tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; padding: .2em .3em .3em; position: relative; }
