@@ -1,5 +1,6 @@
-# goo.gl URL
-# 
+#!/usr/bin/env bash
+# Usage: goo.gl [URL]
+#
 # Shorten a URL using the Google URL Shortener service (http://goo.gl).
 goo.gl() {
 	[[ ! $1 ]] && { echo -e "Usage: goo.gl [URL]\n\nShorten a URL using the Google URL Shortener service (http://goo.gl)."; return; }

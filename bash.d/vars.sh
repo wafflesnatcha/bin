@@ -1,9 +1,10 @@
-# vars [NAME]...
+#!/usr/bin/env bash
+# Usage: vars [NAME]...
 #
 # Pretty print variables, useful for debugging.
 #
 # Example:
-# $ some_variable=value
+# $ some_variable="some value"
 # $ vars some_variable
 vars() {
 	local __i __l

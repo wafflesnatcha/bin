@@ -1,5 +1,6 @@
-# mrp FILE
-# 
+#!/usr/bin/env bash
+# Usage: mrp FILE
+#
 # Run `mate` using result of `rp` as the first parameter.
 mrp() {
 	local p

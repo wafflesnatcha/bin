@@ -1,4 +1,3 @@
-
 # Change any existing `l` alias to `gl` substituting `ls` with `gls` (GNU ls)
 # only if `gls` is installed on this system (OS X `ls` is not GNU)
 { alias l && type gls; } &>/dev/null && eval $(alias l | sed "s/^alias l='ls/alias gl='gls/")

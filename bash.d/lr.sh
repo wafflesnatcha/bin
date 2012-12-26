@@ -1,7 +1,8 @@
-# lr [OPTION]... [FILE]...
-# 
+#!/usr/bin/env bash
+# Usage: lr [OPTION]... [FILE]...
+#
 # Replacement for `ls -R`.
-# 
+#
 # OPTION can be any options available to the `ls` command.
 lr() {
 	local f

@@ -1,5 +1,6 @@
-# cdrp FILE
-# 
+#!/usr/bin/env bash
+# Usage: cdrp FILE
+#
 # Change directory to the path of the result of `rp`.
 cdrp() {
 	local p=$(rp "$*") || return

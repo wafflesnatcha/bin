@@ -1,4 +1,5 @@
-# watch_clipboard [INTERVAL]
+#!/usr/bin/env bash
+# Usage: watch_clipboard [INTERVAL]
 #
 # Watch the clipboard for changes and display them to stdout. INTERVAL is the
 # time (in seconds) to wait after the clipboard is tested for a change (default

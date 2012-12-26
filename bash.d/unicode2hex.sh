@@ -1,5 +1,6 @@
-# unicode2hex CHARACTER
-# 
+#!/usr/bin/env bash
+# Usage: unicode2hex CHARACTER
+#
 # Convert a character to its unicode hexadecimal value.
 #
 # Example:
@@ -11,11 +12,7 @@
 # $ printf "$lightning $lightning $lightning\n"
 # ⚡ ⚡ ⚡
 unicode2hex() {
-	echo -n "$1" |
-		hexdump |
-		head -n1 |
-		tr a-z A-z |
-		awk '{for (i=2; i<=NF; i++) printf "\\x%s", $i}'
+	echo -n "$1" | hexdump | head -n1 | tr a-z A-z | awk '{for (i=2; i<=NF; i++) printf "\\x%s", $i}'
 }
 
 # TESTS

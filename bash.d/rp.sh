@@ -1,5 +1,6 @@
-# rp FILE
-# 
+#!/usr/bin/env bash
+# Usage: rp FILE
+#
 # Show the end value of a symbolic link (like GNU `readlink -f`).
 #
 # FILE can be either a path to an existing file, or any file that exists in the

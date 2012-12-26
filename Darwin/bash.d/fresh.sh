@@ -1,9 +1,8 @@
-# fresh
-# 
-# Save the command history and open a new tab at the current directory
-
+#!/usr/bin/env bash
+# Usage: fresh
+#
+# Save the command history and open a new tab at the current directory.
 [[ ! $TERM_PROGRAM = "Apple_Terminal" ]] && return
-
 fresh() {
 	history -w
 	osascript <<-EOF
@@ -22,5 +21,4 @@ fresh() {
 	return
 	EOF
 }
-
 alias freshe='fresh && history -c && exit'

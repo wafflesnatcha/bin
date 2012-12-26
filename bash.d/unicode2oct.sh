@@ -1,5 +1,6 @@
-# unicode2oct CHARACTER
-# 
+#!/usr/bin/env bash
+# Usage: unicode2oct CHARACTER
+#
 # Convert a character to its unicode octal value.
 #
 # Example:
@@ -11,11 +12,7 @@
 # $ printf "$snowman $snowman $snowman\n"
 # ☃ ☃ ☃
 unicode2oct() {
-	echo -n "$1" |
-		hexdump -b |
-		head -n1 |
-		tr "[:lower:]" "[:upper:]" |
-		awk '{for (i=2; i<=NF; i++) printf "\\%s", $i}'
+	echo -n "$1" | hexdump -b | head -n1 | tr "[:lower:]" "[:upper:]" | awk '{for (i=2; i<=NF; i++) printf "\\%s", $i}'
 }
 
 # TESTS
