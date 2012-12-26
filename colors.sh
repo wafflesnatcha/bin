@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `colors.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `colors.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 # 
 # Bash color output.
 #

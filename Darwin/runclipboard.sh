@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `runclipboard.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `runclipboard.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="runclipboard.sh"
 SCRIPT_VERSION="r1 2012-07-11"
 

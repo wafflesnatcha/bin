@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# `browser.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `browser.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="browser.sh"
-SCRIPT_VERSION="r1 2012-11-03"
+SCRIPT_VERSION="r2 2012-12-26"
 
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
@@ -39,4 +39,5 @@ tmpfile="$tmpfile.html"
 [[ $opt_body ]] && echo "<!DOCTYPE html><html><head><title>$(basename "$tmpfile")</title></head><body>" >> "$tmpfile"
 cat >> "$tmpfile"
 [[ $opt_body ]] && echo "</body></html>" >> "$tmpfile"
+[[ ! -s $tmpfile ]] && ERROR 'nothing to display' 2
 open $tmpfile

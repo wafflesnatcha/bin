@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `rmmacres.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `rmmacres.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="rmmacres.sh"
 SCRIPT_VERSION="r4 2012-08-09"
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `pixel_color.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `pixel_color.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="pixel_color.sh"
 SCRIPT_VERSION="r1 2012-09-12"
 

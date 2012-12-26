@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `probeui.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `probeui.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="probeui.sh"
 SCRIPT_VERSION="r1 2012-07-06"
 

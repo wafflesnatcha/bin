@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `extract.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `extract.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="extract.sh"
 SCRIPT_VERSION="r2 2012-09-10"
 
@@ -52,11 +52,11 @@ for f in "$@"; do
 		;;
 
 		*.cpio)
-		ditto -x "$f" "${f%%.cpio}" 
+		ditto -x "$f" "${f%%.cpio}"
 		;;
 
 		*.cpgz)
-		ditto -Vxz "$f" "${f%%.cpgz}" 
+		ditto -Vxz "$f" "${f%%.cpgz}"
 		;;
 
 		*.gz|*.gzip)

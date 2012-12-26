@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `crush.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `crush.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="crush.sh"
 SCRIPT_VERSION="r7 2012-10-02"
 

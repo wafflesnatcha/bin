@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# `textmate.sh` by Scott Buchanan <buchanan.sc@gmail.com> http://wafflesnatcha.github.com
+# `textmate.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
+# 
 # Handy functions to include in your TextMate commands.
 
 # regex_escape STRING
