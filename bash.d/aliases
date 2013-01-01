@@ -21,6 +21,7 @@ alias lxa='xattr -l'
 alias ..='cd ..'
 alias b='browser.sh'
 alias cd..='cd ..'
+alias count-files='echo $(find . | wc -l)'
 alias envf=env_functions
 alias envv=env_vars
 alias finds='findstring.sh -i'
