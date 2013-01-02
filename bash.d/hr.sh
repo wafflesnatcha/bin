@@ -24,3 +24,4 @@ hr() {
 	done
 	printf "${i}%$(($c%${#r[@]}))s\033[0m\n" "" | tr " " "#"
 }
+export -f hr
