@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Usage: env-functions [-x|-l]
 #
-	local c=()
-	[[ ! -p /dev/stdout && "$TERM" =~ xterm-(256)?color ]] && c=( "\033[m" "\033[1;32m" "\033[1;33m" )
 # Pretty print all functions available to the current shell environment. The -x
 # option limits display to exported functions only, while the -l option limits
 # display to non-exported functions. The -n option limits display to function
 # names only.
 env-functions() {
+	local c=()
+	[[ ! -p /dev/stdout && "$TERM" =~ xterm-.*color ]] && c=( "\033[m" "\033[1;32m" "\033[1;33m" )
 	declare -F | sed -E 's/declare \-f((x) |( ))/f\2\3 /' | {
 		while read fn; do
 			if [[ ${fn:0:2} = "fx" ]]; then
