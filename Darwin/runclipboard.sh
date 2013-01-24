@@ -6,9 +6,9 @@ SCRIPT_VERSION="r1 2012-07-11"
 usage() { cat <<EOF
 $SCRIPT_NAME $SCRIPT_VERSION
 Run the contents of the clipboard as a script.
-$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[1;5;7;31m')
+$([[ "$TERM" =~ xterm-.*color ]]&&echo -e '\033[1;5;7;31m')
 WARNING: This script will run ANYTHING on the clipboard!
-$([[ "$TERM" =~ xterm-(256)?color ]]&&echo -e '\033[m')
+$([[ "$TERM" =~ xterm-.*color ]]&&echo -e '\033[m')
 Usage: ${0##*/} [OPTION]... [--] [ARGUMENT]...
 
 Options:

@@ -6,7 +6,7 @@ hr() {
 	local i x r c=${COLUMNS:-`tput cols`}
 
 	# No color support
-	if [[ -p /dev/stdout || ! "$TERM" =~ xterm-(256)?color ]]; then
+	if [[ -p /dev/stdout || ! "$TERM" =~ xterm-.*color ]]; then
 		printf "%-72s" "" | tr " " "#"
 		return
 	fi

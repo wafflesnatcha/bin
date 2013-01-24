@@ -10,7 +10,7 @@
 # Display available colors:
 # $ for c in ${!COLOR_*}; do echo -e "${!c}$c$COLOR_RESET"; done
 
-if [[ ! -p /dev/stdout && "$TERM" =~ xterm-(256)?color ]]; then
+if [[ ! -p /dev/stdout && "$TERM" =~ xterm-.*color ]]; then
 	COLOR_SUPPORTED=1         # Are colors available?
 	COLOR_RESET='\033[m'      # Reset all formatting
 	COLOR_BOLD='\033[1m'      # Bold text
