@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `crush.sh` by Scott Buchanan <http://wafflesnatcha.github.com>
 SCRIPT_NAME="crush.sh"
-SCRIPT_VERSION="r7 2012-10-02"
+SCRIPT_VERSION="r8 2013-01-24"
 
 type optipng &>/dev/null && P_optipng="optipng -quiet -preserve"
 type pngcrush &>/dev/null && P_pngcrush="pngcrush -q -rem alla -rem gAMA -rem text -oldtimestamp -ow"
@@ -64,8 +64,8 @@ process() {
 
 count=0
 for f in "$@"; do
-	(( count++ ))
-	process "$f" || continue
 	[[ $opt_percentage ]] && echo -n "$(echo "$count/$#*100" | bc -l | xargs printf "%1.0f%%";) "
 	echo "$f"
+	(( count++ ))
+	process "$f" || continue
 done

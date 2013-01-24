@@ -5,7 +5,7 @@
 #
 # Example (courtesy of Dave Grohl): `string_repeat 7 "THE BEST "`
 string-repeat() {
-	[[ ! $1 || $1 = "-h" || $1 = "--help" || ! $1 =~ ^[0-9]+$ || $# -lt 1 ]] && cat <<-EOF 1>&2 && return 2
+	[[ ! $1 =~ ^[0-9]+$ ]] && cat <<-EOF 1>&2 && return 1
 		Usage: string-repeat MULTIPLIER [STRING]
 
 		Repeat a string MULTIPLIER times.
