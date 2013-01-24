@@ -91,9 +91,7 @@ mac() {
 	shift 2
 
 	usage() {
-		local c indent="  "
-		# Color output supported?
-	    [[ ! -p /dev/stdout && "$TERM" =~ xterm-(256)?color ]] && c=("\033[m" "\033[34m" "\033[31m" "\033[93m")
+		local indent="  "
 
 		if [[ ! $1 ]]; then
 			# Display list of commands
