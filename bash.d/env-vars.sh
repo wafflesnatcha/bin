@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Usage: env_vars [PATTERN]
+# Usage: env-vars [PATTERN]
 #
 # Pretty print all variables in the current shell environment (even those not
 # exported).
-env_vars() {
+env-vars() {
 	local c output=$(set | perl -ne 'print if m/^[a-z0-9_]+=/i')
 	[[ $1 =~ ^[a-zA-Z0-9\_]*$ ]] && output=$(echo "$output" | perl -ne 'print if m/^'"$1"'[^=]*?=/i')
 	[[ ! -p /dev/stdout && "$TERM" =~ xterm-(256)?color ]] && c=("\033[m" "\033[34m" "\033[32m" "\033[93m")
