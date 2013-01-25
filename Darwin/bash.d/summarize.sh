@@ -1,11 +1,14 @@
-# summarize SENTENCES
+#!/usr/bin/env bash
+# Usage: summarize [SENTENCES]
 #
-# Use OS X summary service (via AppleScript) to summarize stdin.
+# Use OS X summary service (via AppleScript) to summarize stdin. SENTENCES is
+# an integer specifying the maximum number of sentences in the result.
 summarize() {
-	[[ ! $1 || $1 = "-h" || $1 = "--help" ]] && cat <<-EOF && return
-		Usage: summarize SENTENCES
+	[[ $1 && ! $1 =~ ^[0-9]+$ ]] && cat <<-EOF 1>&2 && return 1
+		Usage: summarize [SENTENCES]
 
-		Use the OS X summary service to summarize stdin.
+		Use OS X summary service (via AppleScript) to summarize stdin. SENTENCES is
+		an integer specifying the maximum number of sentences in the result.
 		EOF
-	osascript -e "summarize (do shell script \"cat\") in $1"
+	osascript -e "summarize (\"$(cat)\" & return)${1:+ in $1}"
 }
