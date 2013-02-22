@@ -168,16 +168,18 @@ mac() {
 
 		-h|"") usage "dock" \
 			'addspace' "Add a spacer to the Dock" \
+			'restart' "Reload the Dock" \
 			'fadehidden [BOOL]' "Hidden applications appear dimmer on the Dock" \
 			'lockcontent [BOOL]' "Disallow changing the icons in the Dock" \
 			'locksize [BOOL]' "Disallow resizing the Dock" \
 			'noglass [BOOL]' "Toggle the 3d display of the Dock" \
-			'restart' "Reload the Dock" \
 			'size [FLOAT]' "Set the tile size of Dock items (pixels)" \
 			'size-magnified [FLOAT]' "Set the maximum tile size of magnified Dock items (pixels)"
 			;;
 
 		addspace) defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}' && mac dock restart ;;
+
+		restart|r) killall Dock ;;
 
 		fadehidden) pref bool "com.apple.dock showhidden" $1 && mac dock restart ;;
 
@@ -186,8 +188,6 @@ mac() {
 		locksize) pref bool "com.apple.dock size-immutable" $1 && mac dock restart ;;
 
 		noglass) pref bool "com.apple.dock no-glass" $1 && mac dock restart ;;
-
-		restart|r) killall Dock ;;
 
 		size) pref float "com.apple.dock tilesize" $1 && mac dock restart ;;
 
@@ -216,17 +216,15 @@ mac() {
 		-h|"") usage "finder" \
 			'hidefile FILE...' "Hide a file in Finder" \
 			'showfile FILE...' "Make a file visible in Finder" \
-			'fullpathview [BOOL]' "Show the full path in the title of Finder windows" \
 			'restart' "Restart Finder" \
 			'seticon ICNS FILE...' "Change the icon for a file using a .icns file" \
+			'full-path [BOOL]' "Show the full path in the title of Finder windows" \
 			'show-hidden [BOOL]' "Toggle visibility of hidden files and folders"
 			;;
 
 		hidefile|hf|hide) type chflags &>/dev/null && chflags -h hidden "$@" || setfile -P -a V "$@" ;;
 
 		showfile|sf|show) type chflags &>/dev/null && chflags -h nohidden "$@" || setfile -P -a v "$@" ;;
-
-		fullpathview) pref bool "com.apple.finder _FXShowPosixPathInTitle" $1 ;;
 
 		restart|r) osascript -e 'tell application "Finder" to quit' -e 'try' -e 'tell application "Finder" to reopen' -e 'on error' -e 'tell application "Finder" to launch' -e 'end try' ;;
 
@@ -240,7 +238,9 @@ mac() {
 			EOF
 			;;
 
-		show-hidden) pref bool "com.apple.finder AppleShowAllFiles" $1 && mac finder restart ;;
+		full-path) pref bool "com.apple.finder _FXShowPosixPathInTitle" $1 ;;
+
+		show-hidden|hidden) pref bool "com.apple.finder AppleShowAllFiles" $1 && mac finder restart ;;
 
 		*) unknown; return ;;
 		esac
@@ -254,19 +254,13 @@ mac() {
 		case $arg2_lower in
 
 		-h|"") usage "itunes" \
-			'halfstars [BOOL]' "Enable ratings with half stars" \
-			'hideping [BOOL]' "Hide the 'Ping' arrows" \
-			'storelinks [BOOL]' "Toggle display of the store link arrows" \
 			'current' "List all information about the current track" \
 			'lyrics' "Show lyrics saved with the current track" \
 			'status' "Show player state and current track"
+			'halfstars [BOOL]' "Enable ratings with half stars" \
+			'hideping [BOOL]' "Hide the 'Ping' arrows" \
+			'storelinks [BOOL]' "Toggle display of the store link arrows" \
 			;;
-
-		halfstars) pref bool "com.apple.iTunes allow-half-stars" $1 ;;
-
-		hideping) pref bool "com.apple.iTunes hide-ping-dropdown" $1 ;;
-
-		storelinks) pref bool "com.apple.iTunes show-store-link-arrows" $1 ;;
 
 		current)
 			itunes_running && osascript -ss -e \
@@ -289,6 +283,12 @@ mac() {
 			end tell
 			EOF
 			;;
+
+		halfstars) pref bool "com.apple.iTunes allow-half-stars" $1 ;;
+
+		hideping) pref bool "com.apple.iTunes hide-ping-dropdown" $1 ;;
+
+		storelinks) pref bool "com.apple.iTunes show-store-link-arrows" $1 ;;
 
 		*) unknown; return ;;
 		esac
