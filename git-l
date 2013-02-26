@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+git symbolic-ref HEAD 1>/dev/null || exit
+git log \
+	--graph \
+	--pretty=format:"%C($(git config --get color.diff.commit || echo "yellow"))%h%C(reset)%C(cyan)%d%C(reset) %C(green)%an %C(red)%ar%C(reset)%n%s" \
+	$*
