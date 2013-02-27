@@ -210,7 +210,7 @@ export -f tooltip_html
 # Red tooltip with a ✘, useful for when a command has failed.
 tooltip_error() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
+	tooltip_template $([[ $input ]] && echo "notice" || echo "icon") \
 		--background 170,14,14 \
 		--color 255,255,255 \
 		--icon '&#x2718;' \
@@ -223,7 +223,7 @@ export -f tooltip_error
 # Green tooltip with a ✔, used for a command has successfully completed.
 tooltip_success() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
+	tooltip_template $([[ $input ]] && echo "notice" || echo "icon") \
 		--background 57,154,21 \
 		--color 255,255,255 \
 		--icon '&#x2714;' \
@@ -236,7 +236,7 @@ export -f tooltip_success
 # Orange tooltip with a ⚠, used for warnings and such.
 tooltip_warning() {
 	local input="$(html_encode_br "$@")"
-	tooltip_template $([[ $input ]] && echo "styled" || echo "styled_notext") \
+	tooltip_template $([[ $input ]] && echo "notice" || echo "icon") \
 		--background 175,82,0 \
 		--color 255,255,255 \
 		--icon '<span style="color:yellow">&#x26A0;</span>' \
@@ -294,13 +294,15 @@ __css='
 html, body, span, div, table, thead, tbody, tr, th, td, pre, code, tt, kbd, samp, form, hr { border: 0; margin: 0; padding: 0; }
 div, hr { -webkit-box-sizing: border-box; box-sizing: border-box; }
 body { font: small-caption; font-size: <%font-size%11px%>; line-height: 1.25em; padding: 1px 10px 14px; }
-h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; }
+h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; font-size: 100%; }
 pre, code, tt, kbd, samp { font-family: Menlo, Monaco, monospace; font-size: inherit; }
 b, strong { font-weight: 700; }
 i, em { font-style: italic; }
-hr { background: -webkit-linear-gradient(bottom, rgba(<%background%255,255,185%>,0), rgba(0,0,0,.2)); border-top: 1px solid rgba(0,0,0,.3); height: 4px; margin: 3px -3px -1px; }
+hr { background: -webkit-linear-gradient(rgba(<%background%255,255,185%>,0),rgba(0,0,0,.6)); border-top: 0px solid rgba(0,0,0,.3); height: 3px; margin: 1px -3px 1px; }
 table { border-collapse: collapse; }
-th, td { padding: 0 2px; text-align: left; }
+th, td { padding: 0 2px; text-align: left; vertical-align: top; }
+tr > :first-child { padding-left: 0; }
+tr > :last-child { padding-right: 0; }
 .tooltip { -webkit-animation: fadeIn .2s ease 0s forwards; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 5px 9px 0 rgba(0,0,0,.4); background: rgba(<%background%255,255,185%>,.95); color: rgb(<%color%0,0,0%>); opacity: 0; padding: .2em .3em .3em; position: relative; }
 .icon { font-family: monospace, sans-serif, serif, monospace; font-size: 115%; text-align: center; text-shadow: 0 -1px 1px rgba(0,0,0,.4); }
 @-webkit-keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
@@ -320,9 +322,9 @@ export TM_tooltip_template_default='
 </html>
 '
 
-# TM_tooltip_template_styled
+# TM_tooltip_template_notice
 # --icon CHARACTER --text TEXT [--background 255,255,185] [--color 0,0,0]
-export TM_tooltip_template_styled='
+export TM_tooltip_template_notice='
 <!DOCTYPE html>
 <html>
 <head>
@@ -341,9 +343,9 @@ export TM_tooltip_template_styled='
 </html>
 '
 
-# TM_tooltip_template_styled_notext
+# TM_tooltip_template_icon
 # --icon CHARACTER [--background 255,255,185] [--color 0,0,0]
-export TM_tooltip_template_styled_notext='
+export TM_tooltip_template_icon='
 <!DOCTYPE html>
 <html>
 <head>
@@ -391,6 +393,6 @@ export -f exit_tooltip_warning
 #
 # tooltip_template default --font-size 11px --text "$(ruby -v)" &>/dev/null&
 # tooltip_success "$(php -v | fold -sw40)" &>/dev/null&
-# tooltip_template styled --text "$(html_encode_br "$(php -v | fold -sw40)")" --font-size 15px --background 57,154,21 --color 255,255,255 --icon "&#x2714;" &>/dev/null&
-# tooltip_template styled_notext --background 170,14,14 --color 255,255,255 --icon '˟' &>/dev/null&
+# tooltip_template notice --text "$(html_encode_br "$(php -v | fold -sw40)")" --font-size 15px --background 57,154,21 --color 255,255,255 --icon "&#x2714;" &>/dev/null&
+# tooltip_template icon --background 170,14,14 --color 255,255,255 --icon '˟' &>/dev/null&
 
