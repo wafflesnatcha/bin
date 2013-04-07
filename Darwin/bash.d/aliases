@@ -16,6 +16,8 @@ type mate &>/dev/null && {
 	export LESSEDIT='mate -l %lm %f'
 	export VISUAL='mate -w'
 }
+alias mate2='mate2 -r'
+alias m2='mate2'
 
 # npm aliases
 alias npmo='npm -gq outdated | grep -v "$(npm config get prefix)/lib/node_modules/npm"'
