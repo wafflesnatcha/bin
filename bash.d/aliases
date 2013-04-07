@@ -5,7 +5,7 @@ alias cpath='/bin/echo -n "$PWD" | { xclip 2>/dev/null || pbcopy; }'
 alias du-graph='du -d1 "$PWD" | sed \$d | sort -rn | sed "s/${PWD////\/}\///" | awk -v t=$(du -d0 | cut -f1) -v w=${COLUMNS:-`tput cols`} -F$'\''\t'\'' '\''{ M=w/2; for (a=0;a<$1;a++) { if(a>c){c=a} } br=a/c; b=M*br; for (x=0;x<b;x++) { printf "\033[31m#\033[0m" }printf " \033[2m%0.2f%%\033[0m %s\n",a/t*100,$2}'\'
 
 # Retrieves the current WAN ipv4 address via checkip.dyn.com
-alias getip='curl -qsL http://checkip.dyn.com | sed -E "s/^.*Address: ([0-9\.]+).*$/\1/"'
+alias myip='curl -qsL http://checkip.dyn.com | sed -E "s/^.*Address: ([0-9\.]+).*$/\1/"'
 
 # `ls` shortcut (for GNU ls only!)
 alias l='ls -AhlqU -T4 --file-type --color=auto'
