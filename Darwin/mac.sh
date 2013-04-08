@@ -145,7 +145,7 @@ mac() {
 			'users [NAME]' "List users of this machine"
 			;;
 
-		groups) dscacheutil -q group $([[ "$1" ]] && echo "-a name $2") ;;
+		groups) dscacheutil -q group $([[ "$1" ]] && echo "-a name $1") ;;
 
 		members)
 			[[ ! $1 ]] && return 1
