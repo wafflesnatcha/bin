@@ -1,5 +1,8 @@
 #!/usr/bin/env phantomjs
 
+/*jshint browser:true, devel:true*/
+/*global phantom, require*/
+
 var config = {
 	'delay': 0.25,
 	'width': null,
@@ -31,8 +34,8 @@ var Script = (function () {
 		' -y, --top PIXELS     Y-position of the screenshot',
 		' -z, --zoom FACTOR    Page zoom factor (1.0 = 100%)',
 		'     --debug          Output more information',
-		'     --help           Show this help',
-		].join('\n');
+		'     --help           Show this help'
+	].join('\n');
 
 	function usage() {
 		console.log(help);
@@ -51,43 +54,42 @@ var Script = (function () {
 
 	// Parse command line arguments
 	var args = (function () {
-		var res = []; // shift off first element (script name)
+		var a, res = []; // shift off first element (script name)
 		while (argv.length > 0) {
 			a = argv.shift();
 			switch (a) {
-			case '--help':
-				usage();
-				phantom.exit();
-				break;
-			case '--delay':
-			case '-d':
-				config.delay = argv.shift();
-				break;
-			case '--width':
-			case '-w':
-				config.width = argv.shift();
-				break;
-			case '--height':
-			case '-h':
-				config.height = argv.shift();
-				break;
-			case '--left':
-			case '-x':
-				config.left = argv.shift();
-				break;
-			case '--top':
-			case '-y':
-				config.top = argv.shift();
-				break;
-			case '--zoom':
-			case '-z':
-				config.zoom = argv.shift();
-				break;
-			case '--':
-				return res.concat(a, argv);
-				break;
-			default:
-				res.push(a);
+				case '--help':
+					usage();
+					phantom.exit();
+					break;
+				case '--delay':
+				case '-d':
+					config.delay = argv.shift();
+					break;
+				case '--width':
+				case '-w':
+					config.width = argv.shift();
+					break;
+				case '--height':
+				case '-h':
+					config.height = argv.shift();
+					break;
+				case '--left':
+				case '-x':
+					config.left = argv.shift();
+					break;
+				case '--top':
+				case '-y':
+					config.top = argv.shift();
+					break;
+				case '--zoom':
+				case '-z':
+					config.zoom = argv.shift();
+					break;
+				case '--':
+					return res.concat(a, argv);
+				default:
+					res.push(a);
 			}
 		}
 		return res;
@@ -100,22 +102,20 @@ var Script = (function () {
 	};
 }());
 
-Script.debug(Script.args);
-
 if (Script.args.length < 1) {
 	Script.usage();
 	phantom.exit(1);
 }
 
 var address = Script.args.shift();
-if (address.indexOf("://") == -1) {
-	address = "http://" + address;
+if (address.indexOf('://') == -1) {
+	address = 'http://' + address;
 	Script.debug('address: ' + address);
 }
 
 var output = Script.args.shift();
 if (!output) {
-	output = address.substr(address.indexOf("://") + 3).replace(/[^a-z0-9\-_\.]/gi, "_").replace(/^_/, '') + ".png";
+	output = address.substr(address.indexOf('://') + 3).replace(/[^a-z0-9\-_\.]/gi, '_').replace(/^_/, '') + '.png';
 	Script.debug('output: ' + output);
 }
 
@@ -125,7 +125,7 @@ var page = (function () {
 			'loadImages': true,
 			'loadPlugins': true,
 			'webSecurityEnabled': false,
-			'localToRemoteUrlAccessEnabled': true,
+			'localToRemoteUrlAccessEnabled': true
 		};
 
 	for (var prop in settings) {
@@ -156,7 +156,7 @@ var page = (function () {
 		Script.debug(msg);
 		trace.forEach(function (item) {
 			Script.debug('  ', item.file, ':', item.line);
-		})
+		});
 	};
 
 	return page;
@@ -165,13 +165,14 @@ var page = (function () {
 var start = Date.now();
 page.open(address, function (status) {
 	if (status !== 'success') {
-		console.error("Unable to load '" + address + "'");
+		console.error('Unable to load [' + address + ']');
 		phantom.exit(1);
 	}
-	Script.debug('Page loaded ' + (Date.now() - start) + ' msec');
+	Script.debug('Page loaded [' + (Date.now() - start) + ' msec]');
+	page.zoomFactor = config.zoom;
 	window.setTimeout(function () {
-		page.zoomFactor = config.zoom;
 		page.render(output);
+		Script.debug('Rendered [' + (Date.now() - start) + ' msec]');
 		console.log(output);
 		phantom.exit();
 	}, config.delay * 1000);
