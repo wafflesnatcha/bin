@@ -4,9 +4,9 @@
  * Visualize source code as PHP tokens.
  *
  * @author    Scott Buchanan <buchanan.sc@gmail.com>
- * @copyright 2012 Scott Buchanan
+ * @copyright 2016 Scott Buchanan
  * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
- * @version   r2 2012-09-09
+ * @version   r2 2016-10-19
  * @link      http://wafflesnatcha.github.com
  */
 require_once ('CLIScript.php');
@@ -25,8 +25,7 @@ $script = new CLIScript(array(
 			'short' => 'a',
 			'long' => 'ansi',
 			'description' => 'Show ansi colors (console only)'
-		),
-
+		)
 	)
 ));
 
