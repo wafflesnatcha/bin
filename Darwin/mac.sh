@@ -351,12 +351,15 @@ mac() {
 
 		-h|"") usage "system" \
 			'battery' "Display battery charge (if available)" \
-			'lock' "Lock the desktop"
+			'lock' "Lock the desktop" \
+			'purge' "Force disk cache to be purged"
 			;;
 
 		battery) ioreg -S -w0 -c AppleSmartBattery -r AppleSmartBattery | grep -Ei '(Max|Current)Capacity' | perl -pe 's/^[\s\|]*"(\w*)Capacity" = (.*?)[\s]*$/$2 /gi' | awk '{printf "%.1f%%\n",($2/$1*100)}' ;;
 
 		lock) "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend ;;
+
+		purge) sudo purge ;;
 
 		*) unknown; return ;;
 		esac
