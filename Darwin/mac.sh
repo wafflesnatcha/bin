@@ -256,10 +256,10 @@ mac() {
 		-h|"") usage "itunes" \
 			'current' "List all information about the current track" \
 			'lyrics' "Show lyrics saved with the current track" \
-			'status' "Show player state and current track"
+			'status' "Show player state and current track" \
 			'halfstars [BOOL]' "Enable ratings with half stars" \
 			'hideping [BOOL]' "Hide the 'Ping' arrows" \
-			'storelinks [BOOL]' "Toggle display of the store link arrows" \
+			'storelinks [BOOL]' "Toggle display of the store link arrows"
 			;;
 
 		current)
