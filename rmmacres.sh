@@ -69,10 +69,11 @@ $fopts
 )
 -print
 $( [[ ! $opt_dryrun ]] && echo '-exec rm \{\} \;' )
-EOF)
+EOF
+)
 
 for path in "${@:-$PWD}"; do
 	[[ $opt_quiet ]] &&
-		echo "$args" | xargs find -s "$path" 1>/dev/null ||
-		echo "$args" | xargs find -s "$path"
+		echo "$args" | xargs find "$path" 1>/dev/null ||
+		echo "$args" | xargs find "$path"
 done
