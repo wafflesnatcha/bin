@@ -8,7 +8,7 @@
 # $ echo -e "${COLOR_BLUE}Here is some blue text.${COLOR_RESET}"
 #
 # Display available colors:
-# $ for c in ${!COLOR_*}; do echo -e "${!c}$c$COLOR_RESET"; done
+# $ . colors.sh; for c in ${!COLOR_*}; do echo -e "${!c}$c$COLOR_RESET"; done
 
 if [[ ! -p /dev/stdout && $(tput colors 2>/dev/null) -gt 0 ]]; then
 	COLOR_SUPPORTED=1         # Are colors available?
