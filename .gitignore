@@ -1,1 +1,15 @@
 node_modules/
+bundle
+bundler
+compass
+rake
+kramdown
+ri
+jekyll
+listen
+rdoc
+rougify
+safe_yaml
+sass
+sass-convert
+scss
